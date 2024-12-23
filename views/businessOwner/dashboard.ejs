@@ -1,0 +1,28 @@
+<!-- views/businessOwner/dashboard.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+</head>
+<body>
+    <h1>Welcome to the <%= title %></h1>
+    
+    <h2>Transactions</h2>
+    <ul>
+        <% transactions.forEach(transaction => { %>
+            <li><%= transaction.description %> - <%= transaction.amount %> - <%= transaction.date.toLocaleString() %></li>
+        <% }) %>
+    </ul>
+
+    <h3>Add New Transaction</h3>
+    <form action="/businessOwner/addTransaction" method="POST">
+        <label for="description">Description:</label>
+        <input type="text" name="description" id="description" required><br>
+        <label for="amount">Amount:</label>
+        <input type="number" name="amount" id="amount" required><br>
+        <button type="submit">Add Transaction</button>
+    </form>
+</body>
+</html>
