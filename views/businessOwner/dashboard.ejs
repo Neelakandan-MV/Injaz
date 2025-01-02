@@ -1,28 +1,190 @@
-<!-- views/businessOwner/dashboard.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
+    <title>Ingaz Dashboard</title>
+    <!-- CSS Framework -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Add custom styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 10px;
+        }
+        .chart {
+            height: 200px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .company-dropdown {
+            margin-top: 15px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the <%= title %></h1>
-    
-    <h2>Transactions</h2>
-    <ul>
-        <% transactions.forEach(transaction => { %>
-            <li><%= transaction.description %> - <%= transaction.amount %> - <%= transaction.date.toLocaleString() %></li>
-        <% }) %>
-    </ul>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar p-3">
+            <h4 class="text-center"><%= user.name %></h4>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="#" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i> Transactions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
+                </li>
+            </ul>
+        </div>
 
-    <h3>Add New Transaction</h3>
-    <form action="/businessOwner/addTransaction" method="POST">
-        <label for="description">Description:</label>
-        <input type="text" name="description" id="description" required><br>
-        <label for="amount">Amount:</label>
-        <input type="number" name="amount" id="amount" required><br>
-        <button type="submit">Add Transaction</button>
-    </form>
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Dashboard</h2>
+                <button class="btn btn-primary">+ Add Sale</button>
+            </div>
+
+            <div class="row">
+                <!-- Company Info Section -->
+                <div class="col-md-12">
+                    <div class="card p-3">
+                        <h5>Current Company</h5>
+                        <p><%= currentCompany ? currentCompany.name : 'No company associated' %></p>
+
+                        <% if (!currentCompany) { %>
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                                Add New Company
+                            </button>
+                        <% } else { %>
+                            <div class="company-dropdown">
+                                <label for="companySwitch">Switch Company</label>
+                                <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                    <option value="">Select Company</option>
+                                    <% companies.forEach(company => { %>
+                                        <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
+                                            <%= company.name %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                                Add New Company
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Total Receivable -->
+                <div class="col-md-6">
+                    <div class="card p-3">
+                        <h5>Total Receivable</h5>
+                        <p class="text-success">₹0 <!-- Hardcoded value; replace with dynamic --> </p>
+                        <p>You don’t have any receivables as of now.</p>
+                    </div>
+                </div>
+                <!-- Total Payable -->
+                <div class="col-md-6">
+                    <div class="card p-3">
+                        <h5>Total Payable</h5>
+                        <p class="text-danger">₹0 <!-- Hardcoded value; replace with dynamic --> </p>
+                        <p>You don’t have any payables as of now.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Total Sale (This Month)</div>
+                        <div class="chart">Chart Goes Here (Dynamic)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card p-3">
+                        <h5>Most Used Reports</h5>
+                        <ul>
+                            <li><a href="#">Sale Report</a></li>
+                            <li><a href="#">All Transactions</a></li>
+                            <li><a href="#">Daybook Report</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Add Widget Section -->
+                <div class="col-md-6">
+                    <div class="card p-3">
+                        <h5>It Looks So Empty in Here!</h5>
+                        <p>Add one of our widgets to get started and view your business operations.</p>
+                        <button class="btn btn-secondary">Add Widget of Your Choice</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modaal -->
+
+    <!-- Modal for Add New Company -->
+<div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCompanyModalLabel">Add New Company</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/business-owner/addCompany" method="POST">
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">Company Name</label>
+                        <input type="text" class="form-control" id="companyName" name="name" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Save Company</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- JS Framework -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,3 +1,6 @@
+const User = require('../models/userModel');
+const bcrypt = require('bcryptjs');
+
 const adminController = {
     getDashboard: (req, res) => {
         res.render("admin/dashboard", { title: "Admin Dashboard" });
@@ -7,5 +10,7 @@ const adminController = {
         res.render("admin/manageUsers", { title: "Manage Users" });
     },
 };
+
+
 
 module.exports = adminController;

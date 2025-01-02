@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Transactions</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            background-color: #343a40;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            padding: 20px 0;
+            margin: 0;
+            font-size: 24px;
+            border-bottom: 1px solid #495057;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li {
+            padding: 15px 20px;
+            border-bottom: 1px solid #495057;
+        }
+
+        .sidebar ul li a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 10px;
+        }
+
+        .sidebar ul li:hover {
+            background-color: #495057;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
+
+        .form-section {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        table input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+        }
+
+        table input:focus {
+            border-bottom: 1px solid #007bff;
+        }
+    </style>
+
+    <script>
+        let count = 0;
+
+        function addRow() {
+            const table = document.getElementById('productTableBody');
+            const row = document.createElement('tr');
+            count++;
+
+            row.innerHTML = `
+                <td></td>
+                <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
+                <td><input type="number" name="products[${count}][quantity]" oninput="updateProductTotal(this)" required></td>
+                <td><input type="text" id="unit${count}" name="products[${count}][unit]" required ></td>
+                <td><input type="number" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
+                <td><input type="number" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required ></td>
+                <td><input type="number" name="products[${count}][tax]" oninput="updateProductTotal(this)" required ></td>
+                <td><input type="number" name="products[${count}][productTotal]" required ></td>
+                <td><input type="hidden" id="productId" name="products[${count}][productId]" ></td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
+            `;
+
+            table.appendChild(row);
+            updateRowNumbers();
+        }
+
+        function removeRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            updateRowNumbers();
+        }
+
+        function updateRowNumbers() {
+            const rows = document.querySelectorAll('#productTableBody tr');
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1; // Update row number in the first column
+            });
+        }
+
+        function updateProductTotal(input) {
+            const row = input.closest('tr');
+            const quantity = parseFloat(row.querySelector(`[name^="products"][name$="[quantity]"]`)?.value) || 0;
+            const pricePerUnit = parseFloat(row.querySelector(`[name^="products"][name$="[pricePerUnit]"]`)?.value) || 0;
+            const discount = parseFloat(row.querySelector(`[name^="products"][name$="[discount]"]`)?.value) || 0;
+            const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
+
+            let productTotal = quantity * pricePerUnit;
+            productTotal += (productTotal * tax) / 100; // Add tax
+            productTotal -= (productTotal * discount) / 100; // Subtract discount
+
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);
+        }
+
+        function validateForm(event) {
+            const rows = document.querySelectorAll('#productTableBody tr');
+            const hasProduct = Array.from(rows).some(row => {
+                return row.querySelector(`[name^="products"][name$="[item]"]`).value.trim() !== '';
+            });
+
+            if (!hasProduct) {
+                alert('Please enter at least one product.');
+                event.preventDefault();
+            }
+        }
+
+        // Initialize 3 rows by default
+        window.onload = function () {
+            for (let i = 0; i < 3; i++) {
+                addRow();
+            }
+        };
+    </script>
+</head>
+<datalist id="productSuggestions">
+    <%if(products.length){ products.forEach(product=> {%>
+        <option value="<%= product.item_name %>">
+            <% })}else{ %>
+                <option value="No Products Found">
+                    <% } %>
+</datalist>
+<script>
+    function sugesstion(element,count) {
+        
+            const selectedProductName = element.value;
+            const products = <%- JSON.stringify(products) %>
+            
+            const selectedProduct = products.find(
+                (product) => product.item_name === selectedProductName
+            );
+            
+
+            if (selectedProduct) {
+                // const row = element.target.closest('tr');
+                document.getElementsByName(`products[${count}][unit]`)[0].value = selectedProduct.unit;
+                document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
+                document.getElementsByName(`products[${count}][discount]`)[0].value = selectedProduct.discount_value;
+                document.getElementsByName(`products[${count}][tax]`)[0].value = selectedProduct.tax_rate;
+                document.getElementsByName(`products[${count}][productId]`)[0].value = selectedProduct.id;
+            }else{
+                document.getElementsByName(`products[${count}][unit]`)[0].value = ''
+                document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = ''
+                document.getElementsByName(`products[${count}][discount]`)[0].value = ''
+                document.getElementsByName(`products[${count}][tax]`)[0].value = ''
+            }
+
+
+    }
+
+</script>
+
+
+
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h4>Injaz</h4>
+            <ul>
+                <li><a href="/business-owner/dashboard"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Parties</a></li>
+                <li><a href="/business-owner/viewItems"><i class="fas fa-box"></i> Items</a></li>
+                <li><a href="/business-owner/transactions"><i class="fas fa-shopping-cart"></i> Transactions</a></li>
+                <li><a href="#"><i class="fas fa-file-invoice"></i> Reports</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header>
+                <h2>Add Transactions</h2>
+            </header>
+            
+
+            <!-- Add Sale Form -->
+            <section class="form-section mt-4">
+                <h3>Transaction Details</h3>
+                <form action="/business-owner/addTransactions" method="POST">
+                    <!-- Existing fields -->
+                    <div class="row pl-3">
+                        <div class="col-md-6">
+                            <label for="date" class="form-label">Transaction Type *</label>
+                            <select id="transaction" name="transactionType" class="form-select" required onclick="ijsadij(this)">
+                                <option value="">Choose one option</option>
+                                <option value="purchase">Purchase</option>
+                                <option value="sale">Sale</option>
+                            </select>
+                        </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+
+                            <label for="partyName" class="form-label">Party Name *</label>
+                            <input type="text" id="partyName" name="partyName" class="form-control"
+                                placeholder="Enter Party Name" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="Invoice Number" class="form-label">Invoice Number *</label>
+                            <input type="text" id="invoiceNumber" name="invoiceNumber" class="form-control"
+                                placeholder="Enter Invoice Number" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="Payment Type">Payment Type *</label>
+                            <select id="paymentType" name="paymentType" class="form-select">
+                                <option value="cash">Cash</option>
+                                <option value="credit">Credit</option>
+                                <option value="online">Online</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date" class="form-label">Date *</label>
+                            <input type="date" id="date" name="date" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    </div>
+
+                    <!-- Products Table -->
+                    <h4>Products</h4>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Unit<p style="font-size: 12px; color: gray;">(kg,mtr,ltr,pac)</p>
+                                </th>
+                                <th>Price/Unit<p style="font-size: 12px; color: gray;">(Price per Unit)</p>
+                                </th>
+                                <th>Discount (%)</th>
+                                <th>Tax (%)</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <!-- Rows will be added dynamically here -->
+                        </tbody>
+                    </table>
+                    <p style="font-size: 12px; color: rgba(255, 0, 0, 0.7);">Note: Please remove the unwanted rows</p>
+                    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()">Add Row</button>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="TotalAmount" class="form-label">Total *</label>
+                            <input type="text" id="totalAmount" name="totalAmount" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="recieved" id="remaining" class="form-label">Received *</label>
+                            <input type="text" id="received" name="received" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="balanceDue" class="form-label">Balance Due *</label>
+                            <input type="text" id="balanceDue" name="balanceDue" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-primary">Save Sale</button>
+                        <a href="/business-owner/sales" class="btn btn-secondary ms-2">Cancel</a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+</body>
+<script>
+    function ijsadij(element) {
+        const transactionType = element.value;
+        
+        if (transactionType === 'sale'){
+            document.getElementById('remaining').textContent = 'Received *';
+        }else{
+            document.getElementById('remaining').textContent = 'Paid *';
+        }
+    }
+</script>   
+
+</html>

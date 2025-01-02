@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            background-color: #343a40;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h4 {
+            text-align: center;
+            padding: 20px 0;
+            margin: 0;
+            font-size: 24px;
+            border-bottom: 1px solid #495057;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li {
+            padding: 15px 20px;
+            border-bottom: 1px solid #495057;
+        }
+
+        .sidebar ul li a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar ul li a i {
+            margin-right: 10px;
+        }
+
+        .sidebar ul li:hover {
+            background-color: #495057;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+        }
+
+        .btn-primary, .btn-secondary {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h4>Injaz</h4>
+            <ul>
+                <li><a href="/business-owner/dashboard"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Parties</a></li>
+                <li><a href="/business-owner/viewItems"><i class="fas fa-box"></i> Items</a></li>
+                <li><a href="/business-owner/sales"><i class="fas fa-shopping-cart"></i> Sale</a></li>
+                <li><a href="#"><i class="fas fa-file-invoice"></i> Reports</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2>This Month</h2>
+                    <!-- <div class="filters d-flex align-items-center">
+                        <label for="from-date" class="me-2">Between</label>
+                        <input type="date" id="from-date" class="form-control me-2" />
+                        <span class="me-2">To</span>
+                        <input type="date" id="to-date" class="form-control me-2" />
+                        <select class="form-select">
+                            <option value="all">All Firms</option>
+                        </select>
+                    </div> -->
+                </div>
+                <div class="mt-3">
+                    <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Transactions</a>
+                    
+                </div>
+            </header>
+
+            <!-- Transactions Section -->
+            <section class="transactions mt-4">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Invoice No.</th>
+                            <th>Party Name</th>
+                            <th>Transaction Type</th>
+                            <th>Payment Type</th>
+                            <th>Amount</th>
+                            <th>Balance Due</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% items.forEach(item => { %>
+                            
+                        <tr>
+                            
+                            <td>
+                                <%= new Date(item.date).getDate().toString().padStart(2, '0') + '-' + 
+                                    (new Date(item.date).getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                    new Date(item.date).getFullYear() %>
+                              </td>
+                              
+                            <td><%= item.invoice_number %></td>
+                            <td><%= item.customer_name %></td>
+                            <td><%= item.transaction_type %></td>
+                            <td><%= item.payment_type %></td>
+                            <td>&#8377; <%= item.total_amount %></td>
+                            <td>&#8377; <%= item.balance_due %></td>
+                            <td>
+                                <a href="/sales/edit/<%= item.id %>" class="btn btn-success btn-sm"><i class="fas fa-edit"></i></a>
+                                <a href="/sales/delete/<%= item.id %>" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    </a>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+</body>
+</html>

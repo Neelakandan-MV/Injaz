@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        /* Left table */
+        .left-table {
+            width: 30%;
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .left-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .left-table table, .left-table th, .left-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .left-table th {
+            background-color: #f2f2f2;
+        }
+        /* Right section */
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            width: 65%;
+        }
+        /* Card style for party information */
+        .party-info-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .party-info-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .party-info-card p {
+            color: #555;
+        }
+        /* Bottom table for transaction details */
+        .transaction-table {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        .transaction-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .transaction-table table, .transaction-table th, .transaction-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .transaction-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Left table -->
+    <div class="left-table">
+        <h4>Party Overview</h4>
+        <select id="partySelector" onchange="updatePartyData()">
+            <!-- Party options will be added dynamically -->
+        </select>
+        <table>
+            <tr>
+                <th>Party Name</th>
+                <td id="partyName">Select a party</td>
+            </tr>
+            <tr>
+                <th>Total Amount</th>
+                <td id="totalAmount">$0</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Right section -->
+    <div class="right-section">
+        <!-- Party info card -->
+        <div class="party-info-card">
+            <h3 id="partyInfoName">Party Information</h3>
+            <p><strong>Phone:</strong> <span id="partyPhone">---</span></p>
+            <p><strong>Email:</strong> <span id="partyEmail">---</span></p>
+            <p><strong>Address:</strong> <span id="partyAddress">---</span></p>
+        </div>
+
+        <!-- Transaction details table -->
+        <div class="transaction-table">
+            <h4>Transaction Details</h4>
+            <table id="transactionDetailsTable">
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Example party data
+    const parties = [
+        {
+            id: 1,
+            name: "Party A",
+            totalAmount: "$1000",
+            phone: "123-456-7890",
+            email: "partya@example.com",
+            address: "123 Party St, City, Country",
+            transactions: [
+                { id: "T001", date: "2025-01-01", amount: "$500", status: "Completed" },
+                { id: "T002", date: "2025-01-05", amount: "$500", status: "Pending" }
+            ]
+        },
+        {
+            id: 2,
+            name: "Party B",
+            totalAmount: "$2000",
+            phone: "987-654-3210",
+            email: "partyb@example.com",
+            address: "456 Celebration Ave, City, Country",
+            transactions: [
+                { id: "T003", date: "2025-01-02", amount: "$1000", status: "Completed" },
+                { id: "T004", date: "2025-01-06", amount: "$1000", status: "Pending" }
+            ]
+        }
+    ];
+
+    // Populate the party selector dropdown
+    const partySelector = document.getElementById("partySelector");
+    parties.forEach(party => {
+        const option = document.createElement("option");
+        option.value = party.id;
+        option.textContent = party.name;
+        partySelector.appendChild(option);
+    });
+
+    // Function to update the data when a new party is selected
+    function updatePartyData() {
+        const selectedPartyId = document.getElementById("partySelector").value;
+        const party = parties.find(p => p.id == selectedPartyId);
+
+        if (party) {
+            // Update party overview
+            document.getElementById("partyName").textContent = party.name;
+            document.getElementById("totalAmount").textContent = party.totalAmount;
+
+            // Update party info card
+            document.getElementById("partyInfoName").textContent = party.name;
+            document.getElementById("partyPhone").textContent = party.phone;
+            document.getElementById("partyEmail").textContent = party.email;
+            document.getElementById("partyAddress").textContent = party.address;
+
+            // Update transaction details table
+            const transactionTable = document.getElementById("transactionDetailsTable");
+            // Clear previous rows
+            const rows = transactionTable.getElementsByTagName("tr");
+            for (let i = rows.length - 1; i > 0; i--) {
+                transactionTable.deleteRow(i);
+            }
+            // Add new rows
+            party.transactions.forEach(transaction => {
+                const row = transactionTable.insertRow();
+                row.insertCell(0).textContent = transaction.id;
+                row.insertCell(1).textContent = transaction.date;
+                row.insertCell(2).textContent = transaction.amount;
+                row.insertCell(3).textContent = transaction.status;
+            });
+        }
+    }
+
+    // Initialize with the first party
+    updatePartyData();
+</script>
+
+</body>
+</html>
