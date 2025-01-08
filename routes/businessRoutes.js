@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const businessController = require('../controllers/businessController');
-const {isLogged} = require('../middlewares/auth')
+const {isLogged,isUserActive} = require('../middlewares/auth')
 
 // Business Owner dashboard
 router.post('/switch-company', (req, res) => {
@@ -21,6 +21,9 @@ router.post('/business-owner/addTransactions',isLogged,businessController.addTra
 router.post('/business-owner/addCompany',isLogged,businessController.addCompany);
 router.get('/business-owner/switchCompany/:id',isLogged,businessController.switchCompany);
 router.get('/business-owner/viewParty',isLogged,businessController.viewParty);
+router.get('/business-owner/logout',isLogged,businessController.logout);
+router.get('/register',businessController.viewRegister)
+router.post('/register',businessController.handleRegister)
 
 
 

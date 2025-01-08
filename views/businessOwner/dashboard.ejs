@@ -47,11 +47,90 @@
 <body>
     <div class="d-flex">
         <!-- Sidebar -->
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+                background-color: #f8f9fa;
+            }
+        
+            .sidebar {
+                width: 280px;
+                height: 100vh;
+                position: fixed;
+                background-color: #343a40;
+                color: white;
+                display: flex;
+                flex-direction: column;
+            }
+        
+            .sidebar h4 {
+                text-align: center;
+                padding: 20px 0;
+                margin: 0;
+                font-size: 24px;
+                border-bottom: 1px solid #495057;
+            }
+        
+            .sidebar ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+        
+            .sidebar ul li {
+                padding: 15px 20px;
+                border-bottom: 1px solid #495057;
+            }
+        
+            .sidebar ul li a {
+                text-decoration: none;
+                color: white;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+            }
+        
+            .sidebar ul li a i {
+                margin-right: 10px;
+            }
+        
+            .sidebar ul li:hover {
+                background-color: #495057;
+            }
+        
+            .main-content {
+                margin-left: 280px;
+                padding: 20px;
+            }
+        
+            .btn-primary, .btn-secondary {
+                margin-right: 10px;
+            }
+        
+            .companyClass{
+                display: none;
+            }
+        </style>
+        <script>
+            function companyDisplay(){
+                const div = document.querySelector('.companyClass'); 
+            if (div) {
+                div.style.display = 'block';
+                 
+            } else {
+                console.error('Element with class "companyClass" not found.');
+            }
+            }
+        </script>
+        
+        
         <div class="sidebar p-3">
             <h4 class="text-center"><%= user.name %></h4>
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="#" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="nav-item">
                     <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
@@ -63,55 +142,61 @@
                     <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i> Transactions</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
+                    <a href="/business-owner/reports" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i> Company</a>
+        
+                    <div class="row companyClass">
+                        <div class="col-md-12">
+                            <div class="">
+                                <!-- <h5>Current Company</h5> -->
+                                <p><%= currentCompany ? currentCompany.name : 'No company associated' %></p>
+        
+                                <% if (!currentCompany) { %>
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                                        Add New Company
+                                    </button>
+                                <% } else { %>
+                                    <div class="company-dropdown">
+                                        <label for="companySwitch">Switch Company</label>
+                                        <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                            <% companies.forEach(company => { %>
+                                                <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
+                                                    <%= company.name %>
+                                                </option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                                        Add New Company
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
 
         <!-- Main Content -->
+
+        
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2>Dashboard</h2>
                 <button class="btn btn-primary">+ Add Sale</button>
+                <h2>Dashboard</h2>
+                <a href="/business-owner/logout"><button class="btn btn-danger">Logout</button></a>
             </div>
 
-            <div class="row">
-                <!-- Company Info Section -->
-                <div class="col-md-12">
-                    <div class="card p-3">
-                        <h5>Current Company</h5>
-                        <p><%= currentCompany ? currentCompany.name : 'No company associated' %></p>
-
-                        <% if (!currentCompany) { %>
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                                Add New Company
-                            </button>
-                        <% } else { %>
-                            <div class="company-dropdown">
-                                <label for="companySwitch">Switch Company</label>
-                                <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
-                                    <option value="">Select Company</option>
-                                    <% companies.forEach(company => { %>
-                                        <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
-                                            <%= company.name %>
-                                        </option>
-                                    <% }); %>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                                Add New Company
-                            </button>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
+            
 
             <div class="row">
                 <!-- Total Receivable -->
                 <div class="col-md-6">
                     <div class="card p-3">
                         <h5>Total Receivable</h5>
-                        <p class="text-success">₹0 <!-- Hardcoded value; replace with dynamic --> </p>
+                        <p class="text-success">₹ <%= totalReceivable?totalReceivable: 0  %> <!-- Hardcoded value; replace with dynamic --> </p>
                         <p>You don’t have any receivables as of now.</p>
                     </div>
                 </div>
@@ -119,21 +204,21 @@
                 <div class="col-md-6">
                     <div class="card p-3">
                         <h5>Total Payable</h5>
-                        <p class="text-danger">₹0 <!-- Hardcoded value; replace with dynamic --> </p>
+                        <p class="text-danger">₹ <%= totalPayable?totalPayable:0 %> <!-- Hardcoded value; replace with dynamic --> </p>
                         <p>You don’t have any payables as of now.</p>
                     </div>
                 </div>
             </div>
 
             <!-- Chart Section -->
-            <div class="row mt-4">
+            <!-- <div class="row mt-4">
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">Total Sale (This Month)</div>
                         <div class="chart">Chart Goes Here (Dynamic)</div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Reports Section -->
             <div class="row mt-4">

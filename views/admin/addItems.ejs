@@ -35,20 +35,77 @@
             }
         }
         .main-content {
-            margin-left: 280px;
             padding: 20px;
         }
+
+        header {
+        background-color: #3498db;
+        color: #fff;
+        padding: 20px 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .navbar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+    
+    .navbar h1 {
+        font-size: 24px;
+        margin: 0;
+    }
+    
+    nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+    
+    nav ul li {
+        margin-left: 20px;
+    }
+    
+    nav ul li a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 16px;
+        padding: 10px 15px;
+        border-radius: 5px;
+    }
+    
+    nav ul li a:hover {
+        background-color: #2980b9;
+    }
     </style>
 </head>
 
 <body>
-
-    <%-include('./sidebar') %>
+    <header>
+        <div class="navbar">
+            <h1>Admin Dashboard</h1>
+            <nav>
+                <ul>
+                    <li><a href="/admin/dashboard">Dashboard</a></li>
+                    <li><a href="/admin/sales">Sales</a></li>
+                    <li><a href="/admin/purchases">Purchases</a></li>
+                    <li><a href="/admin/transactions">Transactions</a></li>
+                    <li><a href="/admin/reports">Reports</a></li>
+                    <li><a href="/admin/settings">Settings</a></li>
+                    <li><a href="/admin/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
     <div class="main-content">
         <section class="form-section mt-4">
             <div class="form-container">
                 <h2 class="form-title">Add Item</h2>
-                <form id="itemForm" action="/business-owner/addItems" method="post" enctype="multipart/form-data">
+                <form id="itemForm" action="/admin/addItems" method="post" enctype="multipart/form-data">
                     <!-- Row 1: Item Name and HSN -->
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -111,7 +168,7 @@
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label for="salePrice" class="form-label">Sale Price *</label>
-                            <input type="number" class="form-control" id="salePrice" name="salePrice"
+                            <input type="text" class="form-control" id="salePrice" name="salePrice"
                                 placeholder="Enter sale price" required>
                         </div>
                         <div class="col-md-4">
@@ -123,7 +180,7 @@
                         </div>
                         <div class="col-md-4">
                             <label for="discount" class="form-label">Discount (%)</label>
-                            <input type="number" class="form-control" id="discount" name="discountValue"
+                            <input type="text" class="form-control" id="discount" name="discountValue"
                                 placeholder="Enter discount">
                         </div>
                     </div>
@@ -133,7 +190,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="wholesalePrice" class="form-label">Wholesale Price</label>
-                            <input type="number" class="form-control" id="wholesalePrice" name="wholesalePrice"
+                            <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice"
                                 placeholder="Enter wholesale price">
                         </div>
                     </div>
@@ -143,7 +200,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="purchasePrice" class="form-label">Purchase Price *</label>
-                            <input type="number" class="form-control" id="purchasePrice" name="purchasePrice"
+                            <input type="text" class="form-control" id="purchasePrice" name="purchasePrice"
                                 placeholder="Enter purchase price" required>
                         </div>
                         <div class="col-md-6">
@@ -181,7 +238,7 @@
                         <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form action="/business-owner/addCategory" method="post">
+                    <form action="/admin/addCategory" method="post">
                         <div class="modal-body">
                             <input type="text" class="form-control" id="newCategory" name="category"
                                 placeholder="Enter new category name">

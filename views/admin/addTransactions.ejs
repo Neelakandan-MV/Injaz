@@ -63,7 +63,8 @@
         }
 
         .main-content {
-            margin-left: 280px;
+            margin-left: 20px;
+            margin-right: 20px;
             padding: 20px;
         }
 
@@ -90,6 +91,49 @@
         table input:focus {
             border-bottom: 1px solid #007bff;
         }
+        header {
+        background-color: #3498db;
+        color: #fff;
+        padding: 20px 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .navbar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+    
+    .navbar h1 {
+        font-size: 24px;
+        margin: 0;
+    }
+    
+    nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+    
+    nav ul li {
+        margin-left: 20px;
+    }
+    
+    nav ul li a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 16px;
+        padding: 10px 15px;
+        border-radius: 5px;
+    }
+    
+    nav ul li a:hover {
+        background-color: #2980b9;
+    }
     </style>
 
     <script>
@@ -204,21 +248,35 @@
 
 
 <body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <%-include('./sidebar') %>
 
+    <header>
+        <div class="navbar">
+            <h1>Admin Dashboard</h1>
+            <nav>
+                <ul>
+                    <li><a href="/admin/dashboard">Dashboard</a></li>
+                    <li><a href="/admin/sales">Sales</a></li>
+                    <li><a href="/admin/purchases">Purchases</a></li>
+                    <li><a href="/admin/transactions">Transactions</a></li>
+                    <li><a href="/admin/reports">Reports</a></li>
+                    <li><a href="/admin/settings">Settings</a></li>
+                    <li><a href="/admin/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <div class="d-flex">
         <!-- Main Content -->
         <div class="main-content">
-            <header>
-                <h2>Add Transactions</h2>
-            </header>
+            
+                <h3>Add Transactions</h2>
+            
             
 
             <!-- Add Sale Form -->
             <section class="form-section mt-4">
                 <h3>Transaction Details</h3>
-                <form action="/business-owner/addTransactions" method="POST">
+                <form action="/admin/addTransactions" method="POST">
                     <!-- Existing fields -->
                     <div class="row pl-3">
                         <div class="col-md-6">
@@ -307,7 +365,7 @@
 
                     <div class="d-flex justify-content-end mt-3">
                         <button type="submit" class="btn btn-primary">Save Sale</button>
-                        <a href="/business-owner/sales" class="btn btn-secondary ms-2">Cancel</a>
+                        <a href="/admin/sales" class="btn btn-secondary ms-2">Cancel</a>
                     </div>
                 </form>
             </section>

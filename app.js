@@ -25,6 +25,9 @@ app.use(session({
   saveUninitialized: true
 }));
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 
 
 app.get('/', (req, res) => {

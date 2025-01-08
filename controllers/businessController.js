@@ -1,5 +1,6 @@
-const mysql = require('../mySql'); // Import the MySQL database connection
+const mysql = require('../mySql');
 const multer = require('multer');
+const bcrypt = require('bcryptjs');
 
 // Set up storage for uploaded images
 var storage = multer.diskStorage({
@@ -14,32 +15,16 @@ var storage = multer.diskStorage({
 
 var upload = multer({
     storage: storage,
-}).array("images", 5);
+}).array("image", 5);
 
 const businessOwnerController = {
-    // Fetch inventory of the logged-in user's company
-    viewInventory: async (req, res) => {
-        const user = req.session.user;
-
-        // Fetch company_id using the user_id from companies table
-        const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
-        const companyId = companyData[0] ? companyData[0].id : null;
-
-        if (!companyId) {
-            return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
-        }
-
-        res.render("businessOwner/inventory", { title: "Inventory", companyId });
-    },
 
     // Fetch sales for the logged-in user's company
     viewTransactions: async (req, res) => {
         const user = req.session.user;
-
-        // // Fetch company_id using the user_id from companies table
-        // const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const companyId = user.company_id;
-        
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
             return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
@@ -49,30 +34,11 @@ const businessOwnerController = {
             SELECT * FROM sales
             WHERE company_id = ?
         `, [companyId]);
-        
 
-        res.render("businessOwner/transactions.ejs", { title: "Sales", items });
+
+        res.render("businessOwner/transactions.ejs", { title: "Sales", items, currentCompany, companies, user });
     },
 
-    // Fetch expenses for the logged-in user's company
-    viewExpenses: async (req, res) => {
-        const user = req.session.user;
-
-        // Fetch company_id using the user_id from companies table
-        const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
-        const companyId = companyData[0] ? companyData[0].id : null;
-
-        if (!companyId) {
-            return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
-        }
-
-        const [expenses] = await mysql.query(`
-            SELECT * FROM expenses
-            WHERE company_id = ?
-        `, [companyId]);
-
-        res.render("businessOwner/expenses", { title: "Expenses", expenses });
-    },
 
     // Fetch dashboard data related to the logged-in user's company
     viewDashboard: async (req, res) => {
@@ -80,24 +46,36 @@ const businessOwnerController = {
 
         try {
             // Fetch company_id using the user_id from companies table
+            const user = req.session.user;
             const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
-            const companyId = companyData[0] ? companyData[0].id : null;
-            const currentCompany = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id])
-
-
+            const companyId = user.company_id;
+            const currentCompany = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
             if (!companyId) {
                 return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
             }
 
             // Fetch transactions related to the company
-            // const [transactions] = await mysql.query(`
-            //     SELECT * FROM transactions
-            //     WHERE company_id = ?
-            // `, [companyId]);
-            const transactions = ['asdsad', 'aishds', 'saihdidha']
+            const [sales] = await mysql.query(`
+                SELECT * FROM sales
+                WHERE company_id = ?
+            `, [companyId]);
 
-            res.render('businessOwner/dashboard.ejs', { title: "Dashboard", transactions, user, currentCompany: currentCompany[0], companies: companyData });
+            const totalReceivable = sales.reduce((acc, sale) => {
+                if (sale.transaction_type === 'sale') {
+                    return acc + Number(sale.balance_due); // Convert string to number
+                }
+                return acc; // Ensure to return the accumulator for other transaction types
+            }, 0);
+
+            const totalPayable = sales.reduce((acc, sale) => {
+                if (sale.transaction_type === 'purchase') {
+                    return acc + Number(sale.balance_due); // Convert string to number
+                }
+                return acc; // Ensure to return the accumulator for other transaction types
+            }, 0);
+
+            res.render('businessOwner/dashboard.ejs', { title: "Dashboard", transactions: sales, totalReceivable, totalPayable, user, currentCompany: currentCompany[0], companies: companyData });
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
             res.render('businessOwner/error.ejs', { error: 'An error occurred while fetching the dashboard data.' });
@@ -107,10 +85,9 @@ const businessOwnerController = {
     // Fetch categories related to the company
     viewAddItems: async (req, res) => {
         const user = req.session.user;
-
-        // Fetch company_id using the user_id from companies table
-        const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
-        const companyId = companyData[0] ? companyData[0].id : null;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
             return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
@@ -118,7 +95,7 @@ const businessOwnerController = {
 
         const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
 
-        res.render('businessOwner/addItems.ejs', { categories: categories.length > 0 ? categories : [] });
+        res.render('businessOwner/addItems.ejs', { categories: categories.length > 0 ? categories : [], companies, currentCompany, user });
     },
 
     // Add new item, associating it with the company
@@ -131,10 +108,9 @@ const businessOwnerController = {
             }
 
             const user = req.session.user;
-
-            // Fetch company_id using the user_id from companies table
-            const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
-            const companyId = companyData[0] ? companyData[0].id : null;
+            const companyId = user.company_id;
+            const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
             if (!companyId) {
                 return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
@@ -159,6 +135,7 @@ const businessOwnerController = {
             const image = req.files.map(file => file.filename);
 
             try {
+
                 const [itemExist] = await mysql.query(
                     "SELECT * FROM items WHERE item_name = ? OR item_code = ?",
                     [itemName, itemCode]
@@ -203,7 +180,7 @@ const businessOwnerController = {
                         newItemCode,
                         companyId, // Associating item with company
                         user_id
-                    ]   
+                    ]
                 );
 
                 const [items] = await mysql.query(`
@@ -213,7 +190,7 @@ const businessOwnerController = {
                     WHERE items.company_id = ?
                 `, [companyId]);
 
-                res.render('businessOwner/itemDisplay.ejs', { items, user: req.session.user });
+                res.render('businessOwner/itemDisplay.ejs', { items, user, companies, currentCompany });
 
             } catch (error) {
                 console.error(error);
@@ -227,6 +204,8 @@ const businessOwnerController = {
         const user = req.session.user;
 
         const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
             return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
@@ -238,17 +217,18 @@ const businessOwnerController = {
             LEFT JOIN categories ON items.category_id = categories.id
             WHERE items.company_id = ?
         `, [companyId]);
+        
+        
 
-        res.render('businessOwner/itemDisplay.ejs', { items, user: req.session.user });
+        res.render('businessOwner/itemDisplay.ejs', { items, user, currentCompany, companies });
     },
 
     // Add new category, linking it to the user's company
     addCategory: async (req, res) => {
         const user = req.session.user;
-
-        // Fetch company_id using the user_id from companies table
-        const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
-        const companyId = companyData[0] ? companyData[0].id : null;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
             return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
@@ -263,7 +243,7 @@ const businessOwnerController = {
                 const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
                 return res.render('businessOwner/addItems.ejs', {
                     categoryError: 'Category Already Exists.',
-                    categories
+                    categories,companies,currentCompany,user
                 });
             }
 
@@ -272,7 +252,7 @@ const businessOwnerController = {
             const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
             return res.render('businessOwner/addItems.ejs', {
                 categories,
-                success: 'Category added successfully.'
+                success: 'Category added successfully.',companies,currentCompany,user
             });
         } catch (error) {
             console.error('Error in addCategory:', error);
@@ -280,20 +260,23 @@ const businessOwnerController = {
             const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
             return res.render('businessOwner/addItems.ejs', {
                 error: 'An error occurred. Please try again.',
-                categories
+                categories,companies,currentCompany,user
             });
         }
     },
 
     // View for adding sales
     viewAddTransaction: async (req, res) => {
+
         const user = req.session.user
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+
         const today = new Date().toISOString().split('T')[0];
         const companyId = user.company_id;
-        const products = await mysql.query("SELECT * FROM items WHERE user_id = ? AND company_id = ?",[user.id,companyId])
-        
-        res.render('businessOwner/addTransactions.ejs', { date: today, products:products[0]});
-        
+        const products = await mysql.query("SELECT * FROM items WHERE user_id = ? AND company_id = ?", [user.id, companyId])
+        res.render('businessOwner/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user });
+
     },
 
     addTransaction: async (req, res) => {
@@ -304,9 +287,9 @@ const businessOwnerController = {
         const sales = await mysql.query("INSERT INTO sales (customer_name, user_id, company_id, date, invoice_number, payment_type, total_amount, received_amount, balance_due, created_at, transaction_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
             partyName, user.id, user.company_id, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, created_at, transactionType
         ]);
-        
+
         await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id])]);
-        
+
         res.redirect('/business-owner/transactions');
     },
 
@@ -340,16 +323,50 @@ const businessOwnerController = {
 
     viewParty: async (req, res) => {
         const user = req.session.user
+
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         // const parties = await mysql.query("SELECT * FROM parties WHERE user_id = ?",[user.id])
-        res.render('businessOwner/partyDisplay.ejs', {});
+        res.render('businessOwner/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user });
     },
-    viewAddPurchase: async (req, res) => {
-        const user = req.session.user
-        const today = new Date().toISOString().split('T')[0];
-        const products = await mysql.query("SELECT * FROM items WHERE user_id = ?",[user.id])
-        
-        res.render('businessOwner/addPurchase.ejs', { date: today, products:products[0]});
-        
+
+    logout: (req, res) => {
+        req.session.destroy();
+        res.redirect('/login');
+    },
+
+    viewRegister:(req,res)=>{
+        res.render('auth/register',{error:null})
+    },
+
+    handleRegister:async(req,res)=>{
+        const hashPassword = async (password) => {
+            try {
+              const saltRounds = 10; // Higher number = more secure but slower
+              const hashedPassword = await bcrypt.hash(password, saltRounds);
+              return hashedPassword;
+            } catch (error) {
+              console.error("Error hashing password:", error);
+            }
+          }
+          const {name,email,password,phone} = req.body;
+          const [emailExist] = await mysql.query("SELECT * FROM users WHERE email = ?",[email])
+          
+          if(!emailExist[0]){
+            hashPassword(password).then(async hashedPassword => {
+                await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",[name,email,hashedPassword,'businessOwner'])
+                const [user] = await mysql.query("SELECT * FROM users WHERE email = ?",[email])
+                console.log(user);
+                
+                await mysql.query(`INSERT INTO companies (user_id, name, created_at) VALUES (?, ?, ?)`,
+                [user[0].id, "Add a Company", new Date()]);
+                res.redirect('/login')
+              });
+          }else{
+            return res.send('Email already exists')
+          }
+          
     }
 
 };
