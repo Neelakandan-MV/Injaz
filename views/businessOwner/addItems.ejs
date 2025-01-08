@@ -11,6 +11,37 @@
     <style>
         body {
             background-color: #f8f9fa;
+            padding-left: 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+        }
+
+
+        .card {
+            border-radius: 10px;
+        }
+
+        .chart {
+            height: 200px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .company-dropdown {
+            margin-top: 15px;
         }
 
         .form-container {
@@ -34,203 +65,360 @@
                 padding: 1rem;
             }
         }
+
         .main-content {
-            margin-left: 280px;
+            margin-left: 180px;
             padding: 20px;
+        }
+
+        .modal-content {
+            border-radius: 8px;
+        }
+
+        .modal-header,
+        .modal-footer {
+            border: none;
+        }
+
+        .modal-title {
+            font-weight: bold;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+        }
+
+        #addCategoryModal input {
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            padding: 0.5rem;
+            width: 100%;
+        }
+
+        #generateCodeButton {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        #generateCodeButton:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 1rem;
+            }
+
+            .form-title {
+                font-size: 1.25rem;
+            }
+
+            .form-section {
+                margin-top: 1rem;
+            }
+        }
+         /* Mobile Styles */
+         @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                width: 100%;
+                height: auto;
+                min-height: 0;
+                z-index: 1030;
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .navbar-toggler {
+                border: none;
+                outline: none;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="d-flex">
+        <div class="sidebar p-3" id="sidebar">
+            <h4 class="text-center">
+                <%= user.name %>
+            </h4>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i>
+                        Transactions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/reports" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
+                        Company</a>
 
-    <%-include('./sidebar') %>
-    <div class="main-content">
-        <section class="form-section mt-4">
-            <div class="form-container">
-                <h2 class="form-title">Add Item</h2>
-                <form id="itemForm" action="/business-owner/addItems" method="post" enctype="multipart/form-data">
-                    <!-- Row 1: Item Name and HSN -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="itemName" class="form-label">Item Name *</label>
-                            <input type="text" class="form-control" id="itemName" name="itemName"
-                                placeholder="Enter item name" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="itemHsn" class="form-label">Item HSN *</label>
-                            <input type="text" class="form-control" id="itemHsn" name="itemHSN"
-                                placeholder="Enter HSN code" required>
-                        </div>
-                    </div>
+                    <div class="row companyClass">
+                        <div class="col-md-12">
+                            <div class="">
+                                <p>
+                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
+                                </p>
 
-                    <!-- Row 2: Category and Item Code -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="category" class="form-label">Category</label>
-                            <select class="form-select" id="category" name="category" required>
-                                <option value="">Select Category</option>
-                                <% if(categories.length){ categories.map((category)=>{ %>
-                                    <option value="<%= category.id %>">
-                                        <%= category.category %>
-                                    </option>
-                                    <% })} %>
-                                        <option value="+ Add New Category">+ Add New Category</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="itemCode" class="form-label">Item Code</label>
-                            <div class="d-flex align-items-center">
-                                <input type="text" class="form-control me-2" id="itemCode" name="itemCode"
-                                    placeholder="Enter item code">
-                                <button type="button" id="generateCodeButton" class="btn btn-primary btn-sm">Generate
-                                    Code</button>
+                                <% if (!currentCompany) { %>
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                        data-bs-target="#addCompanyModal">
+                                        Add New Company
+                                    </button>
+                                    <% } else { %>
+                                        <div class="company-dropdown">
+                                            <label for="companySwitch">Switch Company</label>
+                                            <select id="companySwitch" class="form-select"
+                                                onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                                <% companies.forEach(company=> { %>
+                                                    <option value="<%= company.id %>"
+                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
+                                                        <%= company.name %>
+                                                    </option>
+                                                    <% }); %>
+                                            </select>
+                                        </div>
+                                        <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal"
+                                            data-bs-target="#addCompanyModal">
+                                            Add New Company
+                                        </button>
+                                        <% } %>
                             </div>
                         </div>
                     </div>
+                </li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+                <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <h2>Add Item</h2>
+            </nav>
+            <section class="form-section mt-4">
+                <div class="form-container">
+                    <h2 class="form-title">Add Item</h2>
+                    <form id="itemForm" action="/business-owner/addItems" method="post" enctype="multipart/form-data">
+                        <!-- Row 1: Item Name and HSN -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="itemName" class="form-label">Item Name *</label>
+                                <input type="text" class="form-control" id="itemName" name="itemName"
+                                    placeholder="Enter item name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemHsn" class="form-label">Item HSN *</label>
+                                <input type="text" class="form-control" id="itemHsn" name="itemHSN"
+                                    placeholder="Enter HSN code" required>
+                            </div>
+                        </div>
 
-                    <!-- Row 3: Select Unit -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="unit" class="form-label">Unit</label>
-                            <select class="form-select" id="unit" name="unit" required>
-                                <option value="">Select Unit</option>
-                                <option value="kg">Kilogram</option>
-                                <option value="pcs">Pieces</option>
-                                <option value="packs">Packs</option>
-                                <option value="ltr">Liters</option>
-                            </select>
+                        <!-- Row 2: Category and Item Code -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    <% if(categories.length){ categories.map((category)=>{ %>
+                                        <option value="<%= category.id %>">
+                                            <%= category.category %>
+                                        </option>
+                                        <% })} %>
+                                            <option value="+ Add New Category">+ Add New Category</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemCode" class="form-label">Item Code</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="text" class="form-control me-2" id="itemCode" name="itemCode"
+                                        placeholder="Enter item code">
+                                    <button type="button" id="generateCodeButton"
+                                        class="btn btn-primary btn-sm">Generate
+                                        Code</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="itemImage" class="form-label">Add Item Image</label>
-                            <input type="file" class="form-control" id="itemImage" name="image" multiple>
-                        </div>
-                    </div>
 
-                    <!-- Sale Price Section -->
-                    <h5 class="mt-4">Sale Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="salePrice" class="form-label">Sale Price *</label>
-                            <input type="number" class="form-control" id="salePrice" name="salePrice"
-                                placeholder="Enter sale price" required>
+                        <!-- Row 3: Select Unit -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="unit" class="form-label">Unit</label>
+                                <select class="form-select" id="unit" name="unit" required>
+                                    <option value="">Select Unit</option>
+                                    <option value="kg">Kilogram</option>
+                                    <option value="pcs">Pieces</option>
+                                    <option value="packs">Packs</option>
+                                    <option value="ltr">Liters</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemImage" class="form-label">Add Item Image</label>
+                                <input type="file" class="form-control" id="itemImage" name="image" multiple>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label for="salePriceTax" class="form-label">Tax</label>
-                            <select class="form-select" id="salePriceTax" name="salePriceTaxIncluded">
-                                <option value="false">Without Tax</option>
-                                <option value="true">With Tax</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="discount" class="form-label">Discount (%)</label>
-                            <input type="number" class="form-control" id="discount" name="discountValue"
-                                placeholder="Enter discount">
-                        </div>
-                    </div>
 
-                    <!-- Wholesale Price Section -->
-                    <h5 class="mt-4">Wholesale Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="wholesalePrice" class="form-label">Wholesale Price</label>
-                            <input type="number" class="form-control" id="wholesalePrice" name="wholesalePrice"
-                                placeholder="Enter wholesale price">
+                        <!-- Sale Price Section -->
+                        <h5 class="mt-4">Sale Price</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="salePrice" class="form-label">Sale Price *</label>
+                                <input type="number" class="form-control" id="salePrice" name="salePrice"
+                                    placeholder="Enter sale price" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="salePriceTax" class="form-label">Tax</label>
+                                <select class="form-select" id="salePriceTax" name="salePriceTaxIncluded">
+                                    <option value="false">Without Tax</option>
+                                    <option value="true">With Tax</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="discount" class="form-label">Discount (%)</label>
+                                <input type="number" class="form-control" id="discount" name="discountValue"
+                                    placeholder="Enter discount">
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Purchase Price Section -->
-                    <h5 class="mt-4">Purchase Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="purchasePrice" class="form-label">Purchase Price *</label>
-                            <input type="number" class="form-control" id="purchasePrice" name="purchasePrice"
-                                placeholder="Enter purchase price" required>
+                        <!-- Wholesale Price Section -->
+                        <h5 class="mt-4">Wholesale Price</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="wholesalePrice" class="form-label">Wholesale Price</label>
+                                <input type="number" class="form-control" id="wholesalePrice" name="wholesalePrice"
+                                    placeholder="Enter wholesale price">
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="purchaseTax" class="form-label">Tax</label>
-                            <select class="form-select" id="purchaseTax" name="purchasePriceTaxIncluded">
-                                <option value="false">Without Tax</option>
-                                <option value="true">With Tax</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <!-- Tax Rate Section -->
-                    <h5 class="mt-4">Tax Rate</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="taxRate" class="form-label">Tax Rate *</label>
-                            <input type="text" class="form-control" id="taxRate" name="taxRate"
-                                placeholder="Enter tax rate" required>
+                        <!-- Purchase Price Section -->
+                        <h5 class="mt-4">Purchase Price</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="purchasePrice" class="form-label">Purchase Price *</label>
+                                <input type="number" class="form-control" id="purchasePrice" name="purchasePrice"
+                                    placeholder="Enter purchase price" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="purchaseTax" class="form-label">Tax</label>
+                                <select class="form-select" id="purchaseTax" name="purchasePriceTaxIncluded">
+                                    <option value="false">Without Tax</option>
+                                    <option value="true">With Tax</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Save Button -->
-                    <button type="submit" class="btn btn-primary w-100">Save</button>
-                </form>
-            </div>
-        </section>
-    </div>
+                        <!-- Tax Rate Section -->
+                        <h5 class="mt-4">Tax Rate</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="taxRate" class="form-label">Tax Rate *</label>
+                                <input type="text" class="form-control" id="taxRate" name="taxRate"
+                                    placeholder="Enter tax rate" required>
+                            </div>
+                        </div>
 
-        <!-- Add New Category Modal -->
-        <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form action="/business-owner/addCategory" method="post">
-                        <div class="modal-body">
-                            <input type="text" class="form-control" id="newCategory" name="category"
-                                placeholder="Enter new category name">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="saveCategory">Save Category</button>
-                        </div>
+                        <!-- Save Button -->
+                        <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
                 </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Add New Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/business-owner/addCategory" method="post">
+                    <div class="modal-body">
+                        <input type="text" class="form-control" id="newCategory" name="category"
+                            placeholder="Enter new category name">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="saveCategory">Save Category</button>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
-        <!-- JavaScript to trigger the modal -->
-        <script>
-            document.querySelector('#category').addEventListener('change', function () {
-                if (this.value === '+ Add New Category') {
-                    var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
-                    myModal.show();
-                }
-            });
+    <!-- JavaScript to trigger the modal -->
+    <script>
+        document.querySelector('#category').addEventListener('change', function () {
+            if (this.value === '+ Add New Category') {
+                var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
+                myModal.show();
+            }
+        });
 
-            document.querySelector('#saveCategory').addEventListener('click', function () {
-                var newCategory = document.querySelector('#newCategory').value;
-                if (newCategory) {
-                    var categorySelect = document.querySelector('#category');
-                    var newOption = document.createElement('option');
-                    newOption.value = newCategory;
-                    newOption.textContent = newCategory;
-                    categorySelect.appendChild(newOption);
-                    categorySelect.value = newCategory;
-                    var myModal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-                    myModal.hide();
-                }
-            });
-        </script>
+        document.querySelector('#saveCategory').addEventListener('click', function () {
+            var newCategory = document.querySelector('#newCategory').value;
+            if (newCategory) {
+                var categorySelect = document.querySelector('#category');
+                var newOption = document.createElement('option');
+                newOption.value = newCategory;
+                newOption.textContent = newCategory;
+                categorySelect.appendChild(newOption);
+                categorySelect.value = newCategory;
+                var myModal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+                myModal.hide();
+            }
+        });
+    </script>
 
-        <!-- Generate Item Code Button -->
-        <script>
-            document.getElementById("generateCodeButton").addEventListener("click", function () {
-                const prefix = "ITEM";
-                const randomNumber = Math.floor(1000 + Math.random() * 9000);
-                const timestamp = Date.now().toString().slice(-4);
-                const generatedCode = `${prefix}-${randomNumber}-${timestamp}`;
-                document.getElementById("itemCode").value = generatedCode;
-            });
-        </script>
+    <!-- Generate Item Code Button -->
+    <script>
+        document.getElementById("generateCodeButton").addEventListener("click", function () {
+            const prefix = "ITEM";
+            const randomNumber = Math.floor(1000 + Math.random() * 9000);
+            const timestamp = Date.now().toString().slice(-4);
+            const generatedCode = `${prefix}-${randomNumber}-${timestamp}`;
+            document.getElementById("itemCode").value = generatedCode;
+        });
+    </script>
+    <script>
+            function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+        }
+    </script>
 </body>
 
 </html>

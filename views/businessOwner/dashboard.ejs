@@ -9,7 +9,6 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Add custom styles here */
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
@@ -42,91 +41,31 @@
         .company-dropdown {
             margin-top: 15px;
         }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                width: 100%;
+                height: auto;
+                min-height: 0;
+                z-index: 1030;
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .navbar-toggler {
+                border: none;
+                outline: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="d-flex">
         <!-- Sidebar -->
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: Arial, sans-serif;
-                background-color: #f8f9fa;
-            }
-        
-            .sidebar {
-                width: 280px;
-                height: 100vh;
-                position: fixed;
-                background-color: #343a40;
-                color: white;
-                display: flex;
-                flex-direction: column;
-            }
-        
-            .sidebar h4 {
-                text-align: center;
-                padding: 20px 0;
-                margin: 0;
-                font-size: 24px;
-                border-bottom: 1px solid #495057;
-            }
-        
-            .sidebar ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-        
-            .sidebar ul li {
-                padding: 15px 20px;
-                border-bottom: 1px solid #495057;
-            }
-        
-            .sidebar ul li a {
-                text-decoration: none;
-                color: white;
-                font-size: 16px;
-                display: flex;
-                align-items: center;
-            }
-        
-            .sidebar ul li a i {
-                margin-right: 10px;
-            }
-        
-            .sidebar ul li:hover {
-                background-color: #495057;
-            }
-        
-            .main-content {
-                margin-left: 280px;
-                padding: 20px;
-            }
-        
-            .btn-primary, .btn-secondary {
-                margin-right: 10px;
-            }
-        
-            .companyClass{
-                display: none;
-            }
-        </style>
-        <script>
-            function companyDisplay(){
-                const div = document.querySelector('.companyClass'); 
-            if (div) {
-                div.style.display = 'block';
-                 
-            } else {
-                console.error('Element with class "companyClass" not found.');
-            }
-            }
-        </script>
-        
-        
-        <div class="sidebar p-3">
+        <div class="sidebar p-3" id="sidebar">
             <h4 class="text-center"><%= user.name %></h4>
             <ul class="nav flex-column">
                 <li class="nav-item">
@@ -146,13 +85,12 @@
                 </li>
                 <li class="nav-item">
                     <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i> Company</a>
-        
+
                     <div class="row companyClass">
                         <div class="col-md-12">
                             <div class="">
-                                <!-- <h5>Current Company</h5> -->
                                 <p><%= currentCompany ? currentCompany.name : 'No company associated' %></p>
-        
+
                                 <% if (!currentCompany) { %>
                                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
                                         Add New Company
@@ -180,47 +118,35 @@
         </div>
 
         <!-- Main Content -->
-
-        
         <div class="main-content">
+            <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+                <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <h2>Dashboard</h2>
+            </nav>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <button class="btn btn-primary">+ Add Sale</button>
-                <h2>Dashboard</h2>
                 <a href="/business-owner/logout"><button class="btn btn-danger">Logout</button></a>
             </div>
 
-            
-
             <div class="row">
-                <!-- Total Receivable -->
                 <div class="col-md-6">
                     <div class="card p-3">
                         <h5>Total Receivable</h5>
-                        <p class="text-success">₹ <%= totalReceivable?totalReceivable: 0  %> <!-- Hardcoded value; replace with dynamic --> </p>
+                        <p class="text-success">₹ <%= totalReceivable ? totalReceivable : 0 %></p>
                         <p>You don’t have any receivables as of now.</p>
                     </div>
                 </div>
-                <!-- Total Payable -->
                 <div class="col-md-6">
                     <div class="card p-3">
                         <h5>Total Payable</h5>
-                        <p class="text-danger">₹ <%= totalPayable?totalPayable:0 %> <!-- Hardcoded value; replace with dynamic --> </p>
+                        <p class="text-danger">₹ <%= totalPayable ? totalPayable : 0 %></p>
                         <p>You don’t have any payables as of now.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Chart Section -->
-            <!-- <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">Total Sale (This Month)</div>
-                        <div class="chart">Chart Goes Here (Dynamic)</div>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- Reports Section -->
             <div class="row mt-4">
                 <div class="col-md-6">
                     <div class="card p-3">
@@ -232,8 +158,6 @@
                         </ul>
                     </div>
                 </div>
-
-                <!-- Add Widget Section -->
                 <div class="col-md-6">
                     <div class="card p-3">
                         <h5>It Looks So Empty in Here!</h5>
@@ -245,31 +169,43 @@
         </div>
     </div>
 
-    <!-- modaal -->
-
     <!-- Modal for Add New Company -->
-<div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addCompanyModalLabel">Add New Company</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form action="/business-owner/addCompany" method="POST">
-                    <div class="mb-3">
-                        <label for="companyName" class="form-label">Company Name</label>
-                        <input type="text" class="form-control" id="companyName" name="name" required>
-                    </div>
-                    <button type="submit" class="btn btn-success">Save Company</button>
-                </form>
+    <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCompanyModalLabel">Add New Company</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/business-owner/addCompany" method="POST">
+                        <div class="mb-3">
+                            <label for="companyName" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="companyName" name="name" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Save Company</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
 
     <!-- JS Framework -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function companyDisplay() {
+            const div = document.querySelector('.companyClass');
+            if (div) {
+                div.style.display = 'block';
+            } else {
+                console.error('Element with class "companyClass" not found.');
+            }
+        }
+    </script>
 </body>
 </html>

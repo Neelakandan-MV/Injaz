@@ -63,6 +63,32 @@
     .companyClass{
         display: none;
     }
+
+@media (max-width: 768px) {
+    .hamburger-menu{
+        display: none;
+    }
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+    }
+    #sidebarToggle {
+        display: block;
+    }
+}
+#sidebarToggle {
+    display: none;
+    background-color: #343a40;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+    
 </style>
 <script>
     function companyDisplay(){
@@ -76,10 +102,13 @@
     }
 </script>
 
-
-<div class="sidebar p-3">
+<button  type="button" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+</button>
+<div class="sidebar p-3 hamburger-menu">
+    
     <h4 class="text-center"><%= user.name %></h4>
-    <ul class="nav flex-column">
+    <ul class="nav flex-column ">
         <li class="nav-item">
             <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
         </li>
@@ -127,3 +156,24 @@
         
     </ul>
 </div>
+<script>
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+
+    sidebarToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        mainContent.classList.toggle('active');
+    });
+
+
+</script>
+
+
+
+
+
+
+
+
+
