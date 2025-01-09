@@ -234,10 +234,19 @@
 </head>
 <datalist id="productSuggestions">
     <%if(products.length){ products.forEach(product=> {%>
-        <option value="<%= product.item_name %>">
+        <option value="<%= product.item_name %>" >
             <% })}else{ %>
                 <option value="No Products Found">
                     <% } %>
+</datalist>
+<datalist id="partySuggestions">
+    <% if (parties.length) { %>
+        <% parties.forEach(party => { %>
+            <option value="<%= party.id %>" label="<%= party.PartyName %>"></option>
+        <% }) %>
+    <% } else { %>
+        <option disabled value="No Party Found">No Party Found</option>
+    <% } %>
 </datalist>
 <script>
     function sugesstion(element,count) {
@@ -349,7 +358,7 @@
                 <h3>Transaction Details</h3>
                 <form action="/business-owner/addTransactions" method="POST">
                     <!-- Existing fields -->
-                    <div class="row pl-3">
+                    <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="date" class="form-label">Transaction Type *</label>
                             <select id="transaction" name="transactionType" class="form-select" required onclick="ijsadij(this)">
@@ -360,13 +369,11 @@
                         </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-
-                            <label for="partyName" class="form-label">Party Name *</label>
+                            <label for="partyName" class="form-label">Party ID *</label>
                             <input type="text" id="partyName" name="partyName" class="form-control"
-                                placeholder="Enter Party Name" required>
+                                placeholder="Enter Party ID"  list="partySuggestions" required>
                         </div>
                     </div>
-
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="Invoice Number" class="form-label">Invoice Number *</label>
@@ -442,6 +449,7 @@
             </section>
         </div>
     </div>
+    
 </body>
 <script>
     function ijsadij(element) {

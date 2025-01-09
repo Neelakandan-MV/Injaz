@@ -77,7 +77,20 @@
                 outline: none;
             }
         }
+        .companyClass{
+            display: none;
+        }
     </style>
+    <script>
+        function companyDisplay() {
+            const div = document.querySelector('.companyClass');
+            if (div) {
+                div.style.display = 'block';
+            } else {
+                console.error('Element with class "companyClass" not found.');
+            }
+        }
+    </script>
 </head>
 
 <body>
@@ -133,10 +146,6 @@
                                                     <% }); %>
                                             </select>
                                         </div>
-                                        <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal"
-                                            data-bs-target="#addCompanyModal">
-                                            Add New Company
-                                        </button>
                                         <% } %>
                             </div>
                         </div>

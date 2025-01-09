@@ -17,7 +17,9 @@
             flex-direction: column;
             min-height: 100vh;
             background-color: #f8f9fa;
+            overflow: hidden;
         }
+
 
         .container {
             display: flex;
@@ -26,6 +28,9 @@
             gap: 20px;
             justify-content: space-between;
             flex-wrap: wrap;
+            position: absolute;
+            margin-left: 240px;
+
         }
 
         /* Sidebar (if included) */
@@ -34,8 +39,6 @@
             color: white;
             padding: 20px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            position: ;
-            margin-bottom: 20px;
         }
 
         /* Left table */
@@ -46,6 +49,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             min-width: 300px;
+            height: 90vh;
         }
 
         .left-table h4 {
@@ -114,6 +118,8 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            overflow-y: scroll;
         }
 
         .transaction-table h4 {
@@ -144,11 +150,20 @@
             color: #495057;
         }
 
+        .companyClass {
+            display: none;
+        }
+
         /* Responsive Design for Mobile Devices */
         @media screen and (max-width: 768px) {
+            body {
+                overflow: auto;
+            }
+
             .container {
                 flex-direction: column;
                 gap: 10px;
+                margin-left: 0px;
             }
 
             .sidebar {
@@ -203,30 +218,31 @@
             }
         }
 
-        .container {
-            margin-left: 230px;
-        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
         }
+
         .sidebar {
             width: 250px;
             background-color: #343a40;
             color: white;
             min-height: 100vh;
         }
+
         .sidebar a {
             color: white;
             text-decoration: none;
         }
+
         .main-content {
-            margin-left: 250px;
             padding: 20px;
         }
+
         .card {
             border-radius: 10px;
         }
+
         .chart {
             height: 200px;
             background-color: #f1f1f1;
@@ -235,10 +251,11 @@
             align-items: center;
             justify-content: center;
         }
+
         .company-dropdown {
             margin-top: 15px;
         }
-        
+
         /* Mobile Styles */
         @media (max-width: 768px) {
             .sidebar {
@@ -249,13 +266,15 @@
                 z-index: 1030;
                 display: none;
             }
+
             .main-content {
                 margin-left: 0;
             }
+
             .navbar-toggler {
                 border: none;
                 outline: none;
-                color : orange
+                background-color: transparent;
             }
         }
     </style>
@@ -263,110 +282,175 @@
 
 <body>
 
-    <div class="d-flex">
-        <div class="sidebar p-3" id="sidebar">
-            <h4 class="text-center">
-                <%= user.name %>
-            </h4>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i>
-                        Transactions</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/reports" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
-                </li>
-                <li class="nav-item">
-                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
-                        Company</a>
+    <!-- <div class="d-flex"> -->
+    <div class="sidebar p-3" id="sidebar">
+        <h4 class="text-center">
+            <%= user.name %>
+        </h4>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i>
+                    Transactions</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/reports" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
+            </li>
+            <li class="nav-item">
+                <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
+                    Company</a>
 
-                    <div class="row companyClass">
-                        <div class="col-md-12">
-                            <div class="">
-                                <p>
-                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
-                                </p>
+                <div class="row companyClass">
+                    <div class="col-md-12">
+                        <div class="">
+                            <p>
+                                <%= currentCompany ? currentCompany.name : 'No company associated' %>
+                            </p>
 
-                                <% if (!currentCompany) { %>
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
-                                        data-bs-target="#addCompanyModal">
-                                        Add New Company
-                                    </button>
-                                    <% } else { %>
-                                        <div class="company-dropdown">
-                                            <label for="companySwitch">Switch Company</label>
-                                            <select id="companySwitch" class="form-select"
-                                                onchange="location.href='/business-owner/switchCompany/' + this.value;">
-                                                <% companies.forEach(company=> { %>
-                                                    <option value="<%= company.id %>"
-                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
-                                                        <%= company.name %>
-                                                    </option>
-                                                    <% }); %>
-                                            </select>
-                                        </div>
-                                        <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal"
-                                            data-bs-target="#addCompanyModal">
-                                            Add New Company
-                                        </button>
-                                        <% } %>
-                            </div>
+                            <% if (!currentCompany) { %>
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#addCompanyModal">
+                                    Add New Company
+                                </button>
+                                <% } else { %>
+                                    <div class="company-dropdown">
+                                        <label for="companySwitch">Switch Company</label>
+                                        <select id="companySwitch" class="form-select"
+                                            onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                            <% companies.forEach(company=> { %>
+                                                <option value="<%= company.id %>" <%=currentCompany[0].id===company.id
+                                                    ? 'selected' : '' %>>
+                                                    <%= company.name %>
+                                                </option>
+                                                <% }); %>
+                                        </select>
+                                    </div>
+                                    <% } %>
                         </div>
                     </div>
-                </li>
-            </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="container">
+
+        <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+            <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <h2>Parties</h2>
+        </nav>
+
+        <!-- Left table -->
+        <div class="left-table">
+            <h4>Party Overview</h4>
+            <select id="partySelector" onchange="updatePartyData()">
+                <!-- Party options will be added dynamically -->
+            </select>
+            <table>
+                <tr>
+                    <th>Party Name</th>
+                    <td id="partyName">Select a party</td>
+                </tr>
+                <tr>
+                    <th>Total Amount</th>
+                    <td id="totalAmount">$0</td>
+                </tr>
+            </table>
         </div>
 
-        <div class="container">
+        <!-- Right section -->
+        <div class="right-section">
+            <!-- Party info card -->
+            <div class="party-info-card">
+                <h3 id="partyInfoName">Party Information</h3>
+                <div class="profile-pic-container">
+                    <img src="/uploads/image-1736021067422-824086648" alt="Party Profile Pic" class="profile-pic" />
+                </div>
+                <p><strong>Phone:</strong> <span id="partyPhone">---</span></p>
+                <p><strong>Email:</strong> <span id="partyEmail">---</span></p>
+                <p><strong>Address:</strong> <span id="partyAddress">---</span></p>
+                
+            </div>
+            <style>
+                .profile-pic-container {
+                    margin-right: 15px;
+                    border: #212529 3px;
+                }
 
-            <!-- Left table -->
-            <div class="left-table">
-                <h4>Party Overview</h4>
-                <select id="partySelector" onchange="updatePartyData()">
-                    <!-- Party options will be added dynamically -->
-                </select>
-                <table>
+                .profile-pic {
+                    width: 70px;
+                    height: 70px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    border: 1px solid rgb(197, 197, 197);
+                }
+
+                .party-details {
+                    flex-grow: 1;
+                }
+            </style>
+            <!-- Transaction details table -->
+            <div class="transaction-table">
+                <h4>Transaction Details</h4>
+                <table id="transactionDetailsTable">
                     <tr>
-                        <th>Party Name</th>
-                        <td id="partyName">Select a party</td>
-                    </tr>
-                    <tr>
-                        <th>Total Amount</th>
-                        <td id="totalAmount">$0</td>
+                        <th>Transaction ID</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Balance Due</th>
                     </tr>
                 </table>
             </div>
-
-            <!-- Right section -->
-            <div class="right-section">
-                <!-- Party info card -->
-                <div class="party-info-card">
-                    <h3 id="partyInfoName">Party Information</h3>
-                    <p><strong>Phone:</strong> <span id="partyPhone">---</span></p>
-                    <p><strong>Email:</strong> <span id="partyEmail">---</span></p>
-                    <p><strong>Address:</strong> <span id="partyAddress">---</span></p>
+            <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                Add New Party
+            </button>
+        </div>
+    </div>
+    </div>
+    <!-- Modal for Add New Company -->
+    <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCompanyModalLabel">Add New Party</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="modal-body">
+                    <form action="/business-owner/addParty" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="companyName" class="form-label">Party Name</label>
+                            <input type="text" class="form-control" id="companyName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="companyName" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="companyName" name="address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Party Email</label>
+                            <input type="email" class="form-control" id="companyName" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dp" class="form-label">Profile Picture</label>
+                            <input type="file" class="form-control" id="profile" name="image">
+                        </div>
 
-                <!-- Transaction details table -->
-                <div class="transaction-table">
-                    <h4>Transaction Details</h4>
-                    <table id="transactionDetailsTable">
-                        <tr>
-                            <th>Transaction ID</th>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </table>
+                        <button type="submit" class="btn btn-success">Save Party</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -374,32 +458,7 @@
 
     <script>
         // Example party data
-        const parties = [
-            {
-                id: 1,
-                name: "Party A",
-                totalAmount: "$1000",
-                phone: "123-456-7890",
-                email: "partya@example.com",
-                address: "123 Party St, City, Country",
-                transactions: [
-                    { id: "T001", date: "2025-01-01", amount: "$500", status: "Completed" },
-                    { id: "T002", date: "2025-01-05", amount: "$500", status: "Pending" }
-                ]
-            },
-            {
-                id: 2,
-                name: "Party B",
-                totalAmount: "$2000",
-                phone: "987-654-3210",
-                email: "partyb@example.com",
-                address: "456 Celebration Ave, City, Country",
-                transactions: [
-                    { id: "T003", date: "2025-01-02", amount: "$1000", status: "Completed" },
-                    { id: "T004", date: "2025-01-06", amount: "$1000", status: "Pending" }
-                ]
-            }
-        ];
+        const parties = <%-JSON.stringify(parties)%>
 
         // Populate the party selector dropdown
         const partySelector = document.getElementById("partySelector");
@@ -418,7 +477,7 @@
             if (party) {
                 // Update party overview
                 document.getElementById("partyName").textContent = party.name;
-                document.getElementById("totalAmount").textContent = party.totalAmount;
+                document.getElementById("totalAmount").textContent = party.amount;
 
                 // Update party info card
                 document.getElementById("partyInfoName").textContent = party.name;
@@ -439,7 +498,7 @@
                     row.insertCell(0).textContent = transaction.id;
                     row.insertCell(1).textContent = transaction.date;
                     row.insertCell(2).textContent = transaction.amount;
-                    row.insertCell(3).textContent = transaction.status;
+                    row.insertCell(3).textContent = transaction.balance_due;
                 });
             }
         }
@@ -447,7 +506,21 @@
         // Initialize with the first party
         updatePartyData();
     </script>
-
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+        }
+        function companyDisplay() {
+            const div = document.querySelector('.companyClass');
+            if (div) {
+                div.style.display = 'block';
+            } else {
+                console.error('Element with class "companyClass" not found.');
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

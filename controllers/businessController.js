@@ -15,7 +15,8 @@ var storage = multer.diskStorage({
 
 var upload = multer({
     storage: storage,
-}).array("image", 5);
+}).single("image");
+
 
 const businessOwnerController = {
 
@@ -132,7 +133,7 @@ const businessOwnerController = {
                 itemCode
             } = req.body;
 
-            const image = req.files.map(file => file.filename);
+            const image = req.file ? req.file.filename : null;
 
             try {
 
@@ -190,7 +191,7 @@ const businessOwnerController = {
                     WHERE items.company_id = ?
                 `, [companyId]);
 
-                res.render('businessOwner/itemDisplay.ejs', { items, user, companies, currentCompany });
+                res.render('businessOwner/displayItem.ejs', { items, user, companies, currentCompany });
 
             } catch (error) {
                 console.error(error);
@@ -218,9 +219,7 @@ const businessOwnerController = {
             WHERE items.company_id = ?
         `, [companyId]);
 
-
-
-        res.render('businessOwner/itemDisplay.ejs', { items, user, currentCompany, companies });
+        res.render('businessOwner/displayItem.ejs', { items, user, currentCompany, companies });
     },
 
     // Add new category, linking it to the user's company
@@ -271,12 +270,11 @@ const businessOwnerController = {
         const user = req.session.user
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-
+        const [parties] = await mysql.query(`SELECT * FROM parties WHERE user_id = ?`, [user.id]);
         const today = new Date().toISOString().split('T')[0];
         const companyId = user.company_id;
         const products = await mysql.query("SELECT * FROM items WHERE user_id = ? AND company_id = ?", [user.id, companyId])
-        res.render('businessOwner/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user });
-
+        res.render('businessOwner/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties });
     },
 
     addTransaction: async (req, res) => {
@@ -284,10 +282,10 @@ const businessOwnerController = {
         const products = req.body.products
         const user = req.session.user
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        
         const sales = await mysql.query("INSERT INTO sales (customer_name, user_id, company_id, date, invoice_number, payment_type, total_amount, received_amount, balance_due, created_at, transaction_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
             partyName, user.id, user.company_id, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, created_at, transactionType
         ]);
-
         await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id])]);
 
         res.redirect('/business-owner/transactions');
@@ -323,12 +321,58 @@ const businessOwnerController = {
 
     viewParty: async (req, res) => {
         const user = req.session.user
-
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        // const parties = await mysql.query("SELECT * FROM parties WHERE user_id = ?",[user.id])
-        res.render('businessOwner/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user });
+        const [results] = await mysql.query(`
+            SELECT 
+                p.id AS party_id,
+                p.PartyName AS party_name,
+                p.Phone,
+                p.Email,
+                p.Address,
+                t.id AS transaction_id,
+                t.date AS transaction_date,
+                t.total_amount AS transaction_amount,
+                t.balance_due AS transaction_balance_due
+            FROM 
+                parties p
+            LEFT JOIN 
+                sales t ON p.id = t.customer_name
+            WHERE 
+                p.user_id = ?`, [user.id]);
+        
+        // Initialize a map to group transactions by party ID
+        const partiesMap = {};
+        
+        // Process the results into the desired structure
+        results.forEach(row => {
+            // If the party doesn't exist in the map, initialize it
+            if (!partiesMap[row.party_id]) {
+                partiesMap[row.party_id] = {
+                    id: row.party_id,
+                    name: row.party_name,
+                    phone: row.Phone,
+                    email: row.Email,
+                    address: row.Address,
+                    transactions: []
+                };
+            }
+        
+            // Add the transaction details to the corresponding party
+            if (row.transaction_id) {
+                partiesMap[row.party_id].transactions.push({
+                    id: row.transaction_id,
+                    date: row.transaction_date,
+                    amount: row.transaction_amount,
+                    balance_due: row.transaction_balance_due
+                });
+            }
+        });
+        
+        const parties = Object.values(partiesMap);        
+        
+        res.render('businessOwner/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user, parties });
     },
 
     logout: (req, res) => {
@@ -370,7 +414,6 @@ const businessOwnerController = {
     },
     viewReports: async (req, res) => {
         const user = req.session.user
-
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
@@ -378,7 +421,6 @@ const businessOwnerController = {
     },
     viewSalesReports: async (req, res) => {
         const user = req.session.user
-
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
@@ -386,12 +428,38 @@ const businessOwnerController = {
     },
     viewPurchaseReports: async (req, res) => {
         const user = req.session.user
-
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         res.render('businessOwner/purchaseReports.ejs', { user, companies, currentCompany });
     },
+    addParty: async (req, res) => {
+        upload(req, res, async function (err) {
+            if (err instanceof multer.MulterError) {
+                return res.status(500).json(err);
+            } else if (err) {
+                return res.status(500).json(err);
+            }
+    
+            try {
+                const user = req.session.user;
+                const { name, email, phone, address } = req.body;
+                
+                const image = req.file ? req.file.filename : null;
+    
+                await mysql.query(
+                    "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture) VALUES (?,?,?,?,?,?)",
+                    [user.id, name, email, phone, address, image]
+                );
+    
+                res.redirect('/business-owner/viewParty');
+            } catch (dbError) {
+                res.status(500).json({ error: "Database operation failed", details: dbError });
+            }
+        });
+    }
+    
+
 }
 
 module.exports = businessOwnerController;
