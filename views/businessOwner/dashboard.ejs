@@ -153,16 +153,153 @@
                         <h5>Most Used Reports</h5>
                         <ul>
                             <li><a href="#">Sale Report</a></li>
-                            <li><a href="#">All Transactions</a></li>
+                            <li><a href="/business-owner/transactions">All Transactions</a></li>
                             <li><a href="#">Daybook Report</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="card p-3">
-                        <h5>It Looks So Empty in Here!</h5>
-                        <p>Add one of our widgets to get started and view your business operations.</p>
-                        <button class="btn btn-secondary">Add Widget of Your Choice</button>
+                        <div class="calculator">
+                            <input type="text" id="calculator-display" disabled placeholder="0">
+                            <div class="calculator-buttons">
+                                <button onclick="appendValue('7')">7</button>
+                                <button onclick="appendValue('8')">8</button>
+                                <button onclick="appendValue('9')">9</button>
+                                <button onclick="performOperation('/')">/</button>
+    
+                                <button onclick="appendValue('4')">4</button>
+                                <button onclick="appendValue('5')">5</button>
+                                <button onclick="appendValue('6')">6</button>
+                                <button onclick="performOperation('*')">*</button>
+    
+                                <button onclick="appendValue('1')">1</button>
+                                <button onclick="appendValue('2')">2</button>
+                                <button onclick="appendValue('3')">3</button>
+                                <button onclick="performOperation('-')">-</button>
+    
+                                <button onclick="appendValue('0')">0</button>
+                                <button onclick="appendValue('.')">.</button>
+                                <button style="background-color:#e74c3c;" onclick="clearDisplay()">Clear</button>
+                                <button onclick="performOperation('+')">+</button>
+                            </div>
+    
+                            <button class="clear-btn" onclick="calculate()">=</button>
+                        </div>
+    
+                        <!-- Calculator Styles -->
+                        <style>
+                            .calculator {
+                                width: 300px;
+                                background-color: #f9f9f9;
+                                padding: 20px;
+                                border-radius: 10px;
+                                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                                font-family: Arial, sans-serif;
+                            }
+    
+                            #calculator-display {
+                                width: 100%;
+                                height: 40px;
+                                margin-bottom: 15px;
+                                font-size: 18px;
+                                text-align: right;
+                                padding: 5px;
+                                border: 1px solid #ccc;
+                                border-radius: 5px;
+                                background-color: #fff;
+                            }
+    
+                            .calculator-buttons {
+                                display: grid;
+                                grid-template-columns: repeat(4, 1fr);
+                                gap: 10px;
+                            }
+    
+                            button {
+                                height: 40px;
+                                border: none;
+                                border-radius: 5px;
+                                background-color: #3498db;
+                                color: #fff;
+                                font-size: 16px;
+                                cursor: pointer;
+                            }
+    
+                            button:hover {
+                                background-color: #2980b9;
+                            }
+    
+                            .clear-btn {
+                                margin-top: 15px;
+                                width: 100%;
+                                background-color: #3be244;
+                            }
+    
+                            .clear-btn:hover {
+                                background-color: #32c039;
+                            }
+                        </style>
+    
+                        <!-- Calculator Script -->
+                        <script>
+                            let currentInput = '';
+                            let operator = '';
+                            let previousInput = '';
+    
+                            function appendValue(value) {
+                                currentInput += value;
+                                updateDisplay(currentInput);
+                            }
+    
+                            function performOperation(op) {
+                                if (currentInput === '') return;
+                                if (previousInput !== '') calculate();
+                                operator = op;
+                                previousInput = currentInput;
+                                currentInput = '';
+                            }
+    
+                            function calculate() {
+                                if (currentInput === '' || previousInput === '') return;
+                                let result;
+                                const prev = parseFloat(previousInput);
+                                const curr = parseFloat(currentInput);
+    
+                                switch (operator) {
+                                    case '+':
+                                        result = prev + curr;
+                                        break;
+                                    case '-':
+                                        result = prev - curr;
+                                        break;
+                                    case '*':
+                                        result = prev * curr;
+                                        break;
+                                    case '/':
+                                        result = prev / curr;
+                                        break;
+                                    default:
+                                        return;
+                                }
+    
+                                currentInput = result.toString();
+                                operator = '';
+                                previousInput = '';
+                                updateDisplay(currentInput);
+                            }
+    
+                            function clearDisplay() {
+                                currentInput = '';
+                                operator = '';
+                                previousInput = '';
+                                updateDisplay('0');
+                            }
+    
+                            function updateDisplay(value) {
+                                document.getElementById('calculator-display').value = value;
+                            }
+                        </script>
                     </div>
                 </div>
             </div>

@@ -34,6 +34,7 @@ router.post('/admin/addItems',isLoggedAdmin,adminController.AddItems);
 router.post('/admin/addCategory',isLoggedAdmin,adminController.addCategory);
 router.get('/admin/addTransactions',isLoggedAdmin,adminController.viewAddTransaction);
 router.post('/admin/addTransactions',isLoggedAdmin,adminController.addTransaction);
+router.get('/admin/reports',isLoggedAdmin,adminController.viewReports);
 
 // router.get('/business-owner/viewParty',isLogged,businessController.viewParty);
 // router.get('/business-owner/logout',isLogged,businessController.logout);

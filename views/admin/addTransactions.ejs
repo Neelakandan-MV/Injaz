@@ -17,51 +17,6 @@
             background-color: #f8f9fa;
         }
 
-        .sidebar {
-            width: 280px;
-            height: 100vh;
-            position: fixed;
-            background-color: #343a40;
-            color: white;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar h4 {
-            text-align: center;
-            padding: 20px 0;
-            margin: 0;
-            font-size: 24px;
-            border-bottom: 1px solid #495057;
-        }
-
-        .sidebar ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .sidebar ul li {
-            padding: 15px 20px;
-            border-bottom: 1px solid #495057;
-        }
-
-        .sidebar ul li a {
-            text-decoration: none;
-            color: white;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-        }
-
-        .sidebar ul li a i {
-            margin-right: 10px;
-        }
-
-        .sidebar ul li:hover {
-            background-color: #495057;
-        }
-
         .main-content {
             margin-left: 20px;
             margin-right: 20px;
@@ -91,51 +46,179 @@
         table input:focus {
             border-bottom: 1px solid #007bff;
         }
-        header {
+       /* Responsive Styles */
+    header {
         background-color: #3498db;
         color: #fff;
-        padding: 20px 0;
+        padding: 15px 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    
+
     .navbar {
         max-width: 1200px;
         margin: 0 auto;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0 20px;
+        padding: 0 10px;
     }
-    
+
     .navbar h1 {
-        font-size: 24px;
+        font-size: 20px;
         margin: 0;
+        color: white;
     }
-    
+
     nav ul {
         list-style: none;
         padding: 0;
         margin: 0;
         display: flex;
     }
-    
+
     nav ul li {
-        margin-left: 20px;
+        margin-left: 10px;
     }
-    
+
     nav ul li a {
         color: #fff;
         text-decoration: none;
-        font-size: 16px;
-        padding: 10px 15px;
+        font-size: 14px;
+        padding: 8px 12px;
         border-radius: 5px;
     }
-    
+
     nav ul li a:hover {
         background-color: #2980b9;
     }
+
+    .hamburger {
+        display: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+        background: none;
+        border: none;
+    }
+
+    @media (max-width: 768px) {
+        .navbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        nav ul {
+            flex-direction: column;
+            display: none;
+            width: 100%;
+            background-color: #3498db;
+            padding: 10px 0;
+            margin-top: 10px;
+        }
+
+        nav ul li {
+            margin: 0;
+            text-align: center;
+        }
+
+        nav ul li a {
+            display: block;
+            padding: 10px;
+        }
+
+        nav ul.show {
+            display: flex;
+        }
+
+        .hamburger {
+            display: block;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        button {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .table-responsive {
+            margin-top: 10px;
+        }
+    }
+
+    /* Additional Mobile Optimizations */
+    @media (max-width: 576px) {
+        .main-content {
+            margin: 10px;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .form-section {
+            padding: 15px;
+            box-shadow: none;
+        }
+
+        .form-section h3 {
+            font-size: 20px;
+        }
+
+        .form-label {
+            font-size: 14px;
+        }
+
+        input, select, button {
+            font-size: 12px;
+        }
+
+        .table-responsive table {
+            font-size: 10px;
+        }
+
+        .navbar h1 {
+            font-size: 18px;
+        }
+
+        nav ul li a {
+            font-size: 12px;
+        }
+
+        header {
+            padding: 10px;
+        }
+
+        .hamburger {
+            font-size: 20px;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        table input {
+            font-size: 10px;
+        }
+        .table-responsive {
+            margin-top: 10px;
+        }
+    }
     </style>
 
+<script>
+    const hamburger = document.querySelector('.hamburger');
+    const navMenu = document.querySelector('nav ul');
+
+    hamburger.addEventListener('click', () => {
+        navMenu.classList.toggle('show');
+    });
+</script>
     <script>
         let count = 0;
 
@@ -252,6 +335,7 @@
     <header>
         <div class="navbar">
             <h1>Admin Dashboard</h1>
+            <button class="hamburger">&#9776;</button>
             <nav>
                 <ul>
                     <li><a href="/admin/dashboard">Dashboard</a></li>
@@ -322,7 +406,7 @@
 
                     <!-- Products Table -->
                     <h4>Products</h4>
-
+                    <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -343,6 +427,7 @@
                             <!-- Rows will be added dynamically here -->
                         </tbody>
                     </table>
+                </div>
                     <p style="font-size: 12px; color: rgba(255, 0, 0, 0.7);">Note: Please remove the unwanted rows</p>
                     <button type="button" class="btn btn-secondary mb-3" onclick="addRow()">Add Row</button>
 
@@ -365,7 +450,7 @@
 
                     <div class="d-flex justify-content-end mt-3">
                         <button type="submit" class="btn btn-primary">Save Sale</button>
-                        <a href="/admin/sales" class="btn btn-secondary ms-2">Cancel</a>
+                        <a href="/admin/dashboard" class="btn btn-secondary ms-2">Cancel</a>
                     </div>
                 </form>
             </section>

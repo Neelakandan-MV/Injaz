@@ -14,16 +14,6 @@
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
         }
-        .sidebar {
-            width: 250px;
-            background-color: #343a40;
-            color: white;
-            min-height: 100vh;
-        }
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-        }
         .main-content {
             margin-left: 250px;
             padding: 20px;
@@ -74,12 +64,129 @@
     nav ul li a:hover {
         background-color: #2980b9;
     }
+    .table-responsive {
+        overflow-x: auto;
+    }
+      /* Navbar */
+      header {
+        background-color: #3498db;
+        color: #fff;
+        padding: 15px 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .navbar h1 {
+        font-size: 20px;
+        margin: 0;
+        color: white;
+    }
+
+    nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+
+    nav ul li {
+        margin-left: 10px;
+    }
+
+    nav ul li a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 12px;
+        border-radius: 5px;
+    }
+
+    nav ul li a:hover {
+        background-color: #2980b9;
+    }
+
+    .hamburger {
+        display: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+        background: none;
+        border: none;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+
+        .main-content {
+            margin: 1px;
+            padding: 2px; 
+            width: 100%;
+            
+        }
+        .navbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        nav ul {
+            flex-direction: column;
+            display: none;
+            width: 100%;
+            background-color: #3498db;
+            padding: 10px 0;
+            margin-top: 10px;
+        }
+
+        nav ul li {
+            margin: 0;
+            text-align: center;
+        }
+
+        nav ul li a {
+            display: block;
+            padding: 10px;
+        }
+
+        nav ul.show {
+            display: flex;
+        }
+
+        .hamburger {
+            display: block;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        button {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        
+        .table-responsive {
+            margin-top: 10px;
+        }
+    }
     </style>
 </head>
 <body>
     <header>
         <div class="navbar">
             <h1>Admin Dashboard</h1>
+            <button class="hamburger">&#9776;</button>
             <nav>
                 <ul>
                     <li><a href="/admin/dashboard">Dashboard</a></li>
@@ -107,6 +214,7 @@
                 <div class="col-12">
                     <div class="card p-3">
                         <h5 class="mb-3">Available Items</h5>
+                        <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead class="table-light">
                                 <tr>
@@ -140,6 +248,7 @@
                             </tbody>
                         </table>
                     </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -147,5 +256,13 @@
 
     <!-- JS Framework -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('nav ul');
+    
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('show');
+        });
+    </script>
 </body>
 </html>
