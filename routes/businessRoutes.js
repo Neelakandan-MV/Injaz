@@ -26,8 +26,8 @@ router.get('/business-owner/reports',isLogged,businessController.viewReports);
 router.get('/business-owner/salesReport',isLogged,businessController.viewSalesReports);
 router.get('/business-owner/purchaseReport',isLogged,businessController.viewPurchaseReports);
 router.post('/business-owner/addParty',isLogged,businessController.addParty);
-router.get('/register',businessController.viewRegister)
-router.post('/register',businessController.handleRegister)
+// router.get('/register',businessController.viewRegister)
+// router.post('/register',businessController.handleRegister)
 
 
 
