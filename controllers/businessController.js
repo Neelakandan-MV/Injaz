@@ -331,6 +331,7 @@ const businessOwnerController = {
                 p.Phone,
                 p.Email,
                 p.Address,
+                p.profile_picture,
                 t.id AS transaction_id,
                 t.date AS transaction_date,
                 t.total_amount AS transaction_amount,
@@ -355,6 +356,7 @@ const businessOwnerController = {
                     phone: row.Phone,
                     email: row.Email,
                     address: row.Address,
+                    profile_picture: row.profile_picture,
                     transactions: []
                 };
             }

@@ -5,16 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
         }
         .sidebar {
             width: 250px;
             background-color: #343a40;
             color: white;
             min-height: 100vh;
+            position: fixed;
+            transition: all 0.3s ease;
         }
         .sidebar a {
             color: white;
@@ -23,6 +29,7 @@
         main {
             margin-left: 250px;
             padding: 20px;
+            transition: margin-left 0.3s ease;
         }
         .card {
             border-radius: 10px;
@@ -56,356 +63,208 @@
                 border: none;
                 outline: none;
             }
+            .sidebar.show {
+                display: block;
+            }
+            .navbar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: #343a40;
+                padding: 10px;
+            }
+            .navbar h1 {
+                font-size: 18px;
+                color: white;
+            }
+            nav ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+            }
+            nav ul li {
+                margin-left: 15px;
+            }
+            nav ul li a {
+                color: white;
+                font-size: 14px;
+            }
+            nav ul li a:hover {
+                background-color: #2980b9;
+            }
+            .hamburger {
+                display: block;
+                font-size: 30px;
+                color: white;
+                cursor: pointer;
+            }
+            table {
+                font-size: 12px;
+                overflow-x: auto;
+                display: block;
+            }
+            table thead {
+                font-size: 14px;
+            }
         }
-    
+        .companyClass{
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="d-flex">
-    <div class="sidebar p-3" id="sidebar">
-        <h4 class="text-center"><%= user.name %></h4>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
-            </li>
-            <li class="nav-item">
-                <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
-            </li>
-            <li class="nav-item">
-                <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
-            </li>
-            <li class="nav-item">
-                <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i> Transactions</a>
-            </li>
-            <li class="nav-item">
-                <a href="/business-owner/reports" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
-            </li>
-            <li class="nav-item">
-                <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i> Company</a>
+        <div class="sidebar p-3" id="sidebar">
+            <h4 class="text-center">
+                <%= user.name %>
+            </h4>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i>
+                        Transactions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/reports" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
+                        Company</a>
 
-                <div class="row companyClass">
-                    <div class="col-md-12">
-                        <div class="">
-                            <p><%= currentCompany ? currentCompany.name : 'No company associated' %></p>
+                    <div class="row companyClass">
+                        <div class="col-md-12">
+                            <div class="">
+                                <p>
+                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
+                                </p>
 
-                            <% if (!currentCompany) { %>
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                                    Add New Company
-                                </button>
-                            <% } else { %>
-                                <div class="company-dropdown">
-                                    <label for="companySwitch">Switch Company</label>
-                                    <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
-                                        <% companies.forEach(company => { %>
-                                            <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
-                                                <%= company.name %>
-                                            </option>
-                                        <% }); %>
-                                    </select>
-                                </div>
-                                <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                                    Add New Company
-                                </button>
-                            <% } %>
+                                <% if (!currentCompany) { %>
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                        data-bs-target="#addCompanyModal">
+                                        Add New Company
+                                    </button>
+                                    <% } else { %>
+                                        <div class="company-dropdown">
+                                            <label for="companySwitch">Switch Company</label>
+                                            <select id="companySwitch" class="form-select"
+                                                onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                                <% companies.forEach(company=> { %>
+                                                    <option value="<%= company.id %>"
+                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
+                                                        <%= company.name %>
+                                                    </option>
+                                                    <% }); %>
+                                            </select>
+                                        </div>
+                                        <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <main>
+            <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+                <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <h2>Reports</h2>
+            </nav>
+            <section class="overview">
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <h3>Sales Report</h3>
+                        <div class="col-12">
+                            <div class="card p-3">
+                                <h5 class="mb-3">Available Items</h5>
+                                <table class="table table-bordered">
+                                    <thead class="table-light"> 
+                                        <tr>
+                                            <th>Item Code</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Sale Price</th>
+                                            <th>Purchase Price</th>
+                                            <th>Image</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>Purchase Report</h3>
+                        <div class="col-12">
+                            <div class="card p-3">
+                                <h5 class="mb-3">Available Items</h5>
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Item Code</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Sale Price</th>
+                                            <th>Purchase Price</th>
+                                            <th>Image</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                            <td>adhosih</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </li>
-        </ul>
+            </section>
+        </main>
     </div>
 
-    <main>
-        <section class="overview">
-            <h2>Reports</h2>
-            <div class="stat-cards">
-                <div class="stat-card">
-                    <h3>Sale Report</h3>
-                    <a href="/business-owner/salesReport"><button>Report</button></a>
-                </div>
-
-                <div class="stat-card">
-                    <h3>Purchase Report</h3>
-                    <a href="/business-owner/purchaseReport"><button>Report</button></a>
-                </div>
-            </div>
-        </section>
-    </main>
-</div>
-
-    <!-- <footer>
-        <p>&copy; 2025 Injaz. All rights reserved.</p>
-    </footer> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+    </script>
+    <script>   function companyDisplay() {
+        const div = document.querySelector('.companyClass');
+        if (div) {
+            div.style.display = 'block';
+        } else {
+            console.error('Element with class "companyClass" not found.');
+        }
+    }</script>
 </body>
 </html>
-
-
-<style>
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f4f7fc;
-        margin: 0;
-        padding: 0;
-    }
-    
-    header {
-        background-color: #3498db;
-        color: #fff;
-        padding: 20px 0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .navbar {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 20px;
-    }
-    
-    .navbar h1 {
-        font-size: 24px;
-        margin: 0;
-    }
-    
-    nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-    }
-    
-    nav ul li {
-        margin-left: 20px;
-    }
-    
-    nav ul li a {
-        color: #fff;
-        text-decoration: none;
-        font-size: 16px;
-        padding: 10px 15px;
-        border-radius: 5px;
-    }
-    
-    nav ul li a:hover {
-        background-color: #2980b9;
-    }
-    
-    main {
-        padding: 40px 20px;
-    }
-    
-    h2 {
-        font-size: 24px;
-        color: #333;
-    }
-    
-    section {
-        margin-bottom: 30px;
-    }
-    
-    .stat-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-    
-    .stat-card {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-    
-    .stat-card h3 {
-        margin: 0;
-        color: #3498db;
-    }
-    
-    .stat-card p {
-        font-size: 20px;
-        color: #333;
-    }
-    
-    .quick-links ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .quick-links ul li {
-        margin: 10px 0;
-    }
-    
-    .quick-links ul li a {
-        color: #3498db;
-        text-decoration: none;
-        font-size: 18px;
-    }
-    
-    .quick-links ul li a:hover {
-        text-decoration: underline;
-    }
-    
-    .report-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-    
-    .report-card {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-    
-    .report-card a {
-        display: block;
-        margin-top: 10px;
-        color: #3498db;
-        text-decoration: none;
-        font-size: 16px;
-    }
-    
-    .report-card a:hover {
-        text-decoration: underline;
-    }
-    
-    .user-management p {
-        font-size: 18px;
-        margin-top: 10px;
-    }
-    
-    footer {
-        background-color: #2c3e50;
-        color: #fff;
-        text-align: center;
-        padding: 20px;
-        position: fixed;
-        width: 100%;
-        bottom: 0;
-    }
-    
-    /* Responsive Styles */
-    header {
-        background-color: #3498db;
-        color: #fff;
-        padding: 15px 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .navbar {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 10px;
-    }
-
-    .navbar h1 {
-        font-size: 20px;
-        margin: 0;
-        color: white;
-    }
-
-    nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-    }
-
-    nav ul li {
-        margin-left: 10px;
-    }
-
-    nav ul li a {
-        color: #fff;
-        text-decoration: none;
-        font-size: 14px;
-        padding: 8px 12px;
-        border-radius: 5px;
-    }
-
-    nav ul li a:hover {
-        background-color: #2980b9;
-    }
-
-    .hamburger {
-        display: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: white;
-        background: none;
-        border: none;
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 768px) {
-        .navbar {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        nav ul {
-            flex-direction: column;
-            display: none;
-            width: 100%;
-            background-color: #3498db;
-            padding: 10px 0;
-            margin-top: 10px;
-        }
-
-        nav ul li {
-            margin: 0;
-            text-align: center;
-        }
-
-        nav ul li a {
-            display: block;
-            padding: 10px;
-        }
-
-        nav ul.show {
-            display: flex;
-        }
-
-        .hamburger {
-            display: block;
-        }
-
-        table {
-            font-size: 12px;
-        }
-
-        h1 {
-            font-size: 20px;
-        }
-
-        button {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
-
-        .table-responsive {
-            margin-top: 10px;
-        }
-    }
-    button {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    button:hover {
-            background-color: #218838;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    

@@ -263,7 +263,7 @@
                 width: 100%;
                 height: auto;
                 min-height: 0;
-                z-index: 1030;
+                z-index: 10;
                 display: none;
             }
 
@@ -274,7 +274,11 @@
             .navbar-toggler {
                 border: none;
                 outline: none;
-                background-color: transparent;
+                z-index: 100;
+                margin-top: -17px;
+            }
+            .navbar-toggler-icon {
+                background-color: rgb(223, 223, 223);
             }
         }
     </style>
@@ -374,7 +378,7 @@
             <div class="party-info-card">
                 <h3 id="partyInfoName">Party Information</h3>
                 <div class="profile-pic-container">
-                    <img src="/uploads/image-1736021067422-824086648" alt="Party Profile Pic" class="profile-pic" />
+                    <img id="partyDP" alt="Party Profile Pic" class="profile-pic" />
                 </div>
                 <p><strong>Phone:</strong> <span id="partyPhone">---</span></p>
                 <p><strong>Email:</strong> <span id="partyEmail">---</span></p>
@@ -484,6 +488,7 @@
                 document.getElementById("partyPhone").textContent = party.phone;
                 document.getElementById("partyEmail").textContent = party.email;
                 document.getElementById("partyAddress").textContent = party.address;
+                document.getElementById("partyDP").src = `/uploads/${party.profile_picture?party.profile_picture:'image-1736423096605-197412523'}`;
 
                 // Update transaction details table
                 const transactionTable = document.getElementById("transactionDetailsTable");
