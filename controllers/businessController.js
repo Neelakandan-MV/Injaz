@@ -217,8 +217,8 @@ const businessOwnerController = {
             LEFT JOIN categories ON items.category_id = categories.id
             WHERE items.company_id = ?
         `, [companyId]);
-        
-        
+
+
 
         res.render('businessOwner/itemDisplay.ejs', { items, user, currentCompany, companies });
     },
@@ -243,7 +243,7 @@ const businessOwnerController = {
                 const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
                 return res.render('businessOwner/addItems.ejs', {
                     categoryError: 'Category Already Exists.',
-                    categories,companies,currentCompany,user
+                    categories, companies, currentCompany, user
                 });
             }
 
@@ -252,7 +252,7 @@ const businessOwnerController = {
             const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
             return res.render('businessOwner/addItems.ejs', {
                 categories,
-                success: 'Category added successfully.',companies,currentCompany,user
+                success: 'Category added successfully.', companies, currentCompany, user
             });
         } catch (error) {
             console.error('Error in addCategory:', error);
@@ -260,7 +260,7 @@ const businessOwnerController = {
             const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
             return res.render('businessOwner/addItems.ejs', {
                 error: 'An error occurred. Please try again.',
-                categories,companies,currentCompany,user
+                categories, companies, currentCompany, user
             });
         }
     },
@@ -336,39 +336,62 @@ const businessOwnerController = {
         res.redirect('/login');
     },
 
-    viewRegister:(req,res)=>{
-        res.render('auth/register',{error:null})
+    viewRegister: (req, res) => {
+        res.render('auth/register', { error: null })
     },
 
-    handleRegister:async(req,res)=>{
+    handleRegister: async (req, res) => {
         const hashPassword = async (password) => {
             try {
-              const saltRounds = 10; // Higher number = more secure but slower
-              const hashedPassword = await bcrypt.hash(password, saltRounds);
-              return hashedPassword;
+                const saltRounds = 10; // Higher number = more secure but slower
+                const hashedPassword = await bcrypt.hash(password, saltRounds);
+                return hashedPassword;
             } catch (error) {
-              console.error("Error hashing password:", error);
+                console.error("Error hashing password:", error);
             }
-          }
-          const {name,email,password,phone} = req.body;
-          const [emailExist] = await mysql.query("SELECT * FROM users WHERE email = ?",[email])
-          
-          if(!emailExist[0]){
-            hashPassword(password).then(async hashedPassword => {
-                await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",[name,email,hashedPassword,'businessOwner'])
-                const [user] = await mysql.query("SELECT * FROM users WHERE email = ?",[email])
-                console.log(user);
-                
-                await mysql.query(`INSERT INTO companies (user_id, name, created_at) VALUES (?, ?, ?)`,
-                [user[0].id, "Add a Company", new Date()]);
-                res.redirect('/login')
-              });
-          }else{
-            return res.send('Email already exists')
-          }
-          
-    }
+        }
+        const { name, email, password, phone } = req.body;
+        const [emailExist] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
 
-};
+        if (!emailExist[0]) {
+            hashPassword(password).then(async hashedPassword => {
+                await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, 'businessOwner'])
+                const [user] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
+                console.log(user);
+
+                await mysql.query(`INSERT INTO companies (user_id, name, created_at) VALUES (?, ?, ?)`,
+                    [user[0].id, "Add a Company", new Date()]);
+                res.redirect('/login')
+            });
+        } else {
+            return res.send('Email already exists')
+        }
+
+    },
+    viewReports: async (req, res) => {
+        const user = req.session.user
+
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        res.render('businessOwner/reports.ejs', { user, companies, currentCompany });
+    },
+    viewSalesReports: async (req, res) => {
+        const user = req.session.user
+
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        res.render('businessOwner/salesReports.ejs', { user, companies, currentCompany });
+    },
+    viewPurchaseReports: async (req, res) => {
+        const user = req.session.user
+
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        res.render('businessOwner/purchaseReports.ejs', { user, companies, currentCompany });
+    },
+}
 
 module.exports = businessOwnerController;

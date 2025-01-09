@@ -22,6 +22,9 @@ router.post('/business-owner/addCompany',isLogged,businessController.addCompany)
 router.get('/business-owner/switchCompany/:id',isLogged,businessController.switchCompany);
 router.get('/business-owner/viewParty',isLogged,businessController.viewParty);
 router.get('/business-owner/logout',isLogged,businessController.logout);
+router.get('/business-owner/reports',isLogged,businessController.viewReports);
+router.get('/business-owner/salesReport',isLogged,businessController.viewSalesReports);
+router.get('/business-owner/purchaseReport',isLogged,businessController.viewPurchaseReports);
 router.get('/register',businessController.viewRegister)
 router.post('/register',businessController.handleRegister)
 

@@ -4,27 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report</title>
-    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+        }
+        main {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 10px;
+        }
+        .chart {
+            height: 200px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .company-dropdown {
+            margin-top: 15px;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                width: 100%;
+                height: auto;
+                min-height: 0;
+                z-index: 1030;
+                display: none;
+            }
+            main {
+                margin-left: 0;
+            }
+            .navbar-toggler {
+                border: none;
+                outline: none;
+            }
+        }
+    
+    </style>
 </head>
 <body>
-    <header>
-        <div class="navbar">
-            <h1>Admin Reports</h1>
-            <button class="hamburger">&#9776;</button>
-            <nav>
-                <ul>
-                    <li><a href="/admin/dashboard">Dashboard</a></li>
-                    <li><a href="/admin/sales">Sales</a></li>
-                    <li><a href="/admin/purchases">Purchases</a></li>
-                    <li><a href="/admin/transactions">Transactions</a></li>
-                    <li><a href="/admin/reports">Reports</a></li>
-                    <li><a href="/admin/settings">Settings</a></li>
-                    <li><a href="/admin/logout">Logout</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <div class="d-flex">
+    <div class="sidebar p-3" id="sidebar">
+        <h4 class="text-center"><%= user.name %></h4>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i> Transactions</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/reports" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
+            </li>
+            <li class="nav-item">
+                <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i> Company</a>
+
+                <div class="row companyClass">
+                    <div class="col-md-12">
+                        <div class="">
+                            <p><%= currentCompany ? currentCompany.name : 'No company associated' %></p>
+
+                            <% if (!currentCompany) { %>
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                                    Add New Company
+                                </button>
+                            <% } else { %>
+                                <div class="company-dropdown">
+                                    <label for="companySwitch">Switch Company</label>
+                                    <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                        <% companies.forEach(company => { %>
+                                            <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
+                                                <%= company.name %>
+                                            </option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                                    Add New Company
+                                </button>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
 
     <main>
         <section class="overview">
@@ -32,20 +120,17 @@
             <div class="stat-cards">
                 <div class="stat-card">
                     <h3>Sale Report</h3>
-                    <a href="/admin/sales"><button>Report</button></a>
+                    <a href="/business-owner/salesReport"><button>Report</button></a>
                 </div>
 
                 <div class="stat-card">
                     <h3>Purchase Report</h3>
-                    <a href="/admin/sales"><button>Report</button></a>
-                </div>
-                <div class="stat-card">
-                    <h3>Total Profit</h3>
-                    <p>₹<%= total_profit[0].total_profit %></p>
+                    <a href="/business-owner/purchaseReport"><button>Report</button></a>
                 </div>
             </div>
         </section>
     </main>
+</div>
 
     <!-- <footer>
         <p>&copy; 2025 Injaz. All rights reserved.</p>
@@ -323,11 +408,4 @@
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const hamburger = document.querySelector('.hamburger');
-        const navMenu = document.querySelector('nav ul');
     
-        hamburger.addEventListener('click', () => {
-            navMenu.classList.toggle('show');
-        });
-    </script>

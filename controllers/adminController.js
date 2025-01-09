@@ -359,6 +359,7 @@ const adminController = {
         const [total_profit] = await mysql.query("SELECT (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'sale') - (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'purchase') AS total_profit;");
         res.render('admin/reports.ejs',{total_profit});
     },
+    
 
 };
 

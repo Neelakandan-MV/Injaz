@@ -1,211 +1,453 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Party Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
-            height: 100vh;
             flex-direction: column;
-            background-color: #f4f4f4;
+            min-height: 100vh;
+            background-color: #f8f9fa;
         }
+
         .container {
             display: flex;
             flex: 1;
             padding: 20px;
+            gap: 20px;
             justify-content: space-between;
-            align-items: flex-start;
+            flex-wrap: wrap;
         }
+
+        /* Sidebar (if included) */
+        .sidebar {
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: ;
+            margin-bottom: 20px;
+        }
+
         /* Left table */
         .left-table {
-            width: 30%;
+            flex: 1;
             background-color: #ffffff;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-width: 300px;
         }
+
+        .left-table h4 {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #495057;
+        }
+
+        #partySelector {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
         .left-table table {
             width: 100%;
             border-collapse: collapse;
         }
-        .left-table table, .left-table th, .left-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+
+        .left-table th,
+        .left-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
             text-align: left;
         }
+
         .left-table th {
-            background-color: #f2f2f2;
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #212529;
         }
+
         /* Right section */
         .right-section {
+            flex: 2;
             display: flex;
             flex-direction: column;
-            width: 65%;
+            gap: 20px;
+            width: 100%;
         }
-        /* Card style for party information */
+
         .party-info-card {
-            background-color: #fff;
+            background-color: #ffffff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         .party-info-card h3 {
-            margin-top: 0;
-            color: #333;
+            margin: 0 0 15px;
+            font-size: 1.5em;
+            color: #495057;
         }
+
         .party-info-card p {
-            color: #555;
+            margin: 8px 0;
+            font-size: 1em;
+            color: #6c757d;
         }
-        /* Bottom table for transaction details */
+
         .transaction-table {
-            background-color: #fff;
-            padding: 15px;
+            background-color: #ffffff;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
+        .transaction-table h4 {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #495057;
+        }
+
         .transaction-table table {
             width: 100%;
             border-collapse: collapse;
         }
-        .transaction-table table, .transaction-table th, .transaction-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
+
+        .transaction-table th,
+        .transaction-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
             text-align: left;
         }
+
         .transaction-table th {
-            background-color: #f2f2f2;
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #212529;
+        }
+
+        .transaction-table td {
+            color: #495057;
+        }
+
+        /* Responsive Design for Mobile Devices */
+        @media screen and (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .sidebar {
+                flex-basis: 100%;
+                margin-bottom: 15px;
+            }
+
+            .left-table,
+            .right-section {
+                flex-basis: 100%;
+            }
+
+            .left-table table,
+            .transaction-table table {
+                font-size: 0.9em;
+            }
+
+            .party-info-card {
+                padding: 15px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+
+            .left-table,
+            .right-section {
+                padding: 15px;
+            }
+
+            #partySelector {
+                font-size: 0.9em;
+                padding: 6px;
+            }
+
+            .left-table th,
+            .left-table td,
+            .transaction-table th,
+            .transaction-table td {
+                padding: 8px;
+            }
+
+            .transaction-table td {
+                font-size: 0.9em;
+            }
+
+            .party-info-card p {
+                font-size: 0.9em;
+            }
+
+            .party-info-card h3 {
+                font-size: 1.3em;
+            }
+        }
+
+        .container {
+            margin-left: 230px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 10px;
+        }
+        .chart {
+            height: 200px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .company-dropdown {
+            margin-top: 15px;
+        }
+        
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                width: 100%;
+                height: auto;
+                min-height: 0;
+                z-index: 1030;
+                display: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .navbar-toggler {
+                border: none;
+                outline: none;
+                color : orange
+            }
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <%-include('./sidebar') %>
-    <!-- Left table -->
-    <div class="left-table">
-        <h4>Party Overview</h4>
-        <select id="partySelector" onchange="updatePartyData()">
-            <!-- Party options will be added dynamically -->
-        </select>
-        <table>
-            <tr>
-                <th>Party Name</th>
-                <td id="partyName">Select a party</td>
-            </tr>
-            <tr>
-                <th>Total Amount</th>
-                <td id="totalAmount">$0</td>
-            </tr>
-        </table>
-    </div>
+    <div class="d-flex">
+        <div class="sidebar p-3" id="sidebar">
+            <h4 class="text-center">
+                <%= user.name %>
+            </h4>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i>
+                        Transactions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/reports" class="nav-link"><i class="fas fa-file-invoice"></i> Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
+                        Company</a>
 
-    <!-- Right section -->
-    <div class="right-section">
-        <!-- Party info card -->
-        <div class="party-info-card">
-            <h3 id="partyInfoName">Party Information</h3>
-            <p><strong>Phone:</strong> <span id="partyPhone">---</span></p>
-            <p><strong>Email:</strong> <span id="partyEmail">---</span></p>
-            <p><strong>Address:</strong> <span id="partyAddress">---</span></p>
+                    <div class="row companyClass">
+                        <div class="col-md-12">
+                            <div class="">
+                                <p>
+                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
+                                </p>
+
+                                <% if (!currentCompany) { %>
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                        data-bs-target="#addCompanyModal">
+                                        Add New Company
+                                    </button>
+                                    <% } else { %>
+                                        <div class="company-dropdown">
+                                            <label for="companySwitch">Switch Company</label>
+                                            <select id="companySwitch" class="form-select"
+                                                onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                                <% companies.forEach(company=> { %>
+                                                    <option value="<%= company.id %>"
+                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
+                                                        <%= company.name %>
+                                                    </option>
+                                                    <% }); %>
+                                            </select>
+                                        </div>
+                                        <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal"
+                                            data-bs-target="#addCompanyModal">
+                                            Add New Company
+                                        </button>
+                                        <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
         </div>
 
-        <!-- Transaction details table -->
-        <div class="transaction-table">
-            <h4>Transaction Details</h4>
-            <table id="transactionDetailsTable">
-                <tr>
-                    <th>Transaction ID</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                </tr>
-            </table>
+        <div class="container">
+
+            <!-- Left table -->
+            <div class="left-table">
+                <h4>Party Overview</h4>
+                <select id="partySelector" onchange="updatePartyData()">
+                    <!-- Party options will be added dynamically -->
+                </select>
+                <table>
+                    <tr>
+                        <th>Party Name</th>
+                        <td id="partyName">Select a party</td>
+                    </tr>
+                    <tr>
+                        <th>Total Amount</th>
+                        <td id="totalAmount">$0</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Right section -->
+            <div class="right-section">
+                <!-- Party info card -->
+                <div class="party-info-card">
+                    <h3 id="partyInfoName">Party Information</h3>
+                    <p><strong>Phone:</strong> <span id="partyPhone">---</span></p>
+                    <p><strong>Email:</strong> <span id="partyEmail">---</span></p>
+                    <p><strong>Address:</strong> <span id="partyAddress">---</span></p>
+                </div>
+
+                <!-- Transaction details table -->
+                <div class="transaction-table">
+                    <h4>Transaction Details</h4>
+                    <table id="transactionDetailsTable">
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    // Example party data
-    const parties = [
-        {
-            id: 1,
-            name: "Party A",
-            totalAmount: "$1000",
-            phone: "123-456-7890",
-            email: "partya@example.com",
-            address: "123 Party St, City, Country",
-            transactions: [
-                { id: "T001", date: "2025-01-01", amount: "$500", status: "Completed" },
-                { id: "T002", date: "2025-01-05", amount: "$500", status: "Pending" }
-            ]
-        },
-        {
-            id: 2,
-            name: "Party B",
-            totalAmount: "$2000",
-            phone: "987-654-3210",
-            email: "partyb@example.com",
-            address: "456 Celebration Ave, City, Country",
-            transactions: [
-                { id: "T003", date: "2025-01-02", amount: "$1000", status: "Completed" },
-                { id: "T004", date: "2025-01-06", amount: "$1000", status: "Pending" }
-            ]
-        }
-    ];
-
-    // Populate the party selector dropdown
-    const partySelector = document.getElementById("partySelector");
-    parties.forEach(party => {
-        const option = document.createElement("option");
-        option.value = party.id;
-        option.textContent = party.name;
-        partySelector.appendChild(option);
-    });
-
-    // Function to update the data when a new party is selected
-    function updatePartyData() {
-        const selectedPartyId = document.getElementById("partySelector").value;
-        const party = parties.find(p => p.id == selectedPartyId);
-
-        if (party) {
-            // Update party overview
-            document.getElementById("partyName").textContent = party.name;
-            document.getElementById("totalAmount").textContent = party.totalAmount;
-
-            // Update party info card
-            document.getElementById("partyInfoName").textContent = party.name;
-            document.getElementById("partyPhone").textContent = party.phone;
-            document.getElementById("partyEmail").textContent = party.email;
-            document.getElementById("partyAddress").textContent = party.address;
-
-            // Update transaction details table
-            const transactionTable = document.getElementById("transactionDetailsTable");
-            // Clear previous rows
-            const rows = transactionTable.getElementsByTagName("tr");
-            for (let i = rows.length - 1; i > 0; i--) {
-                transactionTable.deleteRow(i);
+    <script>
+        // Example party data
+        const parties = [
+            {
+                id: 1,
+                name: "Party A",
+                totalAmount: "$1000",
+                phone: "123-456-7890",
+                email: "partya@example.com",
+                address: "123 Party St, City, Country",
+                transactions: [
+                    { id: "T001", date: "2025-01-01", amount: "$500", status: "Completed" },
+                    { id: "T002", date: "2025-01-05", amount: "$500", status: "Pending" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Party B",
+                totalAmount: "$2000",
+                phone: "987-654-3210",
+                email: "partyb@example.com",
+                address: "456 Celebration Ave, City, Country",
+                transactions: [
+                    { id: "T003", date: "2025-01-02", amount: "$1000", status: "Completed" },
+                    { id: "T004", date: "2025-01-06", amount: "$1000", status: "Pending" }
+                ]
             }
-            // Add new rows
-            party.transactions.forEach(transaction => {
-                const row = transactionTable.insertRow();
-                row.insertCell(0).textContent = transaction.id;
-                row.insertCell(1).textContent = transaction.date;
-                row.insertCell(2).textContent = transaction.amount;
-                row.insertCell(3).textContent = transaction.status;
-            });
-        }
-    }
+        ];
 
-    // Initialize with the first party
-    updatePartyData();
-</script>
+        // Populate the party selector dropdown
+        const partySelector = document.getElementById("partySelector");
+        parties.forEach(party => {
+            const option = document.createElement("option");
+            option.value = party.id;
+            option.textContent = party.name;
+            partySelector.appendChild(option);
+        });
+
+        // Function to update the data when a new party is selected
+        function updatePartyData() {
+            const selectedPartyId = document.getElementById("partySelector").value;
+            const party = parties.find(p => p.id == selectedPartyId);
+
+            if (party) {
+                // Update party overview
+                document.getElementById("partyName").textContent = party.name;
+                document.getElementById("totalAmount").textContent = party.totalAmount;
+
+                // Update party info card
+                document.getElementById("partyInfoName").textContent = party.name;
+                document.getElementById("partyPhone").textContent = party.phone;
+                document.getElementById("partyEmail").textContent = party.email;
+                document.getElementById("partyAddress").textContent = party.address;
+
+                // Update transaction details table
+                const transactionTable = document.getElementById("transactionDetailsTable");
+                // Clear previous rows
+                const rows = transactionTable.getElementsByTagName("tr");
+                for (let i = rows.length - 1; i > 0; i--) {
+                    transactionTable.deleteRow(i);
+                }
+                // Add new rows
+                party.transactions.forEach(transaction => {
+                    const row = transactionTable.insertRow();
+                    row.insertCell(0).textContent = transaction.id;
+                    row.insertCell(1).textContent = transaction.date;
+                    row.insertCell(2).textContent = transaction.amount;
+                    row.insertCell(3).textContent = transaction.status;
+                });
+            }
+        }
+
+        // Initialize with the first party
+        updatePartyData();
+    </script>
 
 </body>
+
 </html>
