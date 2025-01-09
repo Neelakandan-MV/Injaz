@@ -59,6 +59,7 @@
                 border: none;
                 outline: none;
                 z-index: 100;
+                margin-top: -17px;
             }
             .navbar-toggler-icon {
                 background-color: rgb(223, 223, 223);
@@ -90,9 +91,9 @@
                 <li class="nav-item">
                     <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a href="/business-owner/cashFlow" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> Cash Flow</a>
-                </li>
+                </li> -->
                 <li class="nav-item">
                     <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i> Company</a>
 
@@ -144,14 +145,14 @@
                 <div class="col-md-6">
                     <div class="card p-3">
                         <h5>Total Receivable</h5>
-                        <p class="text-success">₹ <%= totalReceivable ? totalReceivable : 0 %></p>
+                        <p class="text-success">SAR <%= totalReceivable ? totalReceivable : 0 %></p>
                         <p>You don’t have any receivables as of now.</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="card p-3">
                         <h5>Total Payable</h5>
-                        <p class="text-danger">₹ <%= totalPayable ? totalPayable : 0 %></p>
+                        <p class="text-danger">SAR <%= totalPayable ? totalPayable : 0 %></p>
                         <p>You don’t have any payables as of now.</p>
                     </div>
                 </div>
