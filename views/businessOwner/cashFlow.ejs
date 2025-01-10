@@ -167,7 +167,7 @@
                             <th>Transaction Type</th>
                             <th>Money Type</th>
                             <th>Amount</th>
-                            <th>Actions</th>
+                            <!-- <th>Actions</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -179,7 +179,7 @@
                                 <td><%= cashFlow.tnx_type %></td>
                                 <td><%= cashFlow.money_type %></td>
                                 <td>SAR <%= cashFlow.amount %></td>
-                                <td>
+                                <!-- <td>
                                     <a href="/business-owner/cashFlowEdit?id=<%=cashFlow.id%>" class="btn btn-success btn-sm">
                                         <i class="fas fa-edit"></i>
                                     </a>
@@ -189,7 +189,7 @@
                                     <a href="/business-owner/cashFlowDetails?id=<%=cashFlow.id%>" class="btn btn-warning btn-sm">
                                         <i class="fa-regular fa-eye"></i>
                                     </a>
-                                </td>
+                                </td> -->
                             </tr>
                         <% }) %>
                     </tbody>

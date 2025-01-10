@@ -213,9 +213,7 @@
                             <tr>
 
                                 <td>
-                                    <%= new Date(item.date).getDate().toString().padStart(2, '0' ) + '-' + (new
-                                        Date(item.date).getMonth() + 1).toString().padStart(2, '0' ) + '-' + new
-                                        Date(item.date).getFullYear() %>
+                                    <%= new Date(item.date).toLocaleDateString() %>
                                 </td>
 
                                 <td>
@@ -237,8 +235,8 @@
                                 <td>
                                     <a href="/business-owner/transactionEdit?id=<%=item.id%>" class="btn btn-success btn-sm"><i
                                             class="fas fa-edit"></i></a>
-                                    <a href="/business-owner/transactionDelete?id=<%=item.id%>" class="btn btn-danger btn-sm"><i
-                                            class="fas fa-trash"></i></a>
+                                            <a href="#" class="btn btn-danger btn-sm" onclick="deleteFuntion('<%=item.id%>')"><i
+                                                class="fas fa-trash"></i></a>
                                     <a href="/business-owner/transactionDetails?id=<%=item.id%>" class="btn btn-warning btn-sm"><i
                                             class="fa-regular fa-eye"></i></a>
                                 </td>
@@ -253,3 +251,31 @@
 </body>
 
 </html>
+
+<script>
+    function deleteFuntion(itemId) {
+      Swal.fire({
+          title: "Do you really want to delete?",
+          showDenyButton: false,
+          showCancelButton: true,
+          confirmButtonText: "Save",
+      }).then((result) => {
+          if (result.isConfirmed) {
+              Swal.fire("Saved!", "", "success");
+              fetch(`/business-owner/transactionDelete?id=${itemId}`)
+                  .then(() => {
+                      setTimeout(() => {
+                          window.location.reload(); // Correct method to reload the page
+                      }, 200);
+                  })
+                  .catch((error) => {
+                      console.error("Error while deleting:", error);
+                  });
+          } else if (result.isDenied) {
+              Swal.fire("Changes are not saved", "", "info");
+          }
+      });
+  }
+  
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -361,7 +361,7 @@ const businessOwnerController = {
 
         await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
 
-        res.redirect('/business-owner/transactions');
+        res.redirect('/business-owner/dashboard');
     },
 
     addCompany: async (req, res) => {
@@ -629,9 +629,10 @@ const businessOwnerController = {
     transactionDelete: async (req, res) => {
 
         const transaction_id = req.query.id
+        await mysql.query(`DELETE FROM cash_flows WHERE tnx_id = ?`, [transaction_id]);
         await mysql.query(`DELETE FROM sale_products WHERE sale_id = ?`, [transaction_id]);
         await mysql.query(`DELETE FROM sales WHERE id = ?`, [transaction_id]);
-        res.redirect('/business-owner/transactions')
+        res.redirect('/business-owner/dashboard')
 
     },
     viewtransactionEdit: async (req, res) => {
@@ -705,7 +706,7 @@ const businessOwnerController = {
         //         ]
         //     );
         // }
-        res.redirect('/business-owner/transactions');
+        res.redirect('/business-owner/dashboard');
     }
 
 

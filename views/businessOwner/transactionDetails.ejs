@@ -299,7 +299,7 @@
                         </div>
                         <div class="col-md-3">
                             <label for="date" class="form-label">Date *</label>
-                            <input type="text" value="<%= transactionDetails.date %>" class="form-control" readonly>
+                            <input type="text" value="<%= new Date(transactionDetails.date).toLocaleDateString() %>" class="form-control" readonly>
                         </div>
                     </div>
 

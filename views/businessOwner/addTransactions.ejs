@@ -177,7 +177,7 @@
                 <td><input type="text" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required ></td>
                 <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this)" required ></td>
                 <td><input type="text" name="products[${count}][productTotal]" required ></td>
-                <td><input type="hidden" id="productId" name="products[${count}][productId]" ></td>
+                <input type="hidden" id="productId" name="products[${count}][productId]" >
                 <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
             `;
 
