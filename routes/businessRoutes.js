@@ -24,7 +24,12 @@ router.get('/business-owner/viewParty',isLogged,businessController.viewParty);
 router.get('/business-owner/logout',isLogged,businessController.logout);
 router.post('/business-owner/addParty',isLogged,businessController.addParty);
 router.get('/business-owner/dayBook',isLogged,businessController.viewDayBook);
-router.get('/business-owner/cashflow',isLogged,businessController.viewCashFlow);          
+router.get('/business-owner/cashflow',isLogged,businessController.viewCashFlow);
+router.get('/business-owner/transactionDetails',isLogged,businessController.transactionDetails);
+router.get('/business-owner/transactionDelete',isLogged,businessController.transactionDelete);
+router.get('/business-owner/transactionEdit',isLogged,businessController.viewtransactionEdit);
+router.post('/business-owner/transactionEdit',isLogged,businessController.transactionEdit);
+
 
 
 // router.get('/register',businessController.viewRegister)

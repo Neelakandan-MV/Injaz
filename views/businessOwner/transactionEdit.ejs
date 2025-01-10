@@ -161,29 +161,30 @@
     </style>
 
     <script>
-        let count = 0;
+       // In your JavaScript, maintain a counter for dynamically added rows.
+let currentIndex = <%= transactionProducts.length %>;
 
-        function addRow() {
-            const table = document.getElementById('productTableBody');
-            const row = document.createElement('tr');
-            count++;
+function addRow() {
+    const tableBody = document.getElementById("productTableBody");
+    const row = document.createElement("tr");
+    
+    row.innerHTML = `
+        <td>${currentIndex + 1}</td>
+        <td><input type="text" id="productName${currentIndex}" name="products[${currentIndex}][item]" list="productSuggestions" onchange="sugesstion(this, '${currentIndex}')" required></td>
+        <td><input type="number" name="products[${currentIndex}][quantity]" oninput="updateProductTotal(this)" required></td>
+        <td><input type="text" id="unit${currentIndex}" name="products[${currentIndex}][unit]" required ></td>
+        <td><input type="text" id="priceInput${currentIndex}" name="products[${currentIndex}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
+        <td><input type="text" id="discount${currentIndex}" name="products[${currentIndex}][discount]" oninput="updateProductTotal(this)" required ></td>
+        <td><input type="text" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required ></td>
+        <td><input type="text" name="products[${currentIndex}][productTotal]" required ></td>
+        <input type="hidden" id="productId${currentIndex}" name="products[${currentIndex}][productId]" >
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
+    `;
+    
+    tableBody.appendChild(row);
+    currentIndex++; // Increment the index for the next row.
+}
 
-            row.innerHTML = `
-                <td></td>
-                <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
-                <td><input type="number" name="products[${count}][quantity]" oninput="updateProductTotal(this)" required></td>
-                <td><input type="text" id="unit${count}" name="products[${count}][unit]" required ></td>
-                <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
-                <td><input type="text" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required ></td>
-                <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this)" required ></td>
-                <td><input type="text" name="products[${count}][productTotal]" required ></td>
-                <td><input type="hidden" id="productId" name="products[${count}][productId]" ></td>
-                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
-            `;
-
-            table.appendChild(row);
-            updateRowNumbers();
-        }
 
         function removeRow(button) {
             const row = button.closest('tr');
@@ -224,12 +225,12 @@
             }
         }
 
-        // Initialize 3 rows by default
-        window.onload = function () {
-            for (let i = 0; i < 3; i++) {
-                addRow();
-            }
-        };
+       
+        // window.onload = function () {
+        //     for (let i = 0; i < 3; i++) {
+        //         addRow();
+        //     }
+        // };
     </script>
 </head>
 <datalist id="productSuggestions">
@@ -261,16 +262,16 @@
 
             if (selectedProduct) {
                 // const row = element.target.closest('tr');
-                document.getElementsByName(`products[${count}][unit]`)[0].value = selectedProduct.unit;
-                document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
-                document.getElementsByName(`products[${count}][discount]`)[0].value = selectedProduct.discount_value;
-                document.getElementsByName(`products[${count}][tax]`)[0].value = selectedProduct.tax_rate;
-                document.getElementsByName(`products[${count}][productId]`)[0].value = selectedProduct.id;
+                document.getElementsByName(`products[${ count }][unit]`)[0].value = selectedProduct.unit;
+                document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = selectedProduct.sale_price;
+                document.getElementsByName(`products[${ count }][discount]`)[0].value = selectedProduct.discount_value;
+                document.getElementsByName(`products[${ count }][tax]`)[0].value = selectedProduct.tax_rate;
+                document.getElementsByName(`products[${ count }][itemId]`)[0].value = selectedProduct.id;
             }else{
-                document.getElementsByName(`products[${count}][unit]`)[0].value = ''
-                document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = ''
-                document.getElementsByName(`products[${count}][discount]`)[0].value = ''
-                document.getElementsByName(`products[${count}][tax]`)[0].value = ''
+                document.getElementsByName(`products[${ count }][unit]`)[0].value = ''
+                document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = ''
+                document.getElementsByName(`products[${ count }][discount]`)[0].value = ''
+                document.getElementsByName(`products[${ count }][tax]`)[0].value = ''
             }
 
 
@@ -359,44 +360,61 @@
             <!-- Add Sale Form -->
             <section class="form-section mt-4">
                 <h3>Transaction Details</h3>
-                <form action="/business-owner/addTransactions" method="POST">
+                <form action="/business-owner/transactionEdit" method="POST">
                     <!-- Existing fields -->
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="date" class="form-label">Transaction Type *</label>
                             <select id="transaction" name="transactionType" class="form-select" required onclick="ijsadij(this)">
                                 <option value="">Choose one option</option>
-                                <option value="purchase">Purchase</option>
-                                <option value="sale">Sale</option>
+                                <option <%= transactionDetails.transaction_type === 'purchase'? 'selected':'' %> value="purchase">Purchase</option>
+                                <option <%= transactionDetails.transaction_type === 'sale'? 'selected':'' %> value="sale">Sale</option>
                             </select>
                         </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="partyName" class="form-label">Party ID *</label>
                             <input type="text" id="partyName" name="partyName" class="form-control"
-                                placeholder="Enter Party ID"  list="partySuggestions" required>
+                                placeholder="Enter Party ID"  list="partySuggestions" value="<%= transactionDetails.customer_name %>" required>
+                                <input type="hidden" name="transaction_id" value="<%= transactionDetails.id %>">
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="Invoice Number" class="form-label">Invoice Number *</label>
                             <input type="text" id="invoiceNumber" name="invoiceNumber" class="form-control"
-                                placeholder="Enter Invoice Number" required>
+                                placeholder="Enter Invoice Number" value="<%= transactionDetails.invoice_number%>"  required>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="Payment Type">Payment Type *</label>
                             <select id="paymentType" name="paymentType" class="form-select">
-                                <option value="cash">Cash</option>
+                                <option <%= transactionDetails.payment_type === 'Cash'? 'selected':'' %> value="cash">Cash</option>
                                 <!-- <option value="credit">Credit</option> -->
-                                <option value="online">Online</option>
+                                <option <%= transactionDetails.payment_type=== 'Online'? 'selected':'' %> value="online">Online</option>
                             </select>
                         </div>
+                        
+                        <%      let date = new Date( transactionDetails.date );%>
+
+                            
+                        <%  const day = String(date.getDate()).padStart(2, '0'); // Ensure 2 digits%>
+                          <%  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based%>
+                          <%const year = date.getFullYear();%>
+                          <%const formattedDate = `${day}-${month}-${year}`;%>
+                          <script>
+                            function dateChange() {
+                                const dateSelector = document.getElementById('date')
+                                dateSelector.type = 'date'
+                            }
+                          </script>
+                            
                         <div class="col-md-3">
                             <label for="date" class="form-label">Date *</label>
-                            <input type="date" id="date" name="date" class="form-control" required>
+                            <input type="text" id="date" name="date" class="form-control" value="<%= formattedDate %>" onclick="dateChange()" >
                         </div>
+                        
                     </div>
                     
                     </div>
@@ -421,26 +439,42 @@
                             </tr>
                         </thead>
                         <tbody id="productTableBody">
-                            <!-- Rows will be added dynamically here -->
+                            <% transactionProducts.forEach((product,index) => { %>
+                                <tr>
+                              <td><%= index+1 %></td>
+                              <td><input type="text" id="productName<%= index %>" name="products[<%= index %>][item]" list="productSuggestions" onchange="sugesstion(this,'<%= index %>')" value="<%= product.product_name %>" readonly></td>
+                              <td><input type="number" name="products[<%= index %>][quantity]" oninput="updateProductTotal(this)" value="<%= product.quantity %>" readonly></td>
+                              <td><input type="text" id="unit<%= index %>" name="products[<%= index %>][unit]" value="<%= product.unit %>" required ></td>
+                              <td><input type="text" id="priceInput<%= index %>" name="products[<%= index %>][pricePerUnit]" oninput="updateProductTotal(this)" value="<%= product.price %>" readonly ></td>
+                              <td><input type="text" id="discount<%= index %>" name="products[<%= index %>][discount]" oninput="updateProductTotal(this)" value="<%= product.discount %>" readonly ></td>
+                              <td><input type="text" name="products[<%= index %>][tax]" oninput="updateProductTotal(this)" value="<%= product.tax_rate %>" readonly ></td>
+                              <td><input type="text" name="products[<%= index %>][productTotal]" value="<%= product.total %>" readonly ></td>
+                              <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)" disabled>Remove</button></td>
+                              <input type="hidden" id="saleProduct_id" name="products[<%= index %>][saleProduct_id]" value="<%= product.id %>">
+                              <input type="hidden" id="itemId" name="products[<%= index %>][itemId]" value="<%= product.item_id %>" >
+                              <input type="hidden" id="productId" name="products[<%= index %>][saleId]" value="<%= product.sale_id %>" >
+                            </tr>
+                              <% });  %>
+                              
                         </tbody>
                     </table>
-                    <p style="font-size: 12px; color: rgba(255, 0, 0, 0.7);">Note: Please remove the unwanted rows</p>
-                    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()">Add Row</button>
+                    <!-- <p style="font-size: 12px; color: rgba(255, 0, 0, 0.7);">Note: Please remove the unwanted rows</p> -->
+                    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()" disabled>Add Row</button>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="TotalAmount" class="form-label">Total *</label>
-                            <input type="text" id="totalAmount" name="totalAmount" class="form-control" required>
+                            <input type="text" id="totalAmount" name="totalAmount" class="form-control" value="<%= transactionDetails.total_amount%>" required>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="recieved" id="remaining" class="form-label">Received *</label>
-                            <input type="text" id="received" name="recieved" class="form-control" required>
+                            <input type="text" id="received" name="recieved" class="form-control" value="<%= transactionDetails.received_amount %>" required>
                         </div>
                         <div class="col-md-3">
                             <label for="balanceDue" class="form-label">Balance Due *</label>
-                            <input type="text" id="balanceDue" name="balanceDue" class="form-control" required>
+                            <input type="text" id="balanceDue" name="balanceDue" class="form-control" value="<%= transactionDetails.balance_due%>" required>
                         </div>
                     </div>
 

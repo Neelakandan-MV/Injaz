@@ -20,46 +20,46 @@ var upload = multer({
 
 // Helper function to add products to transactions
 const addProductsToTransactions = (transactions) => {
-            const groupedTransactions = [];
-        
-            transactions.forEach(transaction => {
-                // Find or create a new transaction entry
-                let existingTransaction = groupedTransactions.find(t => t.transaction_id === transaction.transaction_id);
-        
-                if (!existingTransaction) {
-                    existingTransaction = {
-                        transaction_id: transaction.transaction_id,
-                        date: transaction.date,
-                        invoice_number: transaction.invoice_number,
-                        customer_name: transaction.customer_name,
-                        total_amount: transaction.total_amount,
-                        payment_type: transaction.payment_type,
-                        balance_due: transaction.balance_due,
-                        received_amount: transaction.received_amount,
-                        created_at: transaction.created_at,
-                        company_id: transaction.company_id,
-                        user_id: transaction.user_id,
-                        transaction_type: transaction.transaction_type,
-                        products: [] // Initialize the products array
-                    };
-                    groupedTransactions.push(existingTransaction);
-                }
-        
-                // Add the product details to the products array of the transaction
-                existingTransaction.products.push({
-                    sale_product_id: transaction.sale_product_id,
-                    item_id: transaction.item_id,
-                    quantity: transaction.quantity,
-                    price: transaction.price,
-                    discount: transaction.discount,
-                    tax_rate: transaction.tax_rate,
-                    product_total: transaction.product_total,
-                    product_company_id: transaction.product_company_id
-                });
-            });
-        
-            return groupedTransactions;
-        };
+    const groupedTransactions = [];
+
+    transactions.forEach(transaction => {
+        // Find or create a new transaction entry
+        let existingTransaction = groupedTransactions.find(t => t.transaction_id === transaction.transaction_id);
+
+        if (!existingTransaction) {
+            existingTransaction = {
+                transaction_id: transaction.transaction_id,
+                date: transaction.date,
+                invoice_number: transaction.invoice_number,
+                customer_name: transaction.customer_name,
+                total_amount: transaction.total_amount,
+                payment_type: transaction.payment_type,
+                balance_due: transaction.balance_due,
+                received_amount: transaction.received_amount,
+                created_at: transaction.created_at,
+                company_id: transaction.company_id,
+                user_id: transaction.user_id,
+                transaction_type: transaction.transaction_type,
+                products: [] // Initialize the products array
+            };
+            groupedTransactions.push(existingTransaction);
+        }
+
+        // Add the product details to the products array of the transaction
+        existingTransaction.products.push({
+            sale_product_id: transaction.sale_product_id,
+            item_id: transaction.item_id,
+            quantity: transaction.quantity,
+            price: transaction.price,
+            discount: transaction.discount,
+            tax_rate: transaction.tax_rate,
+            product_total: transaction.product_total,
+            product_company_id: transaction.product_company_id
+        });
+    });
+
+    return groupedTransactions;
+};
 
 
 const businessOwnerController = {
@@ -326,13 +326,21 @@ const businessOwnerController = {
         const products = req.body.products
         const user = req.session.user
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
+
 
         const sales = await mysql.query("INSERT INTO sales (customer_name, user_id, company_id, date, invoice_number, payment_type, total_amount, received_amount, balance_due, created_at, transaction_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
             partyName, user.id, user.company_id, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, created_at, transactionType
         ]);
 
-        
-        await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item])]);
+        //saving to cashFLow table
+        const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
+
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
+                [party[0].PartyName,created_at,transactionType,recieved,money_type,sales[0].insertId,user.company_id])
+
+
+        await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
 
         res.redirect('/business-owner/transactions');
     },
@@ -465,8 +473,8 @@ const businessOwnerController = {
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-    
-       
+
+
 
         // 
         const [salesDetails] = await mysql.query(`
@@ -495,7 +503,7 @@ const businessOwnerController = {
             LEFT JOIN sale_products sp ON t.id = sp.sale_id
             WHERE t.transaction_type = 'sale';
         `);
-        
+
         const [purchaseDetails] = await mysql.query(`
             SELECT 
                 t.id AS transaction_id,
@@ -522,11 +530,11 @@ const businessOwnerController = {
             LEFT JOIN sale_products sp ON t.id = sp.sale_id
             WHERE t.transaction_type = 'purchase';
         `);
-        
+
         // Add products to both sales and purchase details
         const salesWithProducts = addProductsToTransactions(salesDetails);
         const purchaseWithProducts = addProductsToTransactions(purchaseDetails);
-        
+
         console.log("Sales with Products:", salesWithProducts)
 
         res.render('businessOwner/reports.ejs', { user, companies, currentCompany, salesDetails, purchaseDetails });
@@ -557,7 +565,7 @@ const businessOwnerController = {
         });
     },
     viewDayBook: async (req, res) => {
-       
+
         const user = req.session.user;
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
@@ -571,9 +579,9 @@ const businessOwnerController = {
             SELECT * FROM sales
             WHERE company_id = ?
         `, [companyId]);
-            console.log(items);
-            
-        res.render('businessOwner/dayBook.ejs', {title:'Day Book', currentCompany, companies, user, items});
+        console.log(items);
+
+        res.render('businessOwner/dayBook.ejs', { title: 'Day Book', currentCompany, companies, user, items });
     },
 
     viewCashFlow: async (req, res) => {
@@ -581,12 +589,108 @@ const businessOwnerController = {
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [parties] = await mysql.query(`SELECT * FROM parties WHERE user_id = ?`, [user.id]);
-        const today = new Date().toISOString().split('T')[0];
-        const products = await mysql.query("SELECT * FROM items WHERE user_id = ? AND company_id = ?", [user.id, companyId])
-        res.render('businessOwner/cashFlow.ejs', { date: today, products: products[0], currentCompany, companies, user, parties });
+        const [cashFlows] = await mysql.query(`SELECT * FROM cash_flows WHERE company_id = ?`,[companyId])
+
+        res.render('businessOwner/cashFlow.ejs', {  currentCompany, companies, user,cashFlows });
     },
-   
+
+    transactionDetails: async (req, res) => {
+        const user = req.session.user
+        const companyId = user.company_id;
+        const transaction_id = req.query.id
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+        const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
+        console.log(transactionProducts);
+
+
+        res.render('businessOwner/transactionDetails', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts })
+    },
+    transactionDelete: async (req, res) => {
+
+        const transaction_id = req.query.id
+        await mysql.query(`DELETE FROM sale_products WHERE sale_id = ?`, [transaction_id]);
+        await mysql.query(`DELETE FROM sales WHERE id = ?`, [transaction_id]);
+        res.redirect('/business-owner/transactions')
+
+    },
+    viewtransactionEdit: async (req, res) => {
+        const user = req.session.user
+        const companyId = user.company_id;
+        const transaction_id = req.query.id
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+        const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
+        const [parties] = await mysql.query(`SELECT * FROM parties WHERE user_id = ?`, [user.id]);
+        const products = await mysql.query("SELECT * FROM items WHERE user_id = ? AND company_id = ?", [user.id, companyId])
+
+
+        res.render('businessOwner/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0] })
+    },
+    transactionEdit: async (req, res) => {
+        const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;
+        const products = req.body.products;
+        const user = req.session.user;
+        const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
+
+        const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+        if (transactionDetails[0].balanceDue !== balanceDue && transactionDetails[0].received_amount !== recieved) {
+            const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
+                [party[0].PartyName,created_at,transactionType,money_type,recieved,transaction_id, user.company_id]
+            )
+        }
+        await mysql.query(`
+            UPDATE sales 
+            SET 
+                customer_name = ?, 
+                date = ?, 
+                invoice_number = ?, 
+                payment_type = ?, 
+                total_amount = ?, 
+                received_amount = ?, 
+                balance_due = ?, 
+                transaction_type = ? 
+            WHERE id = ?`,
+            [partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id]
+        );
+
+        // for (let product of products) {
+        //     await mysql.query(`
+        //         UPDATE sale_products
+        //         SET  
+        //             item_id = ?, 
+        //             quantity = ?, 
+        //             price = ?, 
+        //             discount = ?, 
+        //             tax_rate = ?, 
+        //             total = ?, 
+        //             company_id = ?, 
+        //             product_name = ?, 
+        //             unit = ?
+        //         WHERE id = ?`,
+        //         [
+        //             product.productId,
+        //             product.quantity,
+        //             product.pricePerUnit,
+        //             product.discount,
+        //             product.tax,
+        //             product.productTotal,
+        //             user.company_id,
+        //             product.item,
+        //             product.unit,
+        //             product.productId
+        //         ]
+        //     );
+        // }
+        res.redirect('/business-owner/transactions');
+    }
+
+
+
 
 
 }

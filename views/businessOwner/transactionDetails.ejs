@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions Details</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: block;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            display: block;
+        }
+
+        .sidebar .navbar-toggler {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .main-content header {
+            margin-bottom: 20px;
+        }
+
+        .form-section {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .table input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+        }
+
+        .table input:focus {
+            border-bottom: 1px solid #007bff;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .navbar-toggler {
+                border: none;
+                outline: none;
+                display: block;
+            }
+
+            .navbar-toggler:focus {
+                outline: none;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .form-section {
+                padding: 15px;
+            }
+
+            .table th,
+            .table td {
+                padding: 8px;
+            }
+
+            .form-section h3 {
+                font-size: 20px;
+            }
+
+            .table th {
+                font-size: 12px;
+            }
+
+            .table input {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .row label {
+                font-size: 14px;
+            }
+
+            .form-select {
+                font-size: 14px;
+            }
+
+            .btn {
+                font-size: 14px;
+            }
+        }
+
+        /* Additional mobile styles */
+        @media (max-width: 480px) {
+            .form-section {
+                padding: 10px;
+            }
+
+            .sidebar {
+                left: -250px;
+                display: block;
+            }
+
+            .table th,
+            .table td {
+                font-size: 12px;
+            }
+
+            .form-section h3 {
+                font-size: 18px;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .form-label {
+                font-size: 13px;
+            }
+        }
+    </style>
+
+    <script>
+        let count = 0;
+
+
+        function updateRowNumbers() {
+            const rows = document.querySelectorAll('#productTableBody tr');
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+            });
+        }
+
+
+    </script>
+</head>
+
+<script>
+
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+    }
+
+</script>
+
+
+
+<body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar p-3" id="sidebar">
+            <h4 class="text-center">
+                <%= user.name %>
+            </h4>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/transactions" class="nav-link"><i class="fas fa-shopping-cart"></i>
+                        Transactions</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a>
+                </li>
+                <li class="nav-item">
+                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
+                        Company</a>
+
+                    <div class="row companyClass">
+                        <div class="col-md-12">
+                            <div class="">
+                                <p>
+                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
+                                </p>
+
+                                <% if (!currentCompany) { %>
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                        data-bs-target="#addCompanyModal">
+                                        Add New Company
+                                    </button>
+                                    <% } else { %>
+                                        <div class="company-dropdown">
+                                            <label for="companySwitch">Switch Company</label>
+                                            <select id="companySwitch" class="form-select"
+                                                onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                                <% companies.forEach(company=> { %>
+                                                    <option value="<%= company.id %>"
+                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
+                                                        <%= company.name %>
+                                                    </option>
+                                                    <% }); %>
+                                            </select>
+                                        </div>
+                                        <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal"
+                                            data-bs-target="#addCompanyModal">
+                                            Add New Company
+                                        </button>
+                                        <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+                <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <h2>Transactions Details</h2>
+            </nav>
+            <header>
+                <h2>Transactions Details</h2>
+            </header>
+
+
+            <!-- Add Sale Form -->
+            <section class="form-section mt-4">
+                <h3>Transaction Details</h3>
+                <!-- Existing fields -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="" class="form-label">Transaction Type *</label>
+                        <input type="text" value="<%= transactionDetails.transaction_type %>" class="form-control" readonly>                
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="partyName" class="form-label">Party ID *</label>
+                            <input type="text" value="<%= transactionDetails.customer_name %>" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="Invoice Number" class="form-label">Invoice Number *</label>
+                            <input type="text"  class="form-control" value="<%= transactionDetails.invoice_number %>" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="Payment Type">Payment Type *</label>
+                            <input type="text"  class="form-control" value="<%= transactionDetails.payment_type %>" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date" class="form-label">Date *</label>
+                            <input type="text" value="<%= transactionDetails.date %>" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Products Table -->
+                <h4>Products</h4>
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Price/Unit<p style="font-size: 12px; color: gray;">(Price per Unit)</p></th>
+                            <th>Discount (%)</th>
+                            <th>Tax (%)</th>
+                            <th>Total (SAR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                    <% transactionProducts.forEach((product,index) => { %>
+                        <tr>
+                        <td><%= index+1 %></td>
+                        <td><input type="text" value="<%= product.product_name %>" readonly></td>
+                        <td><input type="text" value="<%= product.quantity %>" readonly></td>
+                        <td><input type="text" value="<%= product.price %>" readonly></td>
+                        <td><input type="text" value="<%= product.discount %>" readonly></td>
+                        <td><input type="text" value="<%= product.tax_rate %>" readonly></td>
+                        <td><input type="text" value="<%= product.total %>" readonly></td>
+                    </tr>
+                    <% });  %>
+                    </tbody>
+                </table>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="TotalAmount" class="form-label">Total *</label>
+                        <input type="text" value="<%= transactionDetails.total_amount %> SAR" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="recieved" id="remaining" class="form-label">Received *</label>
+                        <input type="text" value="<%= transactionDetails.received_amount %> SAR" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="balanceDue" class="form-label">Balance Due *</label>
+                        <input type="text" value="<%= transactionDetails.balance_due %> SAR" class="form-control" readonly>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3">
+                    <a href="/business-owner/transactions" class="btn btn-secondary ms-2">Back</a>
+                </div>
+                </form>
+            </section>
+        </div>
+    </div>
+
+</body>
+<script>
+    function ijsadij(element) {
+        const transactionType = element.value;
+
+        if (transactionType === 'sale') {
+            document.getElementById('remaining').textContent = 'Received *';
+        } else {
+            document.getElementById('remaining').textContent = 'Paid *';
+        }
+    }
+</script>
+
+</html>

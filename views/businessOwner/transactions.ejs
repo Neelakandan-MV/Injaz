@@ -121,9 +121,9 @@
                 <li class="nav-item">
                     <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
                 </li>
-                <!-- <li class="nav-item">
-                    <a href="/business-owner/cashFlow" class="nav-link"><i class="fa-solid fa-cart-shopping"></i> Cash Flow</a>
-                </li> -->
+                <li class="nav-item">
+                    <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a>
+                </li>
                 <li class="nav-item">
                     <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
                         Company</a>
@@ -231,10 +231,12 @@
                                 <td> SAR <%= item.balance_due %>
                                 </td>
                                 <td>
-                                    <a href="#" class="btn btn-success btn-sm"><i
+                                    <a href="/business-owner/transactionEdit?id=<%=item.id%>" class="btn btn-success btn-sm"><i
                                             class="fas fa-edit"></i></a>
-                                    <a href="#" class="btn btn-danger btn-sm"><i
+                                    <a href="/business-owner/transactionDelete?id=<%=item.id%>" class="btn btn-danger btn-sm"><i
                                             class="fas fa-trash"></i></a>
+                                    <a href="/business-owner/transactionDetails?id=<%=item.id%>" class="btn btn-warning btn-sm"><i
+                                            class="fa-regular fa-eye"></i></a>
                                 </td>
                             </tr>
                             </a>
