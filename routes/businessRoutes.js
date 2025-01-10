@@ -30,6 +30,8 @@ router.get('/business-owner/transactionDetails',isLogged,businessController.tran
 router.get('/business-owner/transactionDelete',isLogged,businessController.transactionDelete);
 router.get('/business-owner/transactionEdit',isLogged,businessController.viewtransactionEdit);
 router.post('/business-owner/transactionEdit',isLogged,businessController.transactionEdit);
+router.get('/business-owner/item-detail',isLogged,businessController.viewItemDetail);
+
 
 
 

@@ -10,6 +10,12 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        html, body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
         }
@@ -55,35 +61,34 @@
                 height: auto;
                 min-height: 0;
                 z-index: 10;
-                display: none;
+                display: none; /* Initially hidden */
             }
 
             .main-content {
-                margin-left: 0;
-                left: 0;
-
+              padding: 20px;
+                width: 100%;
             }
 
             .navbar-toggler {
                 border: none;
                 outline: none;
                 z-index: 100;
-                margin-top: -17px;
+                margin-top: -17px; /* Adjust as needed */
             }
 
             .navbar-toggler-icon {
                 background-color: rgb(223, 223, 223);
             }
+            
+            .table-responsive {
+                overflow-x: auto; /* Allow horizontal scrolling for tables */
+            }
         }
 
-        .main-content {
-
-            padding: 20px;
-        }
 
         .btn-primary,
         .btn-secondary {
-            margin-right: 10px;
+            margin-right: 10px; /* Spacing between buttons */
         }
     </style>
 </head>
@@ -92,6 +97,7 @@
         const sidebar = document.getElementById('sidebar');
         sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
     }
+    
     function companyDisplay() {
         const div = document.querySelector('.companyClass');
         if (div) {
@@ -110,59 +116,35 @@
                 <%= user.name %>
             </h4>
             <ul class="nav flex-column">
+                <!-- Sidebar Links -->
+                <li class="nav-item"><a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a></li>
+                <li class="nav-item"><a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a></li>
+                <li class="nav-item"><a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a></li>
+                <li class="nav-item"><a href="/business-owner/sales" class="nav-link"><i class="fas fa-shopping-cart"></i> Sales</a></li>
+                <li class="nav-item"><a href="/business-owner/purchases" class="nav-link"><i class="fas fa-shopping-cart"></i> Purchases</a></li>
+                <li class="nav-item"><a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a></li>
+                <li class="nav-item"><a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a></li>
+                <li class="nav-item"><a href="/business-owner/item-detail" class="nav-link active"><i class="fa-regular fa-file"></i> Item Detail</a></li>
                 <li class="nav-item">
-                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/sales" class="nav-link"><i class="fas fa-shopping-cart"></i> Sales</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/purchases" class="nav-link"><i class="fas fa-shopping-cart"></i>
-                        Purchases</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash
-                        Flow</a>
-                </li>
-                <li class="nav-item">
-                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
-                        Company</a>
-
+                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i> Company</a>
                     <div class="row companyClass">
                         <div class="col-md-12">
-                            <div class="">
-                                <p>
-                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
-                                </p>
-
+                            <div>
+                                <p><%= currentCompany ? currentCompany.name : 'No company associated' %></p>
                                 <% if (!currentCompany) { %>
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
-                                        data-bs-target="#addCompanyModal">
-                                        Add New Company
-                                    </button>
-                                    <% } else { %>
-                                        <div class="company-dropdown">
-                                            <label for="companySwitch">Switch Company</label>
-                                            <select id="companySwitch" class="form-select"
-                                                onchange="location.href='/business-owner/switchCompany/' + this.value;">
-                                                <% companies.forEach(company=> { %>
-                                                    <option value="<%= company.id %>"
-                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
-                                                        <%= company.name %>
-                                                    </option>
-                                                    <% }); %>
-                                            </select>
-                                        </div>
-                                        <% } %>
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">Add New Company</button>
+                                <% } else { %>
+                                    <div class="company-dropdown">
+                                        <label for="companySwitch">Switch Company</label>
+                                        <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                            <% companies.forEach(company => { %>
+                                                <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>> 
+                                                    <%= company.name %>
+                                                </option>
+                                            <% }); %>
+                                        </select>
+                                    </div>
+                                <% } %>
                             </div>
                         </div>
                     </div>
@@ -171,116 +153,122 @@
         </div>
 
         <!-- Main Content -->
-        <div class="main-content">
+        <div class="main-content flex-grow-1">
             <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
                 <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <h2>Sale</h2>
             </nav>
+
+            <!-- Header -->
             <header>
                 <div class="d-flex justify-content-between align-items-center">
                     <h2>This Month</h2>
-                    <!-- <div class="filters d-flex align-items-center">
+
+                    <!-- Optional Filters (commented out) -->
+                    <!--
+                    <div class="filters d-flex align-items-center">
                         <label for="from-date" class="me-2">Between</label>
                         <input type="date" id="from-date" class="form-control me-2" />
                         <span class="me-2">To</span>
                         <input type="date" id="to-date" class="form-control me-2" />
                         <select class="form-select">
-                            <option value="all">All Firms</option>
+                            <option value="">All Firms</option>
                         </select>
-                    </div> -->
+                    </div> 
+                    -->
                 </div>
+
+                <!-- Action Buttons -->
                 <div class="mt-3">
                     <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Sale</a>
                     <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Purchase</a>
-
                 </div>
             </header>
 
             <!-- Transactions Section -->
-            <section class="transactions mt-4">
+            <section class="transactions mt-4 table-responsive">
+                <!-- Responsive Table -->
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
-                            <th>Date</th>
-                            <th>Invoice No.</th>
-                            <th>Party Name</th>
-                            <th>Transaction Type</th>
-                            <th>Payment Type</th>
-                            <th>Amount</th>
-                            <th>Balance Due</th>
-                            <th>Actions</th>
+                            <!-- Table Headers -->
+                            <th>Date</th><th>Invoice No.</th><th>Party Name</th><th>Transaction Type</th><th>Payment Type</th><th>Amount</th><th>Balance Due</th><th>Actions</th>
                         </tr>
                     </thead>
+
+                    <!-- Table Body -->
                     <tbody>
-                        <% items.forEach(item=> { %>
+                        <% items.forEach(item => { %>
 
                             <tr>
 
-                                <td>
-                                    <%= new Date(item.date).toLocaleDateString() %>
+                                <!-- Table Data -->
+                                <td><%= new Date(item.date).toLocaleDateString() %></td><td><%= item.invoice_number %></td><td><%= item.customer_name %></td><td><%= item.transaction_type %></td><td><%= item.payment_type %></td><td>SAR<%= item.total_amount %></td><td>SAR<%= item.balance_due %></td>
+
+                                <!-- Action Buttons -->
+                                <td class="d-flex">
+                                    <a href="/business-owner/transactionEdit?id=<%=item.id%>" 
+                                       class='btn btn-success btn-sm'><i class='fas fa-edit'></i></a>
+
+                                    <!-- Delete Button with Confirmation -->
+                                    <a href="#" 
+                                       onclick='deleteFuntion("<%=item.id%>")' 
+                                       class='btn btn-danger btn-sm'><i 
+                                       class='fas fa-trash'></i></a>
+
+                                    <!-- View Details Button -->
+                                    <a href='/business-owner/transactionDetails?id=<%=item.id%>' 
+                                       class='btn btn-warning btn-sm'><i 
+                                       class='fa-regular fa-eye'></i></a>
+
                                 </td>
 
-                                <td>
-                                    <%= item.invoice_number %>
-                                </td>
-                                <td>
-                                    <%= item.customer_name %>
-                                </td>
-                                <td>
-                                    <%= item.transaction_type %>
-                                </td>
-                                <td>
-                                    <%= item.payment_type %>
-                                </td>
-                                <td>SAR <%= item.total_amount %>
-                                </td>
-                                <td> SAR <%= item.balance_due %>
-                                </td>
-                                <td>
-                                    <a href="/business-owner/transactionEdit?id=<%=item.id%>"
-                                        class="btn btn-success btn-sm"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="btn btn-danger btn-sm" onclick="deleteFuntion('<%=item.id%>')"><i
-                                            class="fas fa-trash"></i></a>
-                                    <a href="/business-owner/transactionDetails?id=<%=item.id%>"
-                                        class="btn btn-warning btn-sm"><i class="fa-regular fa-eye"></i></a>
-                                </td>
                             </tr>
-                            </a>
-                            <% }) %>
+
+                        <% }) %>
+
                     </tbody>
+
                 </table>
+
             </section>
+
         </div>
+
     </div>
+
+    <!-- SweetAlert Script for Deletion Confirmation -->
+    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+
+    <!-- Delete Functionality Script -->
+    <script>
+      function deleteFuntion(itemId) {
+          Swal.fire({
+              title: "Do you really want to delete?",
+              showDenyButton: false,
+              showCancelButton: true,
+              confirmButtonText: "Save",
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  Swal.fire("Saved!", "", "success");
+                  fetch(`/business-owner/transactionDelete?id=${itemId}`)
+                      .then(() => {
+                          setTimeout(() => {
+                              window.location.reload(); // Reload the page after deletion
+                          }, 200);
+                      })
+                      .catch((error) => {
+                          console.error("Error while deleting:", error);
+                      });
+              } else if (result.isDenied) {
+                  Swal.fire("Changes are not saved", "", "info");
+              }
+          });
+      }
+    </script>
+
 </body>
 
 </html>
-<script>
-  function deleteFuntion(itemId) {
-    Swal.fire({
-        title: "Do you really want to delete?",
-        showDenyButton: false,
-        showCancelButton: true,
-        confirmButtonText: "Save",
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire("Saved!", "", "success");
-            fetch(`/business-owner/transactionDelete?id=${itemId}`)
-                .then(() => {
-                    setTimeout(() => {
-                        window.location.reload(); // Correct method to reload the page
-                    }, 200);
-                })
-                .catch((error) => {
-                    console.error("Error while deleting:", error);
-                });
-        } else if (result.isDenied) {
-            Swal.fire("Changes are not saved", "", "info");
-        }
-    });
-}
-
-</script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

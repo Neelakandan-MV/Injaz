@@ -51,11 +51,20 @@
                 z-index: 100;
             }
 
+            .main-content {
+                width: 100%;
+
+            }
+
             .navbar-toggler-icon {
                 background-color: rgb(223, 223, 223);
             }
+            .table-responsive {
+                overflow-x: auto; /* Allow horizontal scrolling for tables */
+            }
         }
-        .companyClass{
+
+        .companyClass {
             display: none;
         }
     </style>
@@ -66,20 +75,22 @@
         sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
     }
     function companyDisplay() {
-            const div = document.querySelector('.companyClass');
-            if (div) {
-                div.style.display = 'block';
-            } else {
-                console.error('Element with class "companyClass" not found.');
-            }
+        const div = document.querySelector('.companyClass');
+        if (div) {
+            div.style.display = 'block';
+        } else {
+            console.error('Element with class "companyClass" not found.');
         }
+    }
 </script>
 
 <body>
     <div class="d-flex">
         <!-- Sidebar -->
         <div class="sidebar p-3" id="sidebar">
-            <h4 class="text-center"><%= user.name %></h4>
+            <h4 class="text-center">
+                <%= user.name %>
+            </h4>
             <ul class="nav flex-column">
                 <li class="nav-item">
                     <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
@@ -94,13 +105,19 @@
                     <a href="/business-owner/sales" class="nav-link"><i class="fas fa-shopping-cart"></i> Sales</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/business-owner/purchases" class="nav-link"><i class="fas fa-shopping-cart"></i> Purchases</a>
+                    <a href="/business-owner/purchases" class="nav-link"><i class="fas fa-shopping-cart"></i>
+                        Purchases</a>
                 </li>
                 <li class="nav-item">
                     <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a>
+                    <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash
+                        Flow</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/item-detail" class="nav-link active"><i class="fa-regular fa-file"></i>
+                        Item Detail</a>
                 </li>
                 <li class="nav-item">
                     <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
@@ -152,12 +169,12 @@
             <header>
                 <div class="d-flex justify-content-between align-items-center">
                     <h2>Cash Flow</h2>
-                    <a href="/business-owner/addCashFlow" class="btn btn-primary">+ Add Cash Flow</a>
+                    <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Cash Flow</a>
                 </div>
             </header>
 
             <!-- Cash Flow Section -->
-            <section class="transactions mt-4">
+            <section class="transactions mt-4 table-responsive">
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
@@ -171,14 +188,25 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% cashFlows.forEach(cashFlow => { %>
+                        <% cashFlows.forEach(cashFlow=> { %>
                             <tr>
-                                <td><%= new Date(cashFlow.date).toLocaleDateString() %></td>
-                                <td><%= cashFlow.tnx_id %></td>
-                                <td><%= cashFlow.name %></td>
-                                <td><%= cashFlow.tnx_type %></td>
-                                <td><%= cashFlow.money_type %></td>
-                                <td>SAR <%= cashFlow.amount %></td>
+                                <td>
+                                    <%= new Date(cashFlow.date).toLocaleDateString() %>
+                                </td>
+                                <td>
+                                    <%= cashFlow.tnx_id %>
+                                </td>
+                                <td>
+                                    <%= cashFlow.name %>
+                                </td>
+                                <td>
+                                    <%= cashFlow.tnx_type %>
+                                </td>
+                                <td>
+                                    <%= cashFlow.money_type %>
+                                </td>
+                                <td>SAR <%= cashFlow.amount %>
+                                </td>
                                 <!-- <td>
                                     <a href="/business-owner/cashFlowEdit?id=<%=cashFlow.id%>" class="btn btn-success btn-sm">
                                         <i class="fas fa-edit"></i>
@@ -191,7 +219,7 @@
                                     </a>
                                 </td> -->
                             </tr>
-                        <% }) %>
+                            <% }) %>
                     </tbody>
                 </table>
             </section>

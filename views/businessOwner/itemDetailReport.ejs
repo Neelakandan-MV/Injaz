@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <style>
+             body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .sidebar {
+            width: 300px;
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                width: 100%;
+                height: auto;
+                min-height: 0;
+                display: none;
+                z-index: 10; 
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .navbar-toggler {
+                border: none;
+                outline: none;
+                z-index: 100;
+                margin-top: -17px;
+            }
+            .navbar-toggler-icon {
+                background-color: rgb(223, 223, 223);
+            }
+        }
+        .companyClass{
+            display: none;
+        }
+        </style>
+</head>
+<div class="d-flex">
+    <div class="sidebar p-3" id="sidebar">
+        <h4 class="text-center">
+            <%= user.name %>
+        </h4>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/sales" class="nav-link"><i class="fas fa-shopping-cart"></i> Sales</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/purchases" class="nav-link"><i class="fas fa-shopping-cart"></i> Purchases</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash
+                    Flow</a>
+            </li>
+            <li class="nav-item">
+                <a href="/business-owner/item-detail" class="nav-link active"><i class="fa-regular fa-file"></i> Item
+                    Detail</a>
+            </li>
+            <li class="nav-item">
+                <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
+                    Company</a>
+
+                <div class="row companyClass">
+                    <div class="col-md-12">
+                        <div class="">
+                            <p>
+                                <%= currentCompany ? currentCompany.name : 'No company associated' %>
+                            </p>
+
+                            <% if (!currentCompany) { %>
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#addCompanyModal">
+                                    Add New Company
+                                </button>
+                                <% } else { %>
+                                    <div class="company-dropdown">
+                                        <label for="companySwitch">Switch Company</label>
+                                        <select id="companySwitch" class="form-select"
+                                            onchange="location.href='/business-owner/switchCompany/' + this.value;">
+                                            <% companies.forEach(company=> { %>
+                                                <option value="<%= company.id %>" <%=currentCompany[0].id===company.id
+                                                    ? 'selected' : '' %>>
+                                                    <%= company.name %>
+                                                </option>
+                                                <% }); %>
+                                        </select>
+                                    </div>
+                                    <% } %>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="container mt-4">
+        <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+            <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <h2>Item Detail Report</h2>
+        </nav>
+        <form id="filter-form" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="itemId" class="form-control" placeholder="Enter Item Name" />
+                <button type="submit" class="btn btn-primary">Get Report</button>
+            </div>
+        </form>
+
+        <!-- Bootstrap table with responsiveness -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Sale Quantity</th>
+                        <th>Purchase Quantity</th>
+                        <th>Adjustment Quantity</th>
+                        <th>Closing Quantity</th>
+                    </tr>
+                </thead>
+                <tbody id="report-data">
+                    <% itemDetails.map(item=> { %>
+                        <tr>
+                            <td>
+                                <%= item.item_name %>
+                            </td>
+                            <td>
+                                <%= item.sale_qty %>
+                            </td>
+                            <td>
+                                <%= item.purchase_qty %>
+                            </td>
+                            <td>
+                                <%= item.adjust_qty %>
+                            </td>
+                            <td>
+                                <%= item.closing_qty %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Include Bootstrap JS for optional features like tooltips, modals, etc. -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+        }
+        </script>
+
+</body>
+
+</html>

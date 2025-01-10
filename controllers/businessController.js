@@ -119,25 +119,45 @@ const businessOwnerController = {
                 return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
             }
 
-            // Fetch transactions related to the company
+
             const [sales] = await mysql.query(`
                 SELECT * FROM sales
                 WHERE company_id = ?
             `, [companyId]);
 
-            const totalReceivable = sales.reduce((acc, sale) => {
-                if (sale.transaction_type === 'sale') {
-                    return acc + Number(sale.balance_due); // Convert string to number
-                }
-                return acc; // Ensure to return the accumulator for other transaction types
-            }, 0);
+            // const totalReceivable = sales.reduce((acc, sale) => {
+            //     if (sale.transaction_type === 'sale') {
+            //         return acc + Number(sale.balance_due);
+            //     }
+            //     return acc;
+            // }, 0);
 
-            const totalPayable = sales.reduce((acc, sale) => {
-                if (sale.transaction_type === 'purchase') {
-                    return acc + Number(sale.balance_due); // Convert string to number
-                }
-                return acc; // Ensure to return the accumulator for other transaction types
-            }, 0);
+            // const totalPayable = sales.reduce((acc, sale) => {
+            //     if (sale.transaction_type === 'purchase') {
+            //         return acc + Number(sale.balance_due); // Convert string to number
+            //     }
+            //     return acc; // Ensure to return the accumulator for other transaction types
+            // }, 0);
+            // Fetch transactions from cash_flows table
+        const [cashFlows] = await mysql.query(`
+            SELECT * FROM cash_flows
+            WHERE company_id = ?
+        `, [companyId]);
+
+    
+        const totalReceivable = cashFlows.reduce((acc, flow) => {
+            if (flow.money_type === 'money_in') {
+                return acc + Number(flow.amount); 
+            }
+            return acc;
+        }, 0);
+
+        const totalPayable = cashFlows.reduce((acc, flow) => {
+            if (flow.money_type === 'money_out') {
+                return acc + Number(flow.amount); 
+            }
+            return acc;
+        }, 0);
 
             res.render('businessOwner/dashboard.ejs', { title: "Dashboard", transactions: sales, totalReceivable, totalPayable, user, currentCompany: currentCompany[0], companies: companyData });
         } catch (error) {
@@ -146,7 +166,6 @@ const businessOwnerController = {
         }
     },
 
-    // Fetch categories related to the company
     viewAddItems: async (req, res) => {
         const user = req.session.user;
         const companyId = user.company_id;
@@ -170,7 +189,6 @@ const businessOwnerController = {
             } else if (err) {
                 return res.status(500).json(err);
             }
-
             const user = req.session.user;
             const companyId = user.company_id;
             const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
@@ -707,7 +725,58 @@ const businessOwnerController = {
         //     );
         // }
         res.redirect('/business-owner/dashboard');
+    },
+    
+    viewItemDetail:async(req,res)=>{
+        const { itemId } = req.query;
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+
+    try {
+        const [itemDetails] = await mysql.query(`
+            SELECT 
+                items.id AS item_id,
+                items.item_name,
+                items.item_hsn,
+                items.category_id,
+                -- Sales quantity: sum of quantities for transactions where transaction_type is 'sale'
+                COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
+                -- Purchase quantity: sum of quantities for transactions where transaction_type is 'purchase'
+                COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
+                -- Adjustments quantity (if stock_adjustments table is available)
+                COALESCE(SUM(stock_adjustments.quantity), 0) AS adjust_qty,
+                -- Closing quantity: purchase_qty + adjust_qty - sale_qty
+                (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) 
+                + COALESCE(SUM(stock_adjustments.quantity), 0) 
+                - COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0)) AS closing_qty
+            FROM 
+                items
+            LEFT JOIN 
+                sale_products ON items.id = sale_products.item_id
+            LEFT JOIN 
+                sales ON sale_products.sale_id = sales.id
+            LEFT JOIN 
+                stock_adjustments ON items.id = stock_adjustments.item_id  -- Only if adjustments are tracked in a separate table
+            WHERE 
+                items.item_name = ?
+            GROUP BY 
+                items.id;
+        `, [itemId]);
+        
+        
+        
+            
+        res.render('businessOwner/itemDetailReport.ejs',{itemDetails,companies,user,currentCompany})
+        console.log(itemDetails);
+        
+    } catch (error) {
+        console.error("Error fetching item details:", error);
+        res.status(500).json({ success: false, error: 'Failed to fetch item details.' });
     }
+},
+    
 
 
 

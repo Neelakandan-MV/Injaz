@@ -68,6 +68,9 @@
         .companyClass{
             display: none;
         }
+        a{
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -96,6 +99,9 @@
                 </li>
                 <li class="nav-item">
                     <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/item-detail" class="nav-link active"><i class="fa-regular fa-file"></i> Item Detail</a>
                 </li>
                 <li class="nav-item">
                     <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i> Company</a>
@@ -165,13 +171,32 @@
                 <div class="col-md-6">
                     <div class="card p-3">
                         <h5>Most Used Reports</h5>
-                        <ul>
-                            <li><a href="#">Sale Report</a></li>
-                            <li><a href="/business-owner/transactions">All Transactions</a></li>
-                            <li><a href="#">Daybook Report</a></li>
-                        </ul>
+                        <!-- Row for 2x2 cards -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <a href="/business-owner/sales"><div class="card p-3">
+                                    <span>Sales</span>
+                                </div></a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="/business-owner/purchases"><div class="card p-3">
+                                    <span>Purchase</span>
+                                </div></a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="/business-owner/viewItems"><div class="card p-3">
+                                    <span>Items</span>
+                                </div></a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="/business-owner/viewParty"><div class="card p-3">
+                                    <span>Parties</span>
+                                </div></a>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
                 <div class="col-md-6">
                     <div class="card p-3">
                         <div class="calculator">

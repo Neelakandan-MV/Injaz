@@ -60,6 +60,7 @@
             .main-content {
                 margin-left: 0;
                 left: 0;
+                width: 100%;
 
             }
 
@@ -71,6 +72,9 @@
             }
             .navbar-toggler-icon {
                 background-color: rgb(223, 223, 223);
+            }
+            .table-responsive {
+                overflow-x: auto; /* Allow horizontal scrolling for tables */
             }
         }
 
@@ -126,6 +130,9 @@
                 </li>
                 <li class="nav-item">
                     <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/business-owner/item-detail" class="nav-link active"><i class="fa-regular fa-file"></i> Item Detail</a>
                 </li>
                 <li class="nav-item">
                     <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
@@ -192,7 +199,7 @@
             </header>
 
             <!-- Transactions Section -->
-            <section class="transactions mt-4">
+            <section class="transactions mt-4 table-responsive">
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
