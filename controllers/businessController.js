@@ -65,7 +65,7 @@ const addProductsToTransactions = (transactions) => {
 const businessOwnerController = {
 
     // Fetch sales for the logged-in user's company
-    viewTransactions: async (req, res) => {
+    viewPurchases: async (req, res) => {
         const user = req.session.user;
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
@@ -77,11 +77,30 @@ const businessOwnerController = {
 
         const [items] = await mysql.query(`
             SELECT * FROM sales
-            WHERE company_id = ?
+            WHERE company_id = ? AND transaction_type = 'purchase'
         `, [companyId]);
+        
 
 
-        res.render("businessOwner/transactions.ejs", { title: "Sales", items, currentCompany, companies, user });
+        res.render("businessOwner/purchases.ejs", { title: "Sales", items, currentCompany, companies, user });
+    },
+    viewSales: async (req, res) => {
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+
+        if (!companyId) {
+            return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
+        }
+
+        const [items] = await mysql.query(`
+            SELECT * FROM sales
+            WHERE company_id = ? AND transaction_type = 'sale'
+        `, [companyId]);        
+
+
+        res.render("businessOwner/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
     },
 
 

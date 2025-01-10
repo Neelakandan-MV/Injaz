@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Day Book</title>
+    <title>Sales</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Font Awesome Icons -->
@@ -170,23 +170,24 @@
                 <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <h2>Day Book</h2>
+                <h2>Purchases</h2>
             </nav>
             <header>
                 <div class="d-flex justify-content-between align-items-center">
-                    <div class="filters d-flex align-items-center">
-                        <label for="from-date" class="me-2">Select Date</label>
-                        <input type="date" id="from-date" class="form-control me-2" onchange="filterByDate()" />
-                        
-                        <!-- <span class="me-2">To</span>
+                    <h2>This Month</h2>
+                    <!-- <div class="filters d-flex align-items-center">
+                        <label for="from-date" class="me-2">Between</label>
+                        <input type="date" id="from-date" class="form-control me-2" />
+                        <span class="me-2">To</span>
                         <input type="date" id="to-date" class="form-control me-2" />
                         <select class="form-select">
                             <option value="all">All Firms</option>
-                        </select> -->
-                    </div>
+                        </select>
+                    </div> -->
                 </div>
                 <div class="mt-3">
-                    <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Transactions</a>
+                    <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Sale</a>
+                    <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Purchase</a>
 
                 </div>
             </header>
@@ -203,62 +204,52 @@
                             <th>Payment Type</th>
                             <th>Amount</th>
                             <th>Balance Due</th>
-                            
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan='8' class='text-center'>No data available</td></tr>
-                       
+                        <% items.forEach(item=> { %>
+
+                            <tr>
+
+                                <td>
+                                    <%= new Date(item.date).getDate().toString().padStart(2, '0' ) + '-' + (new
+                                        Date(item.date).getMonth() + 1).toString().padStart(2, '0' ) + '-' + new
+                                        Date(item.date).getFullYear() %>
+                                </td>
+
+                                <td>
+                                    <%= item.invoice_number %>
+                                </td>
+                                <td>
+                                    <%= item.customer_name %>
+                                </td>
+                                <td>
+                                    <%= item.transaction_type %>
+                                </td>
+                                <td>
+                                    <%= item.payment_type %>
+                                </td>
+                                <td>SAR <%= item.total_amount %>
+                                </td>
+                                <td> SAR <%= item.balance_due %>
+                                </td>
+                                <td>
+                                    <a href="/business-owner/transactionEdit?id=<%=item.id%>" class="btn btn-success btn-sm"><i
+                                            class="fas fa-edit"></i></a>
+                                    <a href="/business-owner/transactionDelete?id=<%=item.id%>" class="btn btn-danger btn-sm"><i
+                                            class="fas fa-trash"></i></a>
+                                    <a href="/business-owner/transactionDetails?id=<%=item.id%>" class="btn btn-warning btn-sm"><i
+                                            class="fa-regular fa-eye"></i></a>
+                                </td>
+                            </tr>
+                            </a>
+                            <% }) %>
                     </tbody>
                 </table>
             </section>
         </div>
     </div>
 </body>
-<script>
-    const items = <%- JSON.stringify(items) %>; // Backend data passed as JSON
 
-    function filterByDate() {
-    const selectedDate = new Date(document.getElementById('from-date').value).setHours(0, 0, 0, 0);
-
-    const filteredItems = items.filter(item => {
-        const itemDate = new Date(item.date).setHours(0, 0, 0, 0); // Normalize the time
-        return itemDate === selectedDate;
-    });
-
-    renderTable(filteredItems);
-}
-
-
-    function renderTable(data) {
-        const tableBody = document.querySelector("tbody");
-        tableBody.innerHTML = ""; // Clear existing table rows
-
-        if (data.length === 0) {
-            tableBody.innerHTML = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
-            return;
-        }
-
-        data.forEach(item => {
-            const row = `
-                <tr>
-                    <td>${new Date(item.date).getDate().toString().padStart(2, '0')}-${(new Date(item.date).getMonth() + 1).toString().padStart(2, '0')}-${new Date(item.date).getFullYear()}</td>
-                    <td>${item.invoice_number}</td>
-                    <td>${item.customer_name}</td>
-                    <td>${item.transaction_type}</td>
-                    <td>${item.payment_type}</td>
-                    <td>&#8377; ${item.total_amount}</td>
-                    <td>&#8377; ${item.balance_due}</td>
-                    
-                </tr>
-            `;
-            tableBody.innerHTML += row;
-        });
-    }
-
-    
-    // renderTable(items);
-
-
-</script>
 </html>
