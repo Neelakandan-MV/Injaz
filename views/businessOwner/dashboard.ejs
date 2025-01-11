@@ -206,25 +206,93 @@
                                 <button onclick="appendValue('8')">8</button>
                                 <button onclick="appendValue('9')">9</button>
                                 <button onclick="performOperation('/')">/</button>
-    
+                        
                                 <button onclick="appendValue('4')">4</button>
                                 <button onclick="appendValue('5')">5</button>
                                 <button onclick="appendValue('6')">6</button>
                                 <button onclick="performOperation('*')">*</button>
-    
+                        
                                 <button onclick="appendValue('1')">1</button>
                                 <button onclick="appendValue('2')">2</button>
                                 <button onclick="appendValue('3')">3</button>
                                 <button onclick="performOperation('-')">-</button>
-    
+                        
                                 <button onclick="appendValue('0')">0</button>
                                 <button onclick="appendValue('.')">.</button>
                                 <button style="background-color:#e74c3c;" onclick="clearDisplay()">Clear</button>
                                 <button onclick="performOperation('+')">+</button>
                             </div>
-    
+                        
                             <button class="clear-btn" onclick="calculate()">=</button>
+                        
+                            <!-- Currency Exchange Section -->
+                            <div class="currency-section">
+                                <select id="base-currency">
+                                    <option value="SAR">SAR</option>
+                                    <option value="INR">INR</option>
+                                    <!-- Add more currencies as needed -->
+                                </select>
+                                <select id="target-currency">
+                                    <option value="INR">INR</option>
+                                    <option value="SAR">SAR</option>
+                                    <!-- Add more currencies as needed -->
+                                </select>
+                                <button onclick="fetchExchangeRate()">Convert</button>
+                            </div>
                         </div>
+                        
+                        <!-- Styles -->
+                        <style>
+                            .currency-section {
+                                margin-top: 20px;
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                gap: 10px;
+                            }
+                        
+                            select {
+                                width: 40%;
+                                padding: 5px;
+                                font-size: 14px;
+                            }
+                        
+                            .currency-section button {
+                                
+                                background-color: #3be244;
+                            }
+                        
+                            .currency-section button:hover {
+                                background-color: #32c039;
+                            }
+                        </style>
+                        
+                        <!-- Script -->
+                        <script>
+                            async function fetchExchangeRate() {
+                                const baseCurrency = document.getElementById('base-currency').value;
+                                const targetCurrency = document.getElementById('target-currency').value;
+                        
+                                const apiKey = '519b8292d58316d259cc7763'; // Replace with your actual API key
+                                const url = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${baseCurrency}`;
+                        
+                                try {
+                                    const response = await fetch(url);
+                                    const data = await response.json();
+                        
+                                    if (data.result === "success") {
+                                        const exchangeRate = data.conversion_rates[targetCurrency];
+                                        document.getElementById('calculator-display').value = `1 ${baseCurrency} = ${exchangeRate} ${targetCurrency}`;
+                                    } else {
+                                        alert("Error fetching exchange rate. Please try again.");
+                                    }
+                                } catch (error) {
+                                    console.error('Error:', error);
+                                    alert("Failed to fetch exchange rate. Check your network or API key.");
+                                }
+                            }
+                        </script>
+                        
     
                         <!-- Calculator Styles -->
                         <style>
