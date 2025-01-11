@@ -199,7 +199,7 @@
             </header>
 
             <!-- Transactions Section -->
-            <section class="transactions mt-4 table-responsive">
+            <section class="transactions mt-4 table-responsive" id="reportContainer">
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
@@ -219,6 +219,7 @@
                     </tbody>
                 </table>
             </section>
+            <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
         </div>
     </div>
 </body>
@@ -262,10 +263,40 @@
             tableBody.innerHTML += row;
         });
     }
-
     
-    // renderTable(items);
+    function setDefaultDate() {
+            const dateInput = document.getElementById('from-date');
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0]; 
+            dateInput.value = formattedDate;
+            filterByDate()
+        }
 
 
+        window.onload = setDefaultDate;
 </script>
+<script>
+function downloadPdf() {
+    
+    const wrapper = document.createElement('div');
+
+
+    const companyName = document.createElement('h2');
+    companyName.textContent = 'Injaz';
+    companyName.style.textAlign = 'center'; 
+    wrapper.appendChild(companyName);
+
+
+    const reportHeading = document.createElement('h4');
+    reportHeading.textContent = 'Day Book Report';
+    reportHeading.style.textAlign = 'center'; 
+    wrapper.appendChild(reportHeading);
+
+    const tableContent = document.getElementById('reportContainer').cloneNode(true); 
+    wrapper.appendChild(tableContent);
+
+    html2pdf().from(wrapper).save();
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 </html>

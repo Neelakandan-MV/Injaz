@@ -376,8 +376,9 @@ const businessOwnerController = {
             await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
                 [party[0].PartyName,created_at,transactionType,recieved,money_type,sales[0].insertId,user.company_id])
 
-
-        await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
+                if(products){
+                    await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
+                }
 
         res.redirect('/business-owner/dashboard');
     },
@@ -393,8 +394,6 @@ const businessOwnerController = {
             // Insert the new company into the database
             await mysql.query(`INSERT INTO companies (user_id, name, created_at) VALUES (?, ?, ?)`,
                 [user_id, name, new Date()]);
-
-            console.log('new company created');
 
             res.redirect('/business-owner/dashboard');
         } else {
@@ -494,7 +493,7 @@ const businessOwnerController = {
             hashPassword(password).then(async hashedPassword => {
                 await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, 'businessOwner'])
                 const [user] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
-                console.log(user);
+
 
                 await mysql.query(`INSERT INTO companies (user_id, name, created_at) VALUES (?, ?, ?)`,
                     [user[0].id, "Add a Company", new Date()]);
@@ -572,7 +571,7 @@ const businessOwnerController = {
         const salesWithProducts = addProductsToTransactions(salesDetails);
         const purchaseWithProducts = addProductsToTransactions(purchaseDetails);
 
-        console.log("Sales with Products:", salesWithProducts)
+    
 
         res.render('businessOwner/reports.ejs', { user, companies, currentCompany, salesDetails, purchaseDetails });
     },
@@ -616,7 +615,6 @@ const businessOwnerController = {
             SELECT * FROM sales
             WHERE company_id = ?
         `, [companyId]);
-        console.log(items);
 
         res.render('businessOwner/dayBook.ejs', { title: 'Day Book', currentCompany, companies, user, items });
     },
@@ -639,7 +637,6 @@ const businessOwnerController = {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
         const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
-        console.log(transactionProducts);
 
 
         res.render('businessOwner/transactionDetails', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts })
@@ -769,7 +766,6 @@ const businessOwnerController = {
         
             
         res.render('businessOwner/itemDetailReport.ejs',{itemDetails,companies,user,currentCompany})
-        console.log(itemDetails);
         
     } catch (error) {
         console.error("Error fetching item details:", error);

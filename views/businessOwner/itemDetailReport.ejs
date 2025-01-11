@@ -134,7 +134,7 @@
         </form>
 
         <!-- Bootstrap table with responsiveness -->
-        <div class="table-responsive">
+        <div class="table-responsive" id="reportContainer">
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
@@ -168,6 +168,7 @@
                 </tbody>
             </table>
         </div>
+        <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
     </div>
 </div>
 
@@ -182,6 +183,41 @@
             sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
         }
         </script>
+        <script>
+            function companyDisplay() {
+                const div = document.querySelector('.companyClass');
+                if (div) {
+                    div.style.display = 'block';
+                } else {
+                    console.error('Element with class "companyClass" not found.');
+                }
+            }
+        </script>
+       <script>
+        function downloadPdf() {
+
+            const wrapper = document.createElement('div');
+
+
+            const companyName = document.createElement('h2');
+            companyName.textContent = 'Injaz';
+            companyName.style.textAlign = 'center'; // Optional styling
+            wrapper.appendChild(companyName);
+
+
+            const reportHeading = document.createElement('h4');
+            reportHeading.textContent = 'Item Detail Report';
+            reportHeading.style.textAlign = 'center'; // Optional styling
+            wrapper.appendChild(reportHeading);
+
+            const tableContent = document.getElementById('reportContainer').cloneNode(true); // Clone the table element
+            wrapper.appendChild(tableContent);
+
+            html2pdf().from(wrapper).save();
+        }
+    </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
 
 </body>
 

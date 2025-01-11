@@ -245,16 +245,16 @@
                                     placeholder="Enter item name" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="itemHsn" class="form-label">Item HSN *</label>
+                                <label for="itemHsn" class="form-label">Item HSN</label>
                                 <input type="text" class="form-control" id="itemHsn" name="itemHSN"
-                                    placeholder="Enter HSN code" required>
+                                    placeholder="Enter HSN code" >
                             </div>
                         </div>
 
                         <!-- Row 2: Category and Item Code -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="category" class="form-label">Category</label>
+                                <label for="category" class="form-label">Category *</label>
                                 <select class="form-select" id="category" name="category" required>
                                     <option value="">Select Category</option>
                                     <% if(categories.length){ categories.map((category)=>{ %>
@@ -281,7 +281,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="unit" class="form-label">Unit</label>
-                                <select class="form-select" id="unit" name="unit" required>
+                                <select class="form-select" id="unit" name="unit" >
                                     <option value="">Select Unit</option>
                                     <option value="kg">Kilogram</option>
                                     <option value="pcs">Pieces</option>
@@ -299,9 +299,9 @@
                         <h5 class="mt-4">Sale Price</h5>
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label for="salePrice" class="form-label">Sale Price *</label>
+                                <label for="salePrice" class="form-label">Sale Price </label>
                                 <input type="number" class="form-control" id="salePrice" name="salePrice"
-                                    placeholder="Enter sale price" required>
+                                    placeholder="Enter sale price" >
                             </div>
                             <div class="col-md-4">
                                 <label for="salePriceTax" class="form-label">Tax</label>
@@ -331,9 +331,9 @@
                         <h5 class="mt-4">Purchase Price</h5>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="purchasePrice" class="form-label">Purchase Price *</label>
+                                <label for="purchasePrice" class="form-label">Purchase Price </label>
                                 <input type="number" class="form-control" id="purchasePrice" name="purchasePrice"
-                                    placeholder="Enter purchase price" required>
+                                    placeholder="Enter purchase price" >
                             </div>
                             <div class="col-md-6">
                                 <label for="purchaseTax" class="form-label">Tax</label>
@@ -348,9 +348,9 @@
                         <h5 class="mt-4">Tax Rate</h5>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="taxRate" class="form-label">Tax Rate *</label>
+                                <label for="taxRate" class="form-label">Tax Rate </label>
                                 <input type="text" class="form-control" id="taxRate" name="taxRate"
-                                    placeholder="Enter tax rate" required>
+                                    placeholder="Enter tax rate" >
                             </div>
                         </div>
 
