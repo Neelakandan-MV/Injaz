@@ -273,7 +273,7 @@
                                 const baseCurrency = document.getElementById('base-currency').value;
                                 const targetCurrency = document.getElementById('target-currency').value;
                         
-                                const apiKey = '519b8292d58316d259cc7763'; // Replace with your actual API key
+                                const apiKey = <%-JSON.stringify(apiKey)%>
                                 const url = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${baseCurrency}`;
                         
                                 try {

@@ -17,6 +17,9 @@ var upload = multer({
     storage: storage,
 }).single("image");
 
+require('dotenv').config();
+
+
 
 // Helper function to add products to transactions
 const addProductsToTransactions = (transactions) => {
@@ -106,10 +109,11 @@ const businessOwnerController = {
 
     // Fetch dashboard data related to the logged-in user's company
     viewDashboard: async (req, res) => {
-        const user = req.session.user;
+        
 
         try {
-            // Fetch company_id using the user_id from companies table
+            const apiKey = '519b8292d58316d259cc7763'
+
             const user = req.session.user;
             const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
             const companyId = user.company_id;
@@ -159,7 +163,7 @@ const businessOwnerController = {
             return acc;
         }, 0);
 
-            res.render('businessOwner/dashboard.ejs', { title: "Dashboard", transactions: sales, totalReceivable, totalPayable, user, currentCompany: currentCompany[0], companies: companyData });
+            res.render('businessOwner/dashboard.ejs', { title: "Dashboard", transactions: sales, totalReceivable, totalPayable, user, currentCompany: currentCompany[0], companies: companyData, apiKey });
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
             res.render('businessOwner/error.ejs', { error: 'An error occurred while fetching the dashboard data.' });
