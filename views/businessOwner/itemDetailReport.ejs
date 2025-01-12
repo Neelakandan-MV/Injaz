@@ -84,6 +84,9 @@
                     Detail</a>
             </li>
             <li class="nav-item">
+                <a href="/business-owner/expenses" class="nav-link active"><i class="fa-solid fa-money-bill"></i> Expense</a>
+            </li>
+            <li class="nav-item">
                 <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
                     Company</a>
 
@@ -131,6 +134,7 @@
                 <input type="text" name="itemId" class="form-control" placeholder="Enter Item Name" />
                 <button type="submit" class="btn btn-primary">Get Report</button>
             </div>
+            <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
         </form>
 
         <!-- Bootstrap table with responsiveness -->
@@ -168,7 +172,7 @@
                 </tbody>
             </table>
         </div>
-        <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
+        
     </div>
 </div>
 

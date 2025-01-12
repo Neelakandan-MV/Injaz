@@ -82,7 +82,7 @@ const businessOwnerController = {
             SELECT * FROM sales
             WHERE company_id = ? AND transaction_type = 'purchase'
         `, [companyId]);
-        
+
 
 
         res.render("businessOwner/purchases.ejs", { title: "Sales", items, currentCompany, companies, user });
@@ -100,7 +100,7 @@ const businessOwnerController = {
         const [items] = await mysql.query(`
             SELECT * FROM sales
             WHERE company_id = ? AND transaction_type = 'sale'
-        `, [companyId]);        
+        `, [companyId]);
 
 
         res.render("businessOwner/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
@@ -109,7 +109,7 @@ const businessOwnerController = {
 
     // Fetch dashboard data related to the logged-in user's company
     viewDashboard: async (req, res) => {
-        
+
 
         try {
             const apiKey = '519b8292d58316d259cc7763'
@@ -143,25 +143,25 @@ const businessOwnerController = {
             //     return acc; // Ensure to return the accumulator for other transaction types
             // }, 0);
             // Fetch transactions from cash_flows table
-        const [cashFlows] = await mysql.query(`
+            const [cashFlows] = await mysql.query(`
             SELECT * FROM cash_flows
             WHERE company_id = ?
         `, [companyId]);
 
-    
-        const totalReceivable = cashFlows.reduce((acc, flow) => {
-            if (flow.money_type === 'money_in') {
-                return acc + Number(flow.amount); 
-            }
-            return acc;
-        }, 0);
 
-        const totalPayable = cashFlows.reduce((acc, flow) => {
-            if (flow.money_type === 'money_out') {
-                return acc + Number(flow.amount); 
-            }
-            return acc;
-        }, 0);
+            const totalReceivable = cashFlows.reduce((acc, flow) => {
+                if (flow.money_type === 'money_in') {
+                    return acc + Number(flow.amount);
+                }
+                return acc;
+            }, 0);
+
+            const totalPayable = cashFlows.reduce((acc, flow) => {
+                if (flow.money_type === 'money_out') {
+                    return acc + Number(flow.amount);
+                }
+                return acc;
+            }, 0);
 
             res.render('businessOwner/dashboard.ejs', { title: "Dashboard", transactions: sales, totalReceivable, totalPayable, user, currentCompany: currentCompany[0], companies: companyData, apiKey });
         } catch (error) {
@@ -377,12 +377,12 @@ const businessOwnerController = {
         //saving to cashFLow table
         const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
 
-            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
-                [party[0].PartyName,created_at,transactionType,recieved,money_type,sales[0].insertId,user.company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
+            [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id])
 
-                if(products){
-                    await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
-                }
+        if (products) {
+            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
+        }
 
         res.redirect('/business-owner/dashboard');
     },
@@ -476,109 +476,38 @@ const businessOwnerController = {
         res.redirect('/login');
     },
 
-    viewRegister: (req, res) => {
-        res.render('auth/register', { error: null })
-    },
+    // viewRegister: (req, res) => {
+    //     res.render('auth/register', { error: null })
+    // },
 
-    handleRegister: async (req, res) => {
-        const hashPassword = async (password) => {
-            try {
-                const saltRounds = 10; // Higher number = more secure but slower
-                const hashedPassword = await bcrypt.hash(password, saltRounds);
-                return hashedPassword;
-            } catch (error) {
-                console.error("Error hashing password:", error);
-            }
-        }
-        const { name, email, password, phone } = req.body;
-        const [emailExist] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
+    // handleRegister: async (req, res) => {
+    //     const hashPassword = async (password) => {
+    //         try {
+    //             const saltRounds = 10; // Higher number = more secure but slower
+    //             const hashedPassword = await bcrypt.hash(password, saltRounds);
+    //             return hashedPassword;
+    //         } catch (error) {
+    //             console.error("Error hashing password:", error);
+    //         }
+    //     }
+    //     const { name, email, password, phone } = req.body;
+    //     const [emailExist] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
 
-        if (!emailExist[0]) {
-            hashPassword(password).then(async hashedPassword => {
-                await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, 'businessOwner'])
-                const [user] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
-
-
-                await mysql.query(`INSERT INTO companies (user_id, name, created_at) VALUES (?, ?, ?)`,
-                    [user[0].id, "Add a Company", new Date()]);
-                res.redirect('/login')
-            });
-        } else {
-            return res.send('Email already exists')
-        }
-
-    },
-    viewReports: async (req, res) => {
-        const user = req.session.user
-        const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
-        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+    //     if (!emailExist[0]) {
+    //         hashPassword(password).then(async hashedPassword => {
+    //             await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, 'businessOwner'])
+    //             const [user] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
 
 
+    //             await mysql.query(`INSERT INTO companies (user_id, name, created_at) VALUES (?, ?, ?)`,
+    //                 [user[0].id, "Add a Company", new Date()]);
+    //             res.redirect('/login')
+    //         });
+    //     } else {
+    //         return res.send('Email already exists')
+    //     }
 
-        // 
-        const [salesDetails] = await mysql.query(`
-            SELECT 
-                t.id AS transaction_id,
-                t.date,
-                t.invoice_number,
-                t.customer_name,
-                t.total_amount,
-                t.payment_type,
-                t.balance_due,
-                t.received_amount,
-                t.created_at,
-                t.company_id,
-                t.user_id,
-                t.transaction_type,
-                sp.id AS sale_product_id,
-                sp.item_id,
-                sp.quantity,
-                sp.price,
-                sp.discount,
-                sp.tax_rate,
-                sp.total AS product_total,
-                sp.company_id AS product_company_id
-            FROM sales t
-            LEFT JOIN sale_products sp ON t.id = sp.sale_id
-            WHERE t.transaction_type = 'sale';
-        `);
-
-        const [purchaseDetails] = await mysql.query(`
-            SELECT 
-                t.id AS transaction_id,
-                t.date,
-                t.invoice_number,
-                t.customer_name,
-                t.total_amount,
-                t.payment_type,
-                t.balance_due,
-                t.received_amount,
-                t.created_at,
-                t.company_id,
-                t.user_id,
-                t.transaction_type,
-                sp.id AS sale_product_id,
-                sp.item_id,
-                sp.quantity,
-                sp.price,
-                sp.discount,
-                sp.tax_rate,
-                sp.total AS product_total,
-                sp.company_id AS product_company_id
-            FROM sales t
-            LEFT JOIN sale_products sp ON t.id = sp.sale_id
-            WHERE t.transaction_type = 'purchase';
-        `);
-
-        // Add products to both sales and purchase details
-        const salesWithProducts = addProductsToTransactions(salesDetails);
-        const purchaseWithProducts = addProductsToTransactions(purchaseDetails);
-
-    
-
-        res.render('businessOwner/reports.ejs', { user, companies, currentCompany, salesDetails, purchaseDetails });
-    },
+    // },
     addParty: async (req, res) => {
         upload(req, res, async function (err) {
             if (err instanceof multer.MulterError) {
@@ -628,9 +557,9 @@ const businessOwnerController = {
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [cashFlows] = await mysql.query(`SELECT * FROM cash_flows WHERE company_id = ?`,[companyId])
+        const [cashFlows] = await mysql.query(`SELECT * FROM cash_flows WHERE company_id = ?`, [companyId])
 
-        res.render('businessOwner/cashFlow.ejs', {  currentCompany, companies, user,cashFlows });
+        res.render('businessOwner/cashFlow.ejs', { currentCompany, companies, user, cashFlows });
     },
 
     transactionDetails: async (req, res) => {
@@ -679,7 +608,7 @@ const businessOwnerController = {
         if (transactionDetails[0].balanceDue !== balanceDue && transactionDetails[0].received_amount !== recieved) {
             const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
             await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
-                [party[0].PartyName,created_at,transactionType,money_type,recieved,transaction_id, user.company_id]
+                [party[0].PartyName, created_at, transactionType, money_type, recieved, transaction_id, user.company_id]
             )
         }
         await mysql.query(`
@@ -727,16 +656,16 @@ const businessOwnerController = {
         // }
         res.redirect('/business-owner/dashboard');
     },
-    
-    viewItemDetail:async(req,res)=>{
+
+    viewItemDetail: async (req, res) => {
         const { itemId } = req.query;
         const user = req.session.user;
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
-    try {
-        const [itemDetails] = await mysql.query(`
+        try {
+            const [itemDetails] = await mysql.query(`
             SELECT 
                 items.id AS item_id,
                 items.item_name,
@@ -765,19 +694,63 @@ const businessOwnerController = {
             GROUP BY 
                 items.id;
         `, [itemId]);
-        
-        
-        
-            
-        res.render('businessOwner/itemDetailReport.ejs',{itemDetails,companies,user,currentCompany})
-        
-    } catch (error) {
-        console.error("Error fetching item details:", error);
-        res.status(500).json({ success: false, error: 'Failed to fetch item details.' });
-    }
-},
-    
 
+
+
+
+            res.render('businessOwner/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany })
+
+        } catch (error) {
+            console.error("Error fetching item details:", error);
+            res.status(500).json({ success: false, error: 'Failed to fetch item details.' });
+        }
+    },
+
+    viewExpense:async (req,res)=>{
+        const user = req.session.user;
+        const company_id = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ?`,[company_id])
+
+        const [categories] = await mysql.query('SELECT * FROM expense_category');
+
+        const formattedData = categories.map(category => {
+            const filteredExpenses = expenses
+                .filter(expense => expense.category_id === category.id)
+                .map(expense => ({
+                    expense_number: expense.expense_number,
+                    date: new Date(expense.date),
+                    amount: expense.amount,
+                }));
+            return {
+                id: category.id,
+                category_name: category.category_name,
+                expenses: filteredExpenses,
+            };
+        });
+        res.render('businessOwner/expenseDisplay.ejs',{categories:formattedData,user,companies,currentCompany})
+
+    },
+
+    viewAddExpense: async (req,res) => {
+        const [categories] = await mysql.query('SELECT * FROM expense_category');
+        console.log(categories);
+        res.render('businessOwner/addExpense.ejs', { categories });
+    },
+    addExpense: async (req,res)=>{
+        const user = req.session.user;
+        const company_id = user.company_id;
+        const {category_id,expense_number,date,amount} = req.body
+        await mysql.query(`INSERT INTO expenses (category_id,expense_number,date,amount,company_id) VALUES(?,?,?,?,?)`,[category_id,expense_number,date,amount,company_id])
+        res.redirect('/business-owner/dashboard');
+        
+    },
+    addExpenseCategory:async(req,res)=>{
+        const {name} = req.body
+        await mysql.query(`INSERT INTO expense_category (category_name) VALUES(?)`,[name])
+        res.redirect('/business-owner/expenses')
+    }
 
 
 
