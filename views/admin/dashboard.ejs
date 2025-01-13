@@ -33,24 +33,24 @@
             <h2>Business Overview</h2>
             <div class="stat-cards">
                 <div class="stat-card">
-                    <h3>Total Sales</h3>
-                    <p>SAR<%= total_sale[0].total_sales %>
+                    <h3>Total Cash Inflow</h3>
+                    <p>SAR <%= total_cash_inflow[0]?.total_cash_inflow || 0 %>
                     </p>
                 </div>
 
                 <div class="stat-card">
-                    <h3>Total Purchases</h3>
-                    <p>SAR<%= total_purchase[0].total_purchase %>
+                    <h3>Total Cash Outflow</h3>
+                    <p>SAR <%= total_cash_outflow[0]?.total_cash_outflow || 0 %>
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Expenses</h3>
+                    <p>SAR <%= total_expenses[0]?.total_expenses || 0 %>
                     </p>
                 </div>
                 <div class="stat-card">
                     <h3>Total Profit</h3>
-                    <p>SAR<%= total_profit[0].total_profit %>
-                    </p>
-                </div>
-                <div class="stat-card">
-                    <h3>Outstanding Payments</h3>
-                    <p>SAR<%= outstanding_payments[0].outstanding_payments %>
+                    <p>SAR <%= total_profit[0]?.total_profit || 0 %>
                     </p>
                 </div>
             </div>

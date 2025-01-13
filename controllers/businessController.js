@@ -376,13 +376,24 @@ const businessOwnerController = {
 
         //saving to cashFLow table
         const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
-
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id])
 
         if (products) {
             await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
+
+            //controlling stock
+            if (transactionType === "purchase") {
+                for (const product of products) {
+                    await mysql.query(`UPDATE items SET stock = stock + ? WHERE id = ?`, [product.quantity, product.productId]);
+                }
+            } else {
+                for (const product of products) {
+                    await mysql.query(`UPDATE items SET stock = stock - ? WHERE id = ?`, [product.quantity, product.productId]);
+                }
+            }
         }
+       
 
         res.redirect('/business-owner/dashboard');
     },
@@ -734,9 +745,12 @@ const businessOwnerController = {
     },
 
     viewAddExpense: async (req,res) => {
+        const user = req.session.user;
+        const company_id = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [categories] = await mysql.query('SELECT * FROM expense_category');
-        console.log(categories);
-        res.render('businessOwner/addExpense.ejs', { categories });
+        res.render('businessOwner/addExpense.ejs', { categories, companies,currentCompany,user });
     },
     addExpense: async (req,res)=>{
         const user = req.session.user;

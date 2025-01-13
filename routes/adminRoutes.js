@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
-const {isLoggedAdmin} = require('../middlewares/auth');
+const {isLoggedAdmin,isLoggedSuperAdmin} = require('../middlewares/auth');
 
 
 // Admin dashboard
@@ -22,7 +22,7 @@ router.get('/admin/sales',isLoggedAdmin,adminController.viewSales);
 router.get('/admin/purchases',isLoggedAdmin,adminController.viewPurchases);
 router.get('/admin/transactions',isLoggedAdmin,adminController.viewTransactions);
 router.get('/admin/userManagement',isLoggedAdmin,adminController.viewUser);
-router.post('/admin/addUser',isLoggedAdmin,adminController.addUser);
+router.post('/admin/addUser',isLoggedSuperAdmin,adminController.addUser);
 router.put('/admin/deleteUser/:id',isLoggedAdmin,adminController.userBlock);
 router.get('/admin/logout',isLoggedAdmin,adminController.logout);
 router.get('/admin/sales',isLoggedAdmin,adminController.viewSales);
@@ -43,6 +43,10 @@ router.get('/admin/itemWiseProfitAndLoss',isLoggedAdmin,adminController.viewItem
 router.get('/admin/cashFlow',isLoggedAdmin,adminController.viewCashFlow);
 router.get('/admin/dayBook',isLoggedAdmin,adminController.viewDayBook);
 router.get('/admin/viewParty',isLoggedAdmin,adminController.viewParty);
+router.get('/admin/viewStockReport',isLoggedAdmin,adminController.viewStockReport);
+router.get('/admin/adjustStock',isLoggedAdmin,adminController.viewAdjustStock);
+router.get('/admin/adjustStockDetails',isLoggedAdmin,adminController.viewAdjustStockDetails);
+router.post('/admin/adjustStock',isLoggedAdmin,adminController.adjustStock);
   
 
 module.exports = router;

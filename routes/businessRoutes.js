@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const businessController = require('../controllers/businessController');
-const {isLogged,isUserActive} = require('../middlewares/auth')
+const {isLogged} = require('../middlewares/auth')
 
 // Business Owner dashboard
 router.post('/switch-company', (req, res) => {

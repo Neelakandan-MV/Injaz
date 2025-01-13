@@ -298,6 +298,15 @@
                 <option value="No Products Found">
                     <% } %>
 </datalist>
+<datalist id="partySuggestions">
+    <% if (parties.length) { %>
+        <% parties.forEach(party => { %>
+            <option value="<%= party.id %>" label="<%= party.PartyName %>"></option>
+        <% }) %>
+    <% } else { %>
+        <option disabled value="No Party Found">No Party Found</option>
+    <% } %>
+</datalist>
 <script>
     function sugesstion(element,count) {
         
@@ -374,9 +383,9 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
 
-                            <label for="partyName" class="form-label">Party Name *</label>
+                            <label for="partyName" class="form-label">Party ID *</label>
                             <input type="text" id="partyName" name="partyName" class="form-control"
-                                placeholder="Enter Party Name" required>
+                                placeholder="Enter Party Name" list="partySuggestions" required>
                         </div>
                     </div>
 
@@ -440,7 +449,7 @@
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="recieved" id="remaining" class="form-label">Received *</label>
-                            <input type="text" id="received" name="received" class="form-control" required>
+                            <input type="text" id="received" name="recieved" class="form-control" required>
                         </div>
                         <div class="col-md-3">
                             <label for="balanceDue" class="form-label">Balance Due *</label>

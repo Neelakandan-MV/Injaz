@@ -18,6 +18,7 @@ exports.login = async (req, res) => {
     }
 
     const user = rows[0];
+    
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -25,7 +26,7 @@ exports.login = async (req, res) => {
     }
 
     let company_id = null;
-    if (user.role === 'businessOwner' || user.role === 'admin') {
+    if (user.role === 'businessOwner' || user.role === 'admin' || user.role === 'superAdmin') {
       const [companyRows] = await db.execute('SELECT * FROM companies WHERE user_id = ?', [user.id]);
       if (companyRows.length > 0) {
         if (companyRows.length > 1) {
@@ -33,7 +34,6 @@ exports.login = async (req, res) => {
         } else {
           company_id = companyRows[0].id;
         }
-
       }
     }
     
@@ -46,6 +46,10 @@ exports.login = async (req, res) => {
 
     if (user.role === 'businessOwner') {
       res.redirect('/business-owner/dashboard');
+    }
+
+    if(user.role === 'superAdmin'){
+      res.redirect('/admin/dashboard')
     }
 
   } catch (error) {

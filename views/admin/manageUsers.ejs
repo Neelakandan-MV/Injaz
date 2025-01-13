@@ -116,7 +116,9 @@ header h1 {
     <div class="container">
         <header>
             <h1>User Management</h1>
+            <% if(currentUser.role === 'superAdmin'){ %>
             <button class="add-user-btn" onclick="openAddUserModal()">Add User</button>
+            <% } %>
         </header>
 
         <!-- User List Section -->
