@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+
+        }
+        header {
+        background-color: #3498db;
+        color: #fff;
+        padding: 15px 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .navbar h1 {
+        font-size: 20px;
+        margin: 0;
+        color: white;
+    }
+
+    nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+
+    nav ul li {
+        margin-left: 10px;
+    }
+
+    nav ul li a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 12px;
+        border-radius: 5px;
+    }
+
+    nav ul li a:hover {
+        background-color: #2980b9;
+    }
+
+    .hamburger {
+        display: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+        background: none;
+        border: none;
+    }
+    .row a{
+            text-decoration: none;
+        }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .navbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        nav ul {
+            flex-direction: column;
+            display: none;
+            width: 100%;
+            background-color: #3498db;
+            padding: 10px 0;
+            margin-top: 10px;
+        }
+
+        nav ul li {
+            margin: 0;
+            text-align: center;
+        }
+
+        nav ul li a {
+            display: block;
+            padding: 10px;
+        }
+
+        nav ul.show {
+            display: flex;
+        }
+
+        .hamburger {
+            display: block;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        button {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .table-responsive {
+            margin-top: 10px;
+        }
+    }
+
+
+        .container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            
+        }
+
+        /* Left table */
+        .left-table {
+            flex: 1;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-width: 300px;
+            height: 90vh;
+        }
+
+        .left-table h4 {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #495057;
+        }
+
+        #partySelector {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .left-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .left-table th,
+        .left-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .left-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #212529;
+        }
+
+        /* Right section */
+        .right-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .party-info-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .party-info-card h3 {
+            margin: 0 0 15px;
+            font-size: 1.5em;
+            color: #495057;
+        }
+
+        .party-info-card p {
+            margin: 8px 0;
+            font-size: 1em;
+            color: #6c757d;
+        }
+
+        .transaction-table {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            overflow-y: scroll;
+        }
+
+        .transaction-table h4 {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #495057;
+        }
+
+        .transaction-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transaction-table th,
+        .transaction-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .transaction-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #212529;
+        }
+
+        .transaction-table td {
+            color: #495057;
+        }
+
+        /* Responsive Design for Mobile Devices */
+        @media screen and (max-width: 768px) {
+            body {
+                overflow: auto;
+            }
+
+            .container {
+                flex-direction: column;
+                gap: 10px;
+                margin-left: 0px;
+            }
+
+            .left-table,
+            .right-section {
+                flex-basis: 100%;
+            }
+
+            .left-table table,
+            .transaction-table table {
+                font-size: 0.9em;
+            }
+
+            .party-info-card {
+                padding: 15px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+
+            .left-table,
+            .right-section {
+                padding: 15px;
+            }
+
+            #partySelector {
+                font-size: 0.9em;
+                padding: 6px;
+            }
+
+            .left-table th,
+            .left-table td,
+            .transaction-table th,
+            .transaction-table td {
+                padding: 8px;
+            }
+
+            .transaction-table td {
+                font-size: 0.9em;
+            }
+
+            .party-info-card p {
+                font-size: 0.9em;
+            }
+
+            .party-info-card h3 {
+                font-size: 1.3em;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        .chart {
+            height: 200px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+
+            .main-content {
+                margin-left: 0;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="navbar">
+            <h1>Admin Dashboard</h1>
+            <button class="hamburger">&#9776;</button>
+            <nav>
+                <ul>
+                    <li><a href="/admin/dashboard">Dashboard</a></li>
+                    <li><a href="/admin/sales">Sales</a></li>
+                    <li><a href="/admin/purchases">Purchases</a></li>
+                    <li><a href="/admin/transactions">Transactions</a></li>
+                    <li><a href="/admin/reports">Reports</a></li>
+                    <li><a href="/admin/settings">Settings</a></li>
+                    <li><a href="/admin/logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Left table -->
+        <div class="left-table">
+            <h4>Party Overview</h4>
+            <select id="partySelector" onchange="updatePartyData()">
+                <!-- Party options will be added dynamically -->
+            </select>
+            <table>
+                <tr>
+                    <th>Party Name</th>
+                    <td id="partyName">Select a party</td>
+                </tr>
+                <tr>
+                    <th>Total Amount</th>
+                    <td id="totalAmount">$0</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Right section -->
+        <div class="right-section">
+            <!-- Party info card -->
+            <div class="party-info-card">
+                <h3 id="partyInfoName">Party Information</h3>
+                <div class="profile-pic-container">
+                    <img id="partyDP" alt="Party Profile Pic" class="profile-pic" />
+                </div>
+                <p><strong>Phone:</strong> <span id="partyPhone">---</span></p>
+                <p><strong>Email:</strong> <span id="partyEmail">---</span></p>
+                <p><strong>Address:</strong> <span id="partyAddress">---</span></p>
+                
+            </div>
+            <style>
+                .profile-pic-container {
+                    margin-right: 15px;
+                    border: #212529 3px;
+                }
+
+                .profile-pic {
+                    width: 70px;
+                    height: 70px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    border: 1px solid rgb(197, 197, 197);
+                }
+
+                .party-details {
+                    flex-grow: 1;
+                }
+            </style>
+            <!-- Transaction details table -->
+            <div class="transaction-table">
+                <h4>Transaction Details</h4>
+                <table id="transactionDetailsTable">
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Balance Due</th>
+                    </tr>
+                </table>
+            </div>
+            <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+                Add New Party
+            </button>
+        </div>
+    </div>
+    </div>
+    <!-- Modal for Add New Company -->
+    <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCompanyModalLabel">Add New Party</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/admin/addParty" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="companyName" class="form-label">Party Name</label>
+                            <input type="text" class="form-control" id="companyName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="companyName" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="companyName" name="address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Party Email</label>
+                            <input type="email" class="form-control" id="companyName" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dp" class="form-label">Profile Picture</label>
+                            <input type="file" class="form-control" id="profile" name="image">
+                        </div>
+
+                        <button type="submit" class="btn btn-success">Save Party</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Example party data
+        const parties = <%-JSON.stringify(parties)%>
+
+        // Populate the party selector dropdown
+        const partySelector = document.getElementById("partySelector");
+        parties.forEach(party => {
+            const option = document.createElement("option");
+            option.value = party.id;
+            option.textContent = party.name;
+            partySelector.appendChild(option);
+        });
+
+        // Function to update the data when a new party is selected
+        function updatePartyData() {
+            const selectedPartyId = document.getElementById("partySelector").value;
+            const party = parties.find(p => p.id == selectedPartyId);
+
+            if (party) {
+                // Update party overview
+                document.getElementById("partyName").textContent = party.name;
+                document.getElementById("totalAmount").textContent = party.amount;
+
+                // Update party info card
+                document.getElementById("partyInfoName").textContent = party.name;
+                document.getElementById("partyPhone").textContent = party.phone;
+                document.getElementById("partyEmail").textContent = party.email;
+                document.getElementById("partyAddress").textContent = party.address;
+                document.getElementById("partyDP").src = `/uploads/${party.profile_picture?party.profile_picture:'image-1736423096605-197412523'}`;
+
+                // Update transaction details table
+                const transactionTable = document.getElementById("transactionDetailsTable");
+                // Clear previous rows
+                const rows = transactionTable.getElementsByTagName("tr");
+                for (let i = rows.length - 1; i > 0; i--) {
+                    transactionTable.deleteRow(i);
+                }
+                // Add new rows
+                party.transactions.forEach(transaction => {
+                    const row = transactionTable.insertRow();
+                    row.insertCell(0).textContent = transaction.id;
+                    row.insertCell(1).textContent = transaction.date;
+                    row.insertCell(2).textContent = transaction.amount;
+                    row.insertCell(3).textContent = transaction.balance_due;
+                });
+            }
+        }
+
+        // Initialize with the first party
+        updatePartyData();
+    </script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+        }
+        function companyDisplay() {
+            const div = document.querySelector('.companyClass');
+            if (div) {
+                div.style.display = 'block';
+            } else {
+                console.error('Element with class "companyClass" not found.');
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('nav ul');
+    
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('show');
+        });
+    </script>
+</body>
+
+</html>

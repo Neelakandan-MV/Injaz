@@ -57,53 +57,80 @@
         </section>
 
         <section class="quick-links">
-            <h2>Quick Links</h2>
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h2>Quick Links</h2>
+                    <!-- Row for 2x2 cards -->
+                    <div class="row">
+                        <a href=""></a>
+                        <div class="col-md-6 mb-3">
+                            <a href="/admin/userManagement"><div class="card p-3 smallCard"><span>Manage Users</span></div></a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/admin/sales"><div class="card p-3 smallCard"><span>Manage Sales</span></div></a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/admin/purchases"><div class="card p-3 smallCard"><span>Manage Purchases</span></div></a>
+                        </div>   
+                        <div class="col-md-6 mb-3">
+                            <a href="/admin/expense"><div class="card p-3 smallCard"><span>Manage Expense</span></div></a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/admin/viewParty"><div class="card p-3 smallCard"><span>Manage Parties</span></div></a>
+                        </div>   
+                        <div class="col-md-6 mb-3">
+                            <a href="/admin/reports"><div class="card p-3 smallCard"><span>View Reports</span></div></a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/admin/viewItems"><div class="card p-3 smallCard"><span>Item Management</span></div></a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/admin/addTransactions"><div class="card p-3 smallCard"><span>Add Sale/Purchase</span></div></a>
+                        </div>   
+                    </div>
+                </div>
+            </div>
+            
+
+            <!-- company switch -->
             <ul>
-                <li class="nav-item">
-                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
-                        Company</a>
+                <li><a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
+                    Company</a>
 
-                    <div class="row companyClass">
-                        <div class="col-md-12">
-                            <div class="">
-                                <!-- <h5>Current Company</h5> -->
-                                <p>
-                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
-                                </p>
+                <div class="row companyClass">
+                    <div class="col-md-12">
+                        <div class="">
+                            <!-- <h5>Current Company</h5> -->
+                            <p>
+                                <%= currentCompany ? currentCompany.name : 'No company associated' %>
+                            </p>
 
-                                <% if (!currentCompany) { %>
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                            <% if (!currentCompany) { %>
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                    data-bs-target="#addCompanyModal">
+                                    Add New Company
+                                </button>
+                                <% } else { %>
+                                    <div class="company-dropdown">
+                                        <label for="companySwitch">Switch Company</label>
+                                        <select id="companySwitch" class="form-select"
+                                            onchange="location.href='/admin/switchCompany/' + this.value;">
+                                            <% companies.forEach(company=> { %>
+                                                <option value="<%= company.id %>"
+                                                    <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
+                                                    <%= company.name %>
+                                                </option>
+                                                <% }); %>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal"
                                         data-bs-target="#addCompanyModal">
                                         Add New Company
                                     </button>
-                                    <% } else { %>
-                                        <div class="company-dropdown">
-                                            <label for="companySwitch">Switch Company</label>
-                                            <select id="companySwitch" class="form-select"
-                                                onchange="location.href='/admin/switchCompany/' + this.value;">
-                                                <% companies.forEach(company=> { %>
-                                                    <option value="<%= company.id %>"
-                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
-                                                        <%= company.name %>
-                                                    </option>
-                                                    <% }); %>
-                                            </select>
-                                        </div>
-                                        <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal"
-                                            data-bs-target="#addCompanyModal">
-                                            Add New Company
-                                        </button>
-                                        <% } %>
-                            </div>
+                                    <% } %>
                         </div>
                     </div>
-                </li>
-                <li><a href="/admin/sales">Manage Sales</a></li>
-                <li><a href="/admin/purchases">Manage Purchases</a></li>
-                <li><a href="/admin/transactions">Manage Expenses</a></li>
-                <li><a href="/admin/reports">View Reports</a></li>
-                <li><a href="/admin/viewItems">Item Management</a></li>
-                <li><a href="/admin/addTransactions">Add Sale/Purchase</a></li>
+                </div></li>
             </ul>
         </section>
 
@@ -269,12 +296,6 @@
             </div>
         </section>
 
-
-
-        <section class="user-management">
-            <h2>User Management</h2>
-            <p><a href="/admin/userManagement">Manage Users</a></p>
-        </section>
     </main>
 
     <!-- <footer>
@@ -306,6 +327,11 @@
 
 
 <style>
+     .smallCard{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     body {
         font-family: 'Arial', sans-serif;
         background-color: #f4f7fc;
@@ -509,6 +535,9 @@
         background: none;
         border: none;
     }
+    .row a{
+            text-decoration: none;
+        }
 
     /* Responsive Styles */
     @media (max-width: 768px) {

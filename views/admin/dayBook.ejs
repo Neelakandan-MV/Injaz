@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day Book</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .card {
+            border-radius: 10px;
+        }
+
+        .chart {
+            height: 200px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+
+            .main-content {
+                margin-left: 0;
+                left: 0;
+                width: 100%;
+
+            }
+            .table-responsive {
+                overflow-x: auto; /* Allow horizontal scrolling for tables */
+            }
+        }
+
+        .main-content {
+            
+            padding: 20px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+    }
+    function companyDisplay() {
+            const div = document.querySelector('.companyClass');
+            if (div) {
+                div.style.display = 'block';
+            } else {
+                console.error('Element with class "companyClass" not found.');
+            }
+        }
+    </script>
+
+<body>
+
+        <div class="main-content">
+            <header>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="filters d-flex align-items-center">
+                        <label for="from-date" class="me-2">Select Date</label>
+                        <input type="date" id="from-date" class="form-control me-2" onchange="filterByDate()" />
+                        
+                        <!-- <span class="me-2">To</span>
+                        <input type="date" id="to-date" class="form-control me-2" />
+                        <select class="form-select">
+                            <option value="all">All Firms</option>
+                        </select> -->
+                       
+                    </div>
+                </div>
+                <div class="mt-3 ">
+                    <a href="/admin/addTransactions" class="btn btn-primary">+ Add Transactions</a>
+                    <button type="button" class="btn btn-warning mt-3 " onclick="downloadPdf()">Download Report</button>
+
+                </div>
+            </header>
+            <div>
+                <p>
+                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
+                </p>
+                        <div class="company-dropdown">
+                            <label for="companySwitch">Switch Company</label>
+                            <select id="companySwitch" class="form-select"
+                                onchange="location.href='/admin/switchCompany/' + this.value;">
+                                <% companies.forEach(company=> { %>
+                                    <option value="<%= company.id %>" <%=currentCompany[0].id===company.id ? 'selected'
+                                        : '' %>>
+                                        <%= company.name %>
+                                    </option>
+                                    <% }); %>
+                            </select>
+                        </div>
+            </div>
+
+            
+            <!-- Transactions Section -->
+            <section class="transactions mt-4 table-responsive" id="reportContainer">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Invoice No.</th>
+                            <th>Party Name</th>
+                            <th>Transaction Type</th>
+                            <th>Payment Type</th>
+                            <th>Amount</th>
+                            <th>Balance Due</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan='8' class='text-center'>No data available</td></tr>
+                       
+                    </tbody>
+                </table>
+            </section>
+           
+        </div>
+    </div>
+</body>
+<script>
+    const items = <%- JSON.stringify(items) %>; // Backend data passed as JSON
+
+    function filterByDate() {
+    const selectedDate = new Date(document.getElementById('from-date').value).setHours(0, 0, 0, 0);
+
+    const filteredItems = items.filter(item => {
+        const itemDate = new Date(item.date).setHours(0, 0, 0, 0); // Normalize the time
+        return itemDate === selectedDate;
+    });
+
+    renderTable(filteredItems);
+}
+
+
+    function renderTable(data) {
+        const tableBody = document.querySelector("tbody");
+        tableBody.innerHTML = ""; // Clear existing table rows
+
+        if (data.length === 0) {
+            tableBody.innerHTML = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
+            return;
+        }
+
+        data.forEach(item => {
+            const row = `
+                <tr>
+                    <td>${new Date(item.date).getDate().toString().padStart(2, '0')}-${(new Date(item.date).getMonth() + 1).toString().padStart(2, '0')}-${new Date(item.date).getFullYear()}</td>
+                    <td>${item.invoice_number}</td>
+                    <td>${item.customer_name}</td>
+                    <td>${item.transaction_type}</td>
+                    <td>${item.payment_type}</td>
+                    <td>&#8377; ${item.total_amount}</td>
+                    <td>&#8377; ${item.balance_due}</td>
+                    
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    }
+    
+    function setDefaultDate() {
+            const dateInput = document.getElementById('from-date');
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0]; 
+            dateInput.value = formattedDate;
+            filterByDate()
+        }
+
+
+        window.onload = setDefaultDate;
+</script>
+<script>
+function downloadPdf() {
+    
+    const wrapper = document.createElement('div');
+
+
+    const companyName = document.createElement('h2');
+    companyName.textContent = 'Injaz';
+    companyName.style.textAlign = 'center'; 
+    wrapper.appendChild(companyName);
+
+
+    const reportHeading = document.createElement('h4');
+    reportHeading.textContent = 'Day Book Report';
+    reportHeading.style.textAlign = 'center'; 
+    wrapper.appendChild(reportHeading);
+
+    const tableContent = document.getElementById('reportContainer').cloneNode(true); 
+    wrapper.appendChild(tableContent);
+
+    html2pdf().from(wrapper).save();
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+</html>

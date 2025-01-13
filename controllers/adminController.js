@@ -24,10 +24,9 @@ const adminController = {
 
         try {
             const user = req.session.user;
-            
-            const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+
+            const [companies] = await mysql.query(`SELECT * FROM companies`);
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-    
 
             const [total_sale] = await mysql.query("SELECT SUM(total_amount) AS total_sales FROM sales WHERE transaction_type = 'sale';");
             const [total_purchase] = await mysql.query("SELECT SUM(total_amount) AS total_purchase FROM sales WHERE transaction_type = 'purchase';");
@@ -37,7 +36,7 @@ const adminController = {
             res.render('admin/dashboard.ejs', { title: "Admin Dashboard", total_sale, total_purchase, total_profit, outstanding_payments, currentCompany, companies });
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
-            res.render('businessOwner/error.ejs', { error: 'An error occurred while fetching the dashboard data.' });
+            res.render('admin/error.ejs', { error: 'An error occurred while fetching the dashboard data.' });
         }
     },
 
@@ -82,29 +81,29 @@ const adminController = {
         });
     },
 
-    viewUser:async(req,res)=>{
+    viewUser: async (req, res) => {
         const [users] = await mysql.query("SELECT * FROM users WHERE role = 'businessOwner';")
-        res.render('admin/manageUsers.ejs',{users})
+        res.render('admin/manageUsers.ejs', { users })
     },
 
-    addUser:async(req,res)=>{
-        const {name,email,password} = req.body
+    addUser: async (req, res) => {
+        const { name, email, password } = req.body
         const hashedPassword = await bcrypt.hash(password, 10);
-        await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)",[name,email,hashedPassword,'businessOwner'])
-        const [addedUser] = await mysql.query("SELECT * FROM users WHERE email = ?",[email])
-        await mysql.query("INSERT INTO companies (user_id,name,created_at) VALUES (?,?,?)",[addedUser[0].id,'Main',new Date()])
+        await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, 'businessOwner'])
+        const [addedUser] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
+        await mysql.query("INSERT INTO companies (user_id,name,created_at) VALUES (?,?,?)", [addedUser[0].id, 'Main', new Date()])
         res.redirect('/admin/userManagement')
     },
-    userBlock:async(req,res)=>{
+    userBlock: async (req, res) => {
         const id = req.params.id
         console.log(id);
-        const [user] = await mysql.query("SELECT * FROM users WHERE id = ?",[id])
-        if(user[0].isActive){
-            await mysql.query("UPDATE users SET isActive = false WHERE id = ?",[id])
+        const [user] = await mysql.query("SELECT * FROM users WHERE id = ?", [id])
+        if (user[0].isActive) {
+            await mysql.query("UPDATE users SET isActive = false WHERE id = ?", [id])
         } else {
-            await mysql.query("UPDATE users SET isActive = true WHERE id = ?",[id])
+            await mysql.query("UPDATE users SET isActive = true WHERE id = ?", [id])
         }
-        res.json({success:true})
+        res.json({ success: true })
     },
     logout: (req, res) => {
         req.session.destroy();
@@ -123,7 +122,7 @@ const adminController = {
         const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
 
         console.log(categories);
-        
+
         res.render('admin/addItems.ejs', { categories: categories.length > 0 ? categories : [] });
     },
 
@@ -233,7 +232,7 @@ const adminController = {
         const companyId = user.company_id;
 
         if (!companyId) {
-            return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
+            return res.render("admin/error.ejs", { error: 'No company found for this user.' });
         }
 
         const [items] = await mysql.query(`
@@ -252,7 +251,7 @@ const adminController = {
         const companyId = user.company_id;
 
         if (!companyId) {
-            return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
+            return res.render("admin/error.ejs", { error: 'No company found for this user.' });
         }
 
         const { category } = req.body;
@@ -313,7 +312,7 @@ const adminController = {
     addCompany: async (req, res) => {
         const { name } = req.body;
         const user_id = req.session.user.id;
-        
+
         // Check if the company already exists
         const companyExist = await mysql.query(`SELECT * FROM companies WHERE name = ?`, [name]);
 
@@ -335,14 +334,68 @@ const adminController = {
         const user = req.session.user
         const company_id = req.params.id
         req.session.user.company_id = company_id
+        console.log('req from: ',req.originalUrl);
+        
         res.redirect('/admin/dashboard');
     },
 
     viewParty: async (req, res) => {
         const user = req.session.user
-        // const parties = await mysql.query("SELECT * FROM parties WHERE user_id = ?",[user.id])
-        res.render('businessOwner/partyDisplay.ejs', {});
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+        const [results] = await mysql.query(`
+            SELECT 
+                p.id AS party_id,
+                p.PartyName AS party_name,
+                p.Phone,
+                p.Email,
+                p.Address,
+                p.profile_picture,
+                t.id AS transaction_id,
+                t.date AS transaction_date,
+                t.total_amount AS transaction_amount,
+                t.balance_due AS transaction_balance_due
+            FROM 
+                parties p
+            LEFT JOIN 
+                sales t ON p.id = t.customer_name
+           `);
+
+        // Initialize a map to group transactions by party ID
+        const partiesMap = {};
+
+        // Process the results into the desired structure
+        results.forEach(row => {
+            // If the party doesn't exist in the map, initialize it
+            if (!partiesMap[row.party_id]) {
+                partiesMap[row.party_id] = {
+                    id: row.party_id,
+                    name: row.party_name,
+                    phone: row.Phone,
+                    email: row.Email,
+                    address: row.Address,
+                    profile_picture: row.profile_picture,
+                    transactions: []
+                };
+            }
+
+            // Add the transaction details to the corresponding party
+            if (row.transaction_id) {
+                partiesMap[row.party_id].transactions.push({
+                    id: row.transaction_id,
+                    date: row.transaction_date,
+                    amount: row.transaction_amount,
+                    balance_due: row.transaction_balance_due
+                });
+            }
+        });
+
+        const parties = Object.values(partiesMap);
+
+        res.render('admin/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user, parties });
     },
+
     viewAddPurchase: async (req, res) => {
         const user = req.session.user
         const today = new Date().toISOString().split('T')[0];
@@ -357,9 +410,118 @@ const adminController = {
     },
     viewReports: async (req, res) => {
         const [total_profit] = await mysql.query("SELECT (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'sale') - (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'purchase') AS total_profit;");
-        res.render('admin/reports.ejs',{total_profit});
+        res.render('admin/reports.ejs', { total_profit });
     },
-    
+    viewExpense: async (req, res) => {
+        const user = req.session.user;
+        const company_id = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ?`, [company_id])
+
+        const [categories] = await mysql.query('SELECT * FROM expense_category');
+
+        const formattedData = categories.map(category => {
+            const filteredExpenses = expenses
+                .filter(expense => expense.category_id === category.id)
+                .map(expense => ({
+                    expense_number: expense.expense_number,
+                    date: new Date(expense.date),
+                    amount: expense.amount,
+                }));
+            return {
+                id: category.id,
+                category_name: category.category_name,
+                expenses: filteredExpenses,
+            };
+        });
+        res.render('admin/expenseDisplay.ejs', { categories: formattedData })
+    },
+
+    viewItemProfitAndLoss: async (req, res) => {
+        try {
+            const [results] = await mysql.query(`
+               SELECT 
+    i.id AS item_id,
+    i.item_name,
+    COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) AS total_sales,
+    COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) AS total_purchases,
+    CASE 
+        WHEN COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) >
+             COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) 
+        THEN COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) -
+             COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0)
+        ELSE 0 
+    END AS profit,
+    CASE 
+        WHEN COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) >
+             COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) 
+        THEN COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) -
+             COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0)
+        ELSE 0 
+    END AS loss
+FROM 
+    items i
+LEFT JOIN 
+    sale_products sp ON i.id = sp.item_id
+LEFT JOIN 
+    sales s ON sp.sale_id = s.id
+GROUP BY 
+    i.id, i.item_name
+ORDER BY 
+    i.item_name;
+
+            `);
+
+            res.render('admin/itemProfitAndLoss.ejs', { results })
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+
+    },
+    viewCashFlow: async (req, res) => {
+        const user = req.session.user
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [cashFlows] = await mysql.query(`SELECT * FROM cash_flows WHERE company_id = ?`, [companyId])
+
+        res.render('admin/cashFlows.ejs', {cashFlows,companies,currentCompany });
+    },
+
+    viewDayBook: async (req, res) => {
+
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+
+        const [items] = await mysql.query(`
+            SELECT * FROM sales
+            WHERE company_id = ?
+        `, [companyId]);
+
+        res.render('admin/dayBook.ejs', { title: 'Day Book', currentCompany, companies, user, items });
+    },
+    viewAddExpense: async (req,res) => {
+        const [categories] = await mysql.query('SELECT * FROM expense_category');
+        res.render('admin/addExpense.ejs', { categories });
+    },
+    addExpense: async (req,res)=>{
+        const user = req.session.user;
+        const company_id = user.company_id;
+        const {category_id,expense_number,date,amount} = req.body
+        await mysql.query(`INSERT INTO expenses (category_id,expense_number,date,amount,company_id) VALUES(?,?,?,?,?)`,[category_id,expense_number,date,amount,company_id])
+        res.redirect('/admin/dashboard');
+        
+    },
+    addExpenseCategory:async(req,res)=>{
+        const {name} = req.body
+        await mysql.query(`INSERT INTO expense_category (category_name) VALUES(?)`,[name])
+        res.redirect('/admin/expense')
+    }
+
 
 };
 

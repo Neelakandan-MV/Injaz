@@ -35,12 +35,14 @@ router.post('/admin/addCategory',isLoggedAdmin,adminController.addCategory);
 router.get('/admin/addTransactions',isLoggedAdmin,adminController.viewAddTransaction);
 router.post('/admin/addTransactions',isLoggedAdmin,adminController.addTransaction);
 router.get('/admin/reports',isLoggedAdmin,adminController.viewReports);
-
-// router.get('/business-owner/viewParty',isLogged,businessController.viewParty);
-// router.get('/business-owner/logout',isLogged,businessController.logout);
-// router.get('/register',businessController.viewRegister)
-// router.post('/register',businessController.handleRegister)
-
+router.get('/admin/expense',isLoggedAdmin,adminController.viewExpense);
+router.get('/admin/addExpense',isLoggedAdmin,adminController.viewAddExpense);
+router.post('/admin/addExpense',isLoggedAdmin,adminController.addExpense);
+router.post('/admin/addExpenseCategory',isLoggedAdmin,adminController.addExpenseCategory);
+router.get('/admin/itemWiseProfitAndLoss',isLoggedAdmin,adminController.viewItemProfitAndLoss);
+router.get('/admin/cashFlow',isLoggedAdmin,adminController.viewCashFlow);
+router.get('/admin/dayBook',isLoggedAdmin,adminController.viewDayBook);
+router.get('/admin/viewParty',isLoggedAdmin,adminController.viewParty);
   
 
 module.exports = router;

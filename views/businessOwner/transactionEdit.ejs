@@ -18,16 +18,11 @@
 }
 
 .sidebar {
-    width: 250px;
-    background-color: #343a40;
-    color: white;
-    min-height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    display: block;
-}
+            width: 350px;
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+        }
 
 .sidebar a {
     color: white;
@@ -41,7 +36,6 @@
 }
 
 .main-content {
-    margin-left: 250px;
     padding: 20px;
 }
 
@@ -75,26 +69,34 @@
 
 @media (max-width: 768px) {
     .sidebar {
-      display: none;
-    }
-    
-    .main-content {
-        margin-left: 0;
-    }
+                position: fixed;
+                width: 100%;
+                height: auto;
+                min-height: 0;
+                z-index: 10;
+                display: none; /* Initially hidden */
+            }
 
-    .navbar-toggler {
-        border: none;
-        outline: none;
-        display: block;
-    }
+            .main-content {
+                margin-left: 0;
+              padding: 20px;
+                width: 100%;
+            }
 
-    .navbar-toggler:focus {
-        outline: none;
-    }
+            .navbar-toggler {
+                border: none;
+                outline: none;
+                z-index: 100;
+                margin-top: -17px; /* Adjust as needed */
+            }
 
-    .sidebar.show {
-        left: 0;
-    }
+            .navbar-toggler-icon {
+                background-color: rgb(223, 223, 223);
+            }
+            
+            .table-responsive {
+                overflow-x: auto; /* Allow horizontal scrolling for tables */
+            }
 
     .form-section {
         padding: 15px;
@@ -129,35 +131,6 @@
         font-size: 14px;
     }
 }
-
-/* Additional mobile styles */
-@media (max-width: 480px) {
-    .form-section {
-        padding: 10px;
-    }
-
-    .sidebar {
-        left: -250px;
-        display: block;
-    }
-
-    .table th, .table td {
-        font-size: 12px;
-    }
-
-    .form-section h3 {
-        font-size: 18px;
-    }
-
-    .sidebar.show {
-        left: 0;
-    }
-
-    .form-label {
-        font-size: 13px;
-    }
-}
-
     </style>
 
     <script>
@@ -278,9 +251,9 @@ function addRow() {
     }
 
     function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
-        }
+        const sidebar = document.getElementById('sidebar');
+        sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+    }
 
 </script>
 
@@ -342,9 +315,6 @@ function addRow() {
                                             <% }); %>
                                         </select>
                                     </div>
-                                    <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                                        Add New Company
-                                    </button>
                                 <% } %>
                             </div>
                         </div>
@@ -359,10 +329,10 @@ function addRow() {
                 <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <h2>Edit Page</h2>
+                <h2>Transaction Edit</h2>
             </nav>
             <header>
-                <h2>Edit Page</h2>
+                <h2>Transaction Edit</h2>
             </header>
             
 
@@ -430,7 +400,7 @@ function addRow() {
 
                     <!-- Products Table -->
                     <h4>Products</h4>
-
+                    <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -467,6 +437,7 @@ function addRow() {
                               
                         </tbody>
                     </table>
+                </div>
                     <!-- <p style="font-size: 12px; color: rgba(255, 0, 0, 0.7);">Note: Please remove the unwanted rows</p> -->
                     <button type="button" class="btn btn-secondary mb-3" onclick="addRow()" disabled>Add Row</button>
 
