@@ -1,6 +1,7 @@
 const mysql = require('../mySql');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
+require('dotenv').config();
 
 // Set up storage for uploaded images
 var storage = multer.diskStorage({
@@ -17,52 +18,7 @@ var upload = multer({
     storage: storage,
 }).single("image");
 
-require('dotenv').config();
 
-
-
-// Helper function to add products to transactions
-const addProductsToTransactions = (transactions) => {
-    const groupedTransactions = [];
-
-    transactions.forEach(transaction => {
-        // Find or create a new transaction entry
-        let existingTransaction = groupedTransactions.find(t => t.transaction_id === transaction.transaction_id);
-
-        if (!existingTransaction) {
-            existingTransaction = {
-                transaction_id: transaction.transaction_id,
-                date: transaction.date,
-                invoice_number: transaction.invoice_number,
-                customer_name: transaction.customer_name,
-                total_amount: transaction.total_amount,
-                payment_type: transaction.payment_type,
-                balance_due: transaction.balance_due,
-                received_amount: transaction.received_amount,
-                created_at: transaction.created_at,
-                company_id: transaction.company_id,
-                user_id: transaction.user_id,
-                transaction_type: transaction.transaction_type,
-                products: [] // Initialize the products array
-            };
-            groupedTransactions.push(existingTransaction);
-        }
-
-        // Add the product details to the products array of the transaction
-        existingTransaction.products.push({
-            sale_product_id: transaction.sale_product_id,
-            item_id: transaction.item_id,
-            quantity: transaction.quantity,
-            price: transaction.price,
-            discount: transaction.discount,
-            tax_rate: transaction.tax_rate,
-            product_total: transaction.product_total,
-            product_company_id: transaction.product_company_id
-        });
-    });
-
-    return groupedTransactions;
-};
 
 
 const businessOwnerController = {
@@ -112,7 +68,7 @@ const businessOwnerController = {
 
 
         try {
-            const apiKey = '519b8292d58316d259cc7763'
+            const apiKey = process.env.EXCHANGE_RATE_API_KEY
 
             const user = req.session.user;
             const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
@@ -386,14 +342,20 @@ const businessOwnerController = {
             if (transactionType === "purchase") {
                 for (const product of products) {
                     await mysql.query(`UPDATE items SET stock = stock + ? WHERE id = ?`, [product.quantity, product.productId]);
+
+                    await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
+                        [product.productId, 'add', product.quantity, product.productTotal, 'due to purchase', created_at, user.company_id])
                 }
             } else {
                 for (const product of products) {
                     await mysql.query(`UPDATE items SET stock = stock - ? WHERE id = ?`, [product.quantity, product.productId]);
+
+                    await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
+                        [product.productId, 'reduce', product.quantity, product.productTotal, 'due to sale', created_at, user.company_id])
                 }
             }
         }
-       
+
 
         res.redirect('/business-owner/dashboard');
     },
@@ -717,12 +679,12 @@ const businessOwnerController = {
         }
     },
 
-    viewExpense:async (req,res)=>{
+    viewExpense: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ?`,[company_id])
+        const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ?`, [company_id])
 
         const [categories] = await mysql.query('SELECT * FROM expense_category');
 
@@ -740,29 +702,29 @@ const businessOwnerController = {
                 expenses: filteredExpenses,
             };
         });
-        res.render('businessOwner/expenseDisplay.ejs',{categories:formattedData,user,companies,currentCompany})
+        res.render('businessOwner/expenseDisplay.ejs', { categories: formattedData, user, companies, currentCompany })
 
     },
 
-    viewAddExpense: async (req,res) => {
+    viewAddExpense: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [categories] = await mysql.query('SELECT * FROM expense_category');
-        res.render('businessOwner/addExpense.ejs', { categories, companies,currentCompany,user });
+        res.render('businessOwner/addExpense.ejs', { categories, companies, currentCompany, user });
     },
-    addExpense: async (req,res)=>{
+    addExpense: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
-        const {category_id,expense_number,date,amount} = req.body
-        await mysql.query(`INSERT INTO expenses (category_id,expense_number,date,amount,company_id) VALUES(?,?,?,?,?)`,[category_id,expense_number,date,amount,company_id])
+        const { category_id, expense_number, date, amount } = req.body
+        await mysql.query(`INSERT INTO expenses (category_id,expense_number,date,amount,company_id) VALUES(?,?,?,?,?)`, [category_id, expense_number, date, amount, company_id])
         res.redirect('/business-owner/dashboard');
-        
+
     },
-    addExpenseCategory:async(req,res)=>{
-        const {name} = req.body
-        await mysql.query(`INSERT INTO expense_category (category_name) VALUES(?)`,[name])
+    addExpenseCategory: async (req, res) => {
+        const { name } = req.body
+        await mysql.query(`INSERT INTO expense_category (category_name) VALUES(?)`, [name])
         res.redirect('/business-owner/expenses')
     }
 

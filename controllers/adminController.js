@@ -1,6 +1,7 @@
 const mysql = require('../mySql');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
+require('dotenv').config();
 
 // Set up storage for uploaded images
 var storage = multer.diskStorage({
@@ -21,6 +22,7 @@ const adminController = {
 
     viewDashboard: async (req, res) => {
         const user = req.session.user;
+        const apiKey = process.env.EXCHANGE_RATE_API_KEY
 
         try {
             const [companies] = await mysql.query(`SELECT * FROM companies`);
@@ -58,7 +60,8 @@ const adminController = {
                 total_expenses,
                 total_profit,
                 currentCompany,
-                companies
+                companies,
+                apiKey
             });
         } catch (error) {
             console.error("Error fetching dashboard data:", error);

@@ -8,37 +8,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
 </head>
 <body>
-    <header>
-        <div class="navbar">
-            <h1>Admin Reports</h1>
-            <button class="hamburger">&#9776;</button>
-            <nav>
-                <ul>
-                    <li><a href="/admin/dashboard">Dashboard</a></li>
-                    <li><a href="/admin/sales">Sales</a></li>
-                    <li><a href="/admin/purchases">Purchases</a></li>
-                    <li><a href="/admin/transactions">Transactions</a></li>
-                    <li><a href="/admin/reports">Reports</a></li>
-                    <li><a href="/admin/settings">Settings</a></li>
-                    <li><a href="/admin/logout">Logout</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <%- include('./navbar')  %>
 
     <main>
         <section class="overview">
             <h2>Reports</h2>
             <div class="stat-cards">
-                <div class="stat-card">
-                    <h3>Sales</h3>
-                    <a href="/admin/sales"><button>Report</button></a>
-                </div>
-
-                <div class="stat-card">
-                    <h3>Purchases</h3>
-                    <a href="/admin/sales"><button>Report</button></a>
-                </div>
                 <div class="stat-card">
                     <h3>Item Wise Profit & Loss</h3>
                     <a href="/admin/itemWiseProfitAndLoss"><button>Report</button></a>
@@ -57,7 +32,7 @@
                 </div>
                 <div class="stat-card">
                     <h3>Total Profit</h3>
-                    <p>SAR<%= total_profit[0].total_profit %></p>
+                    <p>SAR <%= total_profit[0].total_profit %></p>
                 </div>
             </div>
         </section>
