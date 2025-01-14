@@ -350,14 +350,27 @@ function addRow() {
                                 <option <%= transactionDetails.transaction_type === 'sale'? 'selected':'' %> value="sale">Sale</option>
                             </select>
                         </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="partyName" class="form-label">Party ID *</label>
-                            <input type="text" id="partyName" name="partyName" class="form-control"
-                                placeholder="Enter Party ID"  list="partySuggestions" value="<%= transactionDetails.customer_name %>" required>
-                                <input type="hidden" name="transaction_id" value="<%= transactionDetails.id %>">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="partyName" class="form-label">Party Name *</label>
+                                <!-- <input type="text" id="partyName" name="partyName" class="form-control"
+                                    placeholder="Enter Party ID"  list="partySuggestions" required> -->
+    
+                                    <select name="partyName" id="partyName" class="form-control" placeholder="Enter Party Name" on onchange="partyChange(this)" required>
+                                        <option value="">Choose Party</option>
+                                        <% parties.map(party=>{%>
+                                            <option value="<%= party.id %>" <%= transactionDetails.customer_name == party.id ? 'selected' : '' %>><%= party.PartyName %></option>
+                                            <% }) %>
+                                    </select>
+                            </div>
                         </div>
-                    </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="number" class="form-label">Phone Number *</label>
+                                <input type="number" id="phone" name="phone" class="form-control"
+                                    placeholder="Enter Phone Number" value="<%= current_party.Phone %>" required>
+                            </div>
+                        </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="Invoice Number" class="form-label">Invoice Number *</label>
@@ -478,6 +491,17 @@ function addRow() {
             document.getElementById('remaining').textContent = 'Paid *';
         }
     }
+
+    function partyChange(element){
+        const phoneInput = document.getElementById('phone')
+        const parties = <%-JSON.stringify(parties)%>
+        parties.map(party=>{
+            if(party.id == element.value){
+                phoneInput.value = party.Phone
+            }
+        })    
+    }
+
 </script>   
 
 </html>

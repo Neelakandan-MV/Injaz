@@ -71,21 +71,41 @@ const adminController = {
 
 
     viewSales: async (req, res) => {
-        const [sales] = await mysql.query(`SELECT invoice_number, customer_name, total_amount, received_amount, balance_due, payment_type, DATE_FORMAT(date, '%Y-%m-%d') AS date
-    FROM sales
-    WHERE transaction_type = 'sale'
-    ORDER BY date DESC;`)
+
+        const user = req.session.user
+    const [sales] = await mysql.query(`
+        SELECT 
+            sales.*, 
+            parties.PartyName AS customer_name
+        FROM 
+            sales
+        LEFT JOIN 
+            parties ON sales.customer_name = parties.id
+        WHERE 
+            sales.company_id = ? 
+            AND sales.transaction_type = 'purchase'
+    `, [user.company_id]);
+    console.log(sales);
 
         res.render('admin/sales', { sales });
 
     },
 
     viewPurchases: async (req, res) => {
-
-        const [purchases] = await mysql.query(`SELECT invoice_number, customer_name, total_amount, received_amount, balance_due, payment_type, DATE_FORMAT(date, '%Y-%m-%d') AS date
-    FROM sales
-    WHERE transaction_type = 'purchase'
-    ORDER BY date DESC;`)
+        const user = req.session.user
+        const [purchases] = await mysql.query(`
+            SELECT 
+                sales.*, 
+                parties.PartyName AS customer_name
+            FROM 
+                sales
+            LEFT JOIN 
+                parties ON sales.customer_name = parties.id
+            WHERE 
+                sales.company_id = ? 
+                AND sales.transaction_type = 'purchase'
+        `, [user.company_id]);
+        console.log(purchases);
 
         res.render('admin/purchases', { purchases });
     },

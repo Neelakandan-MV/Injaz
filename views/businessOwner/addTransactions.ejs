@@ -231,7 +231,6 @@
                 (product) => product.item_name === selectedProductName
             );
             
-
             if (selectedProduct) {
                 // const row = element.target.closest('tr');
                 document.getElementsByName(`products[${count}][unit]`)[0].value = selectedProduct.unit;
@@ -245,8 +244,6 @@
                 document.getElementsByName(`products[${count}][discount]`)[0].value = ''
                 document.getElementsByName(`products[${count}][tax]`)[0].value = ''
             }
-
-
     }
 
     function toggleSidebar() {
@@ -254,7 +251,19 @@
             sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
         }
 
+        function setDefaultDate() {
+    const dateInput = document.getElementById('date');
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; 
+    dateInput.value = formattedDate;
+    filterByDate()
+}
+
+
+window.onload = setDefaultDate;
+
 </script>
+
 
 
 
@@ -351,9 +360,23 @@
                         </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="partyName" class="form-label">Party ID *</label>
-                            <input type="text" id="partyName" name="partyName" class="form-control"
-                                placeholder="Enter Party ID"  list="partySuggestions" required>
+                            <label for="partyName" class="form-label">Party Name *</label>
+                            <!-- <input type="text" id="partyName" name="partyName" class="form-control"
+                                placeholder="Enter Party ID"  list="partySuggestions" required> -->
+
+                                <select name="partyName" id="partyName" class="form-control" placeholder="Enter Party Name" onchange="partyChange(this)" required>
+                                    <option value="">Choose Party</option>
+                                    <% parties.map(party=>{%>
+                                        <option value="<%= party.id %>"><%= party.PartyName %></option>
+                                        <% }) %>
+                                </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="number" class="form-label">Phone Number *</label>
+                            <input type="number" id="phone" name="phone" class="form-control"
+                                placeholder="Enter Phone Number" required>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -374,7 +397,7 @@
                         </div>
                         <div class="col-md-3">
                             <label for="date" class="form-label">Date *</label>
-                            <input type="date" id="date" name="date" class="form-control" required>
+                            <input type="date" id="date" name="date" class="form-control" required >
                         </div>
                     </div>
                     
@@ -444,6 +467,28 @@
             document.getElementById('remaining').textContent = 'Paid *';
         }
     }
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+            const prefix = "T";
+            const randomNumber = Math.floor(1000 + Math.random() * 9000);
+            const timestamp = Date.now().toString().slice(-4);
+            const generatedCode = `${prefix}-${randomNumber}-${timestamp}`;
+            document.getElementById("invoiceNumber").value = generatedCode;
+    });
+    
+    function partyChange(element){
+        const phoneInput = document.getElementById('phone')
+        const parties = <%-JSON.stringify(parties)%>
+        parties.map(party=>{
+            if(party.id == element.value){
+                phoneInput.value = party.Phone
+            }
+        })    
+    }
+
+
+
 </script>   
 
 </html>

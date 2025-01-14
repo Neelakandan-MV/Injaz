@@ -200,7 +200,6 @@
                                     <th>Sale Price</th>
                                     <th>Purchase Price</th>
                                     <th>Image</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -222,14 +221,10 @@
                                         <td>
                                             <%= item.purchase_price %>
                                         </td>
-                                        <td><img src="/uploads/<%= item.image[0] %>" class="img-sm img-thumbnail"
-                                                alt="Image"></td>
-                                        <td class="d-flex">
-                                            <a href="/business-owner/item-detail?itemId=<%= item.id %>" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i>
-                                                Item Detail</a>
-                                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i>
-                                                Delete</button>
-                                        </td>
+                                        
+                                        <td><img src="/uploads/<%= item.image %>" class="img-sm "
+                                                alt=""></td>
+                                        
                                     </tr>
                                     <% }); %>
 
@@ -245,7 +240,12 @@
     <!-- JS Framework -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
+<style>.img-sm {
+    width: 70px;
+    height: 50px;
+}
 
+</style>
 </html>
 <script>
     function toggleSidebar() {

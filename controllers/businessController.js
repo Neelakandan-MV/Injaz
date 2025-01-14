@@ -35,9 +35,19 @@ const businessOwnerController = {
         }
 
         const [items] = await mysql.query(`
-            SELECT * FROM sales
-            WHERE company_id = ? AND transaction_type = 'purchase'
+            SELECT 
+                sales.*, 
+                parties.PartyName AS customer_name
+            FROM 
+                sales
+            LEFT JOIN 
+                parties ON sales.customer_name = parties.id
+            WHERE 
+                sales.company_id = ? 
+                AND sales.transaction_type = 'purchase'
         `, [companyId]);
+        console.log(items);
+        
 
 
 
@@ -53,10 +63,21 @@ const businessOwnerController = {
             return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
         }
 
-        const [items] = await mysql.query(`
-            SELECT * FROM sales
-            WHERE company_id = ? AND transaction_type = 'sale'
-        `, [companyId]);
+       const [items] = await mysql.query(`
+    SELECT 
+        sales.*, 
+        parties.PartyName AS customer_name
+    FROM 
+        sales
+    LEFT JOIN 
+        parties ON sales.customer_name = parties.id
+    WHERE 
+        sales.company_id = ? 
+        AND sales.transaction_type = 'sale'
+`, [companyId]);
+
+        console.log(items);
+        
 
 
         res.render("businessOwner/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
@@ -138,7 +159,7 @@ const businessOwnerController = {
 
         const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
 
-        res.render('businessOwner/addItems.ejs', { categories: categories.length > 0 ? categories : [], companies, currentCompany, user });
+        res.render('businessOwner/addItems.ejs', { categories: categories.length > 0 ? categories : [], companies, currentCompany, user,error:null });
     },
 
     // Add new item, associating it with the company
@@ -179,18 +200,29 @@ const businessOwnerController = {
             try {
 
                 const [itemExist] = await mysql.query(
-                    "SELECT * FROM items WHERE item_name = ? OR item_code = ?",
-                    [itemName, itemCode]
+                    "SELECT * FROM items WHERE item_name = ? AND user_id = ?",
+                    [itemName, user.id]
                 );
 
                 if (itemExist.length > 0) {
+                    const user = req.session.user;
+                    const companyId = user.company_id;
+                    const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+                    const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+            
+                    if (!companyId) {
+                        return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
+                    }
+            
+                    const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
+            
                     const [items] = await mysql.query(`
                         SELECT items.*, categories.category AS categoryName 
                         FROM items 
                         LEFT JOIN categories ON items.category_id = categories.id
                         WHERE items.company_id = ?
                     `, [companyId]);
-                    return res.render('businessOwner/addItems.ejs', { items, error: 'Product with the same name or code already exists.' });
+                    return res.render('businessOwner/addItems.ejs', { items, error: 'Product with the same name or code already exists.',user,categories,companies,currentCompany });
                 }
 
                 const generateItemCode = () => {
@@ -210,7 +242,7 @@ const businessOwnerController = {
                         itemHSN,
                         category,
                         unit,
-                        JSON.stringify(image),
+                        image || null,
                         salePrice || 0,
                         salePriceTaxIncluded || false,
                         discountValue || 0,
@@ -259,8 +291,22 @@ const businessOwnerController = {
             LEFT JOIN categories ON items.category_id = categories.id
             WHERE items.company_id = ?
         `, [companyId]);
-
+            console.log(items);
+            
         res.render('businessOwner/displayItem.ejs', { items, user, currentCompany, companies });
+    },
+
+    deleteItem:async(req,res)=>{
+        try{
+            const {item_id} = req.query
+            console.log(item_id);
+            await mysql.query(`DELETE FROM items WHERE id = ?`, [item_id]);
+        }catch(error){
+            console.error(error);
+            // res.send('Item already in use, Cannot be deleted')
+        }
+        
+
     },
 
     // Add new category, linking it to the user's company
@@ -292,7 +338,7 @@ const businessOwnerController = {
             const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
             return res.render('businessOwner/addItems.ejs', {
                 categories,
-                success: 'Category added successfully.', companies, currentCompany, user
+                success: 'Category added successfully.', companies, currentCompany, user,error:null
             });
         } catch (error) {
             console.error('Error in addCategory:', error);
@@ -517,9 +563,21 @@ const businessOwnerController = {
             return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
         }
 
+        // const [items] = await mysql.query(`
+        //     SELECT * FROM sales
+        //     WHERE company_id = ?
+        // `, [companyId]);
+
         const [items] = await mysql.query(`
-            SELECT * FROM sales
-            WHERE company_id = ?
+            SELECT 
+                sales.*, 
+                parties.PartyName AS customer_name
+            FROM 
+                sales
+            LEFT JOIN 
+                parties ON sales.customer_name = parties.id
+            WHERE 
+                sales.company_id = ? 
         `, [companyId]);
 
         res.render('businessOwner/dayBook.ejs', { title: 'Day Book', currentCompany, companies, user, items });
@@ -566,9 +624,12 @@ const businessOwnerController = {
         const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
         const [parties] = await mysql.query(`SELECT * FROM parties WHERE user_id = ?`, [user.id]);
         const products = await mysql.query("SELECT * FROM items WHERE user_id = ? AND company_id = ?", [user.id, companyId])
+        const [current_party] = await mysql.query('SELECT * FROM parties WHERE id = ?',transactionDetails[0].customer_name)
+        
+        console.log("current_party",current_party);
+        
 
-
-        res.render('businessOwner/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0] })
+        res.render('businessOwner/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0],current_party:current_party[0] })
     },
     transactionEdit: async (req, res) => {
         const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;
@@ -649,10 +710,10 @@ const businessOwnerController = {
                 -- Purchase quantity: sum of quantities for transactions where transaction_type is 'purchase'
                 COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
                 -- Adjustments quantity (if stock_adjustments table is available)
-                COALESCE(SUM(stock_adjustments.quantity), 0) AS adjust_qty,
+                COALESCE(SUM(stock_adjustments.adjustment_quantity), 0) AS adjust_qty,
                 -- Closing quantity: purchase_qty + adjust_qty - sale_qty
                 (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) 
-                + COALESCE(SUM(stock_adjustments.quantity), 0) 
+                + COALESCE(SUM(stock_adjustments.adjustment_quantity), 0) 
                 - COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0)) AS closing_qty
             FROM 
                 items
@@ -663,10 +724,11 @@ const businessOwnerController = {
             LEFT JOIN 
                 stock_adjustments ON items.id = stock_adjustments.item_id  -- Only if adjustments are tracked in a separate table
             WHERE 
-                items.item_name = ?
+                items.item_name = ? AND
+                items.user_id = ?
             GROUP BY 
                 items.id;
-        `, [itemId]);
+        `, [itemId,user.id]);
 
 
 

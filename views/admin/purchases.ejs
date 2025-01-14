@@ -116,7 +116,7 @@
                             <!-- <td><%= purchase.paid_amount %></td> -->
                             <td><%= purchase.balance_due %></td>
                             <td><%= purchase.payment_type %></td>
-                            <td><%= purchase.date %></td>
+                            <td><%= new Date(purchase.date).toLocaleDateString() %></td>
                         </tr>
                     <% }) %>
                 </tbody>

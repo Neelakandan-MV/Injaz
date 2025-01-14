@@ -116,7 +116,7 @@
                             <!-- <td><%= sale.received_amount %></td> -->
                             <td><%= sale.balance_due %></td>
                             <td><%= sale.payment_type %></td>
-                            <td><%= sale.date %></td>
+                            <td><%= new Date(sale.date).toLocaleDateString() %></td>
                         </tr>
                     <% }) %>
                 </tbody>
