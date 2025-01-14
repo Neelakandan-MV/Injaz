@@ -13,6 +13,8 @@ router.post('/switch-company', (req, res) => {
 router.get('/business-owner/dashboard',isLogged,businessController.viewDashboard);
 router.get('/business-owner/addItems',isLogged,businessController.viewAddItems);
 router.post('/business-owner/addItems',isLogged,businessController.AddItems);
+router.get('/business-owner/editItems',isLogged,businessController.viewEditItems);
+router.post('/business-owner/editItems',isLogged,businessController.editItems);
 router.get('/business-owner/viewItems',isLogged,businessController.viewItems);
 router.post('/business-owner/addCategory',isLogged,businessController.addCategory);
 router.get('/business-owner/sales',isLogged,businessController.viewSales);

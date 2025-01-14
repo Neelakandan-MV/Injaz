@@ -291,6 +291,8 @@ const adminController = {
             LEFT JOIN categories ON items.category_id = categories.id
             WHERE items.company_id = ?
         `, [companyId]);
+        console.log(items);
+        
 
         res.render('admin/itemManagement.ejs', { items, user: req.session.user });
     },
@@ -637,7 +639,111 @@ ORDER BY
         [item_id,adjustmentType,quantity,price,details,date,company_id])
         res.redirect('/admin/viewStockReport')
         
-    }
+    },
+
+    viewEditItems:async(req,res)=>{
+        const {item_id} = req.query
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
+
+        const [item] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id])
+        
+        res.render('admin/itemEdit.ejs',{item:item[0],user,companies,currentCompany,categories})
+        
+    },
+
+    editItems:async(req,res)=>{
+        upload(req, res, async function (err) {
+            if (err instanceof multer.MulterError) {
+                return res.status(500).json(err);
+            } else if (err) {
+                return res.status(500).json(err);
+            }
+            const user = req.session.user;
+            const companyId = user.company_id;
+
+            if (!companyId) {
+                return res.render("admin/error.ejs", { error: 'No company found for this user.' });
+            }
+
+            const {
+                itemName,
+                itemHSN,
+                category,
+                unit,
+                salePrice,
+                salePriceTaxIncluded,
+                discountValue,
+                discountType,
+                wholesalePrice,
+                purchasePrice,
+                purchasePriceTaxIncluded,
+                taxRate,
+                itemCode,
+                item_id
+            } = req.body;
+
+            const [currentItem] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id]);
+
+            
+            const image = req.file ? req.file.filename : currentItem[0].image;
+
+            try {
+                const user_id = req.session.user.id
+
+                await mysql.query(
+                    `UPDATE items 
+                     SET 
+                        item_name = ?, 
+                        item_hsn = ?, 
+                        category_id = ?, 
+                        unit = ?, 
+                        image = ?, 
+                        sale_price = ?, 
+                        sale_price_tax_included = ?, 
+                        discount_value = ?, 
+                        discount_type = ?, 
+                        wholesale_price = ?, 
+                        purchase_price = ?, 
+                        purchase_price_tax_included = ?, 
+                        tax_rate = ?, 
+                        item_code = ?, 
+                        company_id = ?, 
+                        user_id = ?
+                     WHERE id = ?`,
+                    [
+                        itemName,
+                        itemHSN,
+                        category,
+                        unit,
+                        image || null,
+                        salePrice || 0,
+                        salePriceTaxIncluded || false,
+                        discountValue || 0,
+                        discountType || null,
+                        wholesalePrice || 0,
+                        purchasePrice,
+                        purchasePriceTaxIncluded || false,
+                        taxRate,
+                        itemCode,
+                        companyId, 
+                        user_id,
+                        item_id
+                    ]
+                )
+
+                res.redirect('/admin/viewItems')
+
+            } catch (error) {
+                console.error(error);
+                return res.render('admin/editItem.ejs', { error: 'An error occurred. Please try again.'});
+            }
+        });
+    },
+
 
 
 };

@@ -47,6 +47,8 @@ router.get('/admin/viewStockReport',isLoggedAdmin,adminController.viewStockRepor
 router.get('/admin/adjustStock',isLoggedAdmin,adminController.viewAdjustStock);
 router.get('/admin/adjustStockDetails',isLoggedAdmin,adminController.viewAdjustStockDetails);
 router.post('/admin/adjustStock',isLoggedAdmin,adminController.adjustStock);
+router.get('/admin/editItems',isLoggedAdmin,adminController.viewEditItems);
+router.post('/admin/editItems',isLoggedAdmin,adminController.editItems);
   
 
 module.exports = router;

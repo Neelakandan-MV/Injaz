@@ -200,6 +200,7 @@
                                     <th>Sale Price</th>
                                     <th>Purchase Price</th>
                                     <th>Image</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -224,7 +225,7 @@
                                         
                                         <td><img src="/uploads/<%= item.image %>" class="img-sm "
                                                 alt=""></td>
-                                        
+                                        <td><a href="/business-owner/editItems?item_id=<%= item.id %>" class="btn btn-warning">Edit</a></td>
                                     </tr>
                                     <% }); %>
 
@@ -244,7 +245,6 @@
     width: 70px;
     height: 50px;
 }
-
 </style>
 </html>
 <script>
