@@ -442,7 +442,7 @@ const businessOwnerController = {
             if (categoryExist.length > 0) {
                 const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
                 return res.render('businessOwner/addItems.ejs', {
-                    categoryError: 'Category Already Exists.',
+                    error: 'Category Already Exists.',
                     categories, companies, currentCompany, user
                 });
             }
@@ -711,13 +711,14 @@ const businessOwnerController = {
         const user = req.session.user
         const companyId = user.company_id;
         const transaction_id = req.query.id
+        const previousRoute = res.locals.previousRoute
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
         const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
+        console.log(previousRoute);
 
-
-        res.render('businessOwner/transactionDetails', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts })
+        res.render('businessOwner/transactionDetails', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, previousRoute })
     },
     transactionDelete: async (req, res) => {
 
@@ -739,11 +740,11 @@ const businessOwnerController = {
         const [parties] = await mysql.query(`SELECT * FROM parties WHERE user_id = ?`, [user.id]);
         const products = await mysql.query("SELECT * FROM items WHERE user_id = ? AND company_id = ?", [user.id, companyId])
         const [current_party] = await mysql.query('SELECT * FROM parties WHERE id = ?',transactionDetails[0].customer_name)
-        
+        const previousRoute = res.locals.previousRoute
 
         
 
-        res.render('businessOwner/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0],current_party:current_party[0] })
+        res.render('businessOwner/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0],current_party:current_party[0],previousRoute })
     },
     transactionEdit: async (req, res) => {
         const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;

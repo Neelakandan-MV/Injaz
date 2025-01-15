@@ -3,6 +3,13 @@ const router = express.Router();
 const businessController = require('../controllers/businessController');
 const {isLogged} = require('../middlewares/auth')
 
+
+router.use((req, res, next) => {
+    res.locals.previousRoute = req.session.previousRoute || '/business-owner/dashboard';
+    req.session.previousRoute = req.originalUrl; // Update session with the current route
+    next();
+});
+
 // Business Owner dashboard
 router.post('/switch-company', (req, res) => {
     const { companyId } = req.body;
