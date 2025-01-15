@@ -111,13 +111,25 @@ const adminController = {
     },
 
     viewTransactions: async (req, res) => {
-
+        const companyId = req.session.user.company_id
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
-        const [transactions] = await mysql.query(`SELECT id, invoice_number, customer_name, total_amount, balance_due, payment_type, transaction_type, DATE_FORMAT(date, '%Y-%m-%d') AS date
-    FROM sales
-    ORDER BY date DESC
-    LIMIT ? OFFSET ?`, [parseInt(limit), offset])
+        const [transactions] = await mysql.query(`
+            SELECT 
+                id, 
+                invoice_number, 
+                customer_name, 
+                total_amount, 
+                balance_due, 
+                payment_type, 
+                transaction_type, 
+                DATE_FORMAT(date, '%Y-%m-%d') AS date
+            FROM sales
+            WHERE company_id = ?
+            ORDER BY date DESC
+            LIMIT ? OFFSET ?
+        `, [companyId, parseInt(limit), offset]);
+        
 
         const countResults = await mysql.query(`SELECT COUNT(*) AS total FROM sales;`)
         const totalTransactions = countResults[0].total;
@@ -511,38 +523,43 @@ const adminController = {
 
     viewItemProfitAndLoss: async (req, res) => {
         try {
+            const user = req.session.user
+            const company_id = user.company_id;
             const [results] = await mysql.query(`
-               SELECT 
-    i.id AS item_id,
-    i.item_name,
-    COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) AS total_sales,
-    COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) AS total_purchases,
-    CASE 
-        WHEN COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) >
-             COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) 
-        THEN COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) -
-             COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0)
-        ELSE 0 
-    END AS profit,
-    CASE 
-        WHEN COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) >
-             COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) 
-        THEN COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) -
-             COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0)
-        ELSE 0 
-    END AS loss
-FROM 
-    items i
-LEFT JOIN 
-    sale_products sp ON i.id = sp.item_id
-LEFT JOIN 
-    sales s ON sp.sale_id = s.id
-GROUP BY 
-    i.id, i.item_name
-ORDER BY 
-    i.item_name;
-
-            `);
+                SELECT 
+                    i.id AS item_id,
+                    i.item_name,
+                    COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) AS total_sales,
+                    COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) AS total_purchases,
+                    CASE 
+                        WHEN COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) >
+                             COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) 
+                        THEN COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) -
+                             COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0)
+                        ELSE 0 
+                    END AS profit,
+                    CASE 
+                        WHEN COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) >
+                             COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) 
+                        THEN COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) -
+                             COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0)
+                        ELSE 0 
+                    END AS loss
+                FROM 
+                    items i
+                LEFT JOIN 
+                    sale_products sp ON i.id = sp.item_id
+                LEFT JOIN 
+                    sales s ON sp.sale_id = s.id
+                WHERE 
+                    i.company_id = ?
+                GROUP BY 
+                    i.id, i.item_name
+                ORDER BY 
+                    i.item_name;
+            `, [company_id]);
+            
+            
 
             res.render('admin/itemProfitAndLoss.ejs', { results })
         } catch (error) {
@@ -634,11 +651,11 @@ ORDER BY
             UPDATE items 
             SET stock = stock + ? 
             WHERE id = ?
-        `, [adjustmentType === 'add' ? quantity : -quantity, item_id]);
+        `, [adjustmentType == 'add' ? quantity : -quantity, item_id]);
     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
-        [item_id,adjustmentType,quantity,price,details,date,company_id])
-        res.redirect('/admin/viewStockReport')
-        
+        [item_id,adjustmentType,quantity,price,details?details:'',date,company_id])
+    
+        res.redirect('/admin/viewStockReport')  
     },
 
     viewEditItems:async(req,res)=>{

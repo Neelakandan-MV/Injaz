@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <style>
         * {
     margin: 0;
@@ -15,28 +16,23 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f7fa;
     color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
+    
 }
 
 .container {
-    width: 80%;
-    max-width: 1000px;
+    width: 90%;
     background-color: #fff;
-    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    margin-left: 120px;
+    
 }
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.header{
+    margin-left: 10px;
 }
-
-header h1 {
+.header h1 {
     color: #4CAF50;
 }
 
@@ -46,7 +42,8 @@ header h1 {
     padding: 8px 16px;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: pointer;;
+    
 }
 
 .add-user-btn:hover {
@@ -99,7 +96,7 @@ header h1 {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
-    width: 300px;
+    width: 400px;
 }
 
 .close-btn {
@@ -109,21 +106,31 @@ header h1 {
     font-size: 20px;
     cursor: pointer;
 }
+@media (max-width: 768px) {
+    .table-responsive{
+        overflow-x: scroll;
+    }
+    .container{
+        width: 100%;
+        margin-left: 0px;
+    }
+}
+
 
     </style>
 </head>
 <body>
     <%- include('./navbar')  %>
     <div class="container">
-        <header>
+        <div class="header">
             <h1>User Management</h1>
             <% if(currentUser.role === 'superAdmin'){ %>
-            <button class="add-user-btn" onclick="openAddUserModal()">Add User</button>
+            <button class="add-user-btn ms-3" onclick="openAddUserModal()">Add User</button>
             <% } %>
-        </header>
+            </div>
 
         <!-- User List Section -->
-        <section class="user-list">
+        <section class="user-list table-responsive">
             <table>
                 <thead>
                     <tr>
@@ -146,16 +153,21 @@ header h1 {
                 <span class="close-btn" onclick="closeAddUserModal()">&times;</span>
                 <h2>Add New User</h2>
                 <form id="addUserForm" action="/admin/addUser" method="POST">
+                    <div class="form-control mt-2">
                     <label for="userName">Name:</label>
                     <input type="text" name="name" id="userName" required>
-
+                </div>
+                <div class="form-control mt-2">
                     <label for="userEmail">Email:</label>
                     <input type="email" name="email" id="userEmail" required>
-
+                </div>
+                <div class="form-control mt-2">
                     <label for="password">Password:</label>
                     <input type="password" name="password" id="password" required>
-
-                    <button type="submit">Add User</button>
+                </div>
+                    <div class="form-control mt-3">
+                    <button class="btn btn-success" type="submit">Add User</button>
+                </div>
                 </form>
             </div>
         </div>
@@ -237,4 +249,5 @@ renderUserList();
 
     </script>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </html>

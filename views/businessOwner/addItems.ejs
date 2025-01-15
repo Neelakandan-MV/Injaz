@@ -265,8 +265,8 @@
                                             <%= category.category %>
                                         </option>
                                         <% })} %>
-                                            <option value="+ Add New Category">+ Add New Category</option>
                                 </select>
+                                <button  class="btn btn-primary mt-3" id="addCategoryButton">+ Add New Category</button>
                             </div>
                             <div class="col-md-6">
                                 <label for="itemCode" class="form-label">Item Code</label>
@@ -392,11 +392,9 @@
 
     <!-- JavaScript to trigger the modal -->
     <script>
-        document.querySelector('#category').addEventListener('change', function () {
-            if (this.value === '+ Add New Category') {
+        document.querySelector('#addCategoryButton').addEventListener('click', function () {
                 var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
                 myModal.show();
-            }
         });
 
         document.querySelector('#saveCategory').addEventListener('click', function () {
