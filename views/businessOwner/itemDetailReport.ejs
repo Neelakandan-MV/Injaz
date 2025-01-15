@@ -40,7 +40,7 @@
                 border: none;
                 outline: none;
                 z-index: 100;
-                margin-top: -17px;
+                margin-top: -20px;
             }
             .navbar-toggler-icon {
                 background-color: rgb(223, 223, 223);
@@ -123,13 +123,15 @@
         </ul>
     </div>
     <div class="container mt-4">
-        <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+        <nav class="navbar navbar-light  d-flex justify-content-between d-md-none">
             <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <h2>Item Detail Report</h2>
+            
         </nav>
+        
         <form id="filter-form" class="mb-4">
+            <h2>Item Detail Report</h2>
             <div class="input-group">
                 <input type="text" name="itemId" class="form-control" placeholder="Enter Item Name" />
                 <button type="submit" class="btn btn-primary">Get Report</button>

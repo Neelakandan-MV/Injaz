@@ -48,6 +48,7 @@
                 border: none;
                 outline: none;
                 z-index: 100;
+                margin-top: -10px;
             }
 
             .main-content {
@@ -140,14 +141,14 @@
             </ul>
         </div>
         <div class="container">
-            <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+            <nav class="navbar navbar-light  d-flex justify-content-between d-md-none">
                 <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <h2>Expense</h2>
+                <!-- <h2>Expense</h2> -->
             </nav>
             <a href="/business-owner/addExpense" class="btn btn-primary mt-3"> Add Expense </a>
-            <h2 class="text-center mb-4">Expenses by Category</h2>
+            <h3 class="text-center mb-4">Expenses</h3>
             <div class="accordion" id="expensesAccordion">
                 <% categories.forEach(category=> { %>
                     <div class="accordion-item">

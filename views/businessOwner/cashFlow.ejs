@@ -49,6 +49,7 @@
                 border: none;
                 outline: none;
                 z-index: 100;
+                margin-top: -15px;
             }
 
             .main-content {
@@ -161,19 +162,18 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+            <nav class="navbar navbar-light  d-flex justify-content-between d-md-none">
                 <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <h2>Cash Flow</h2>
             </nav>
 
             <!-- Header -->
             <header>
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-md-flex justify-content-between align-items-center">
                     <h2>Cash Flow</h2>
                     <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Cash Flow</a>
-                    <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
+                    <button type="button" class="btn btn-warning mt" onclick="downloadPdf()">Download Report</button>
                 </div>
             </header>
 

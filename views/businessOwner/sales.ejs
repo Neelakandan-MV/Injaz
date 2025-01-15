@@ -18,7 +18,9 @@
         .main-content{
             padding-left: 20px;
             padding-top: 20px;
+            width: 100%;
         }
+        
 
         body {
             font-family: Arial, sans-serif;
@@ -158,43 +160,35 @@
         </div>
 
         <!-- Main Content -->
-        <div class="main-content flex-grow-1">
-            <nav class="navbar navbar-light bg-light d-flex justify-content-between d-md-none">
+        <div class="main-content">
+            <nav class="navbar navbar-light d-flex justify-content-between d-md-none">
                 <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <h2>Sale</h2>
             </nav>
 
             <!-- Header -->
             <header>
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2>This Month</h2>
-
-                    <!-- Optional Filters (commented out) -->
-                    <!--
+                <div class="d-md-flex justify-content-between align-items-center salesHeading">
+                    <h2>Sales</h2>
                     <div class="filters d-flex align-items-center">
-                        <label for="from-date" class="me-2">Between</label>
+                        <label for="from-date" class="me-2"></label>
                         <input type="date" id="from-date" class="form-control me-2" />
                         <span class="me-2">To</span>
                         <input type="date" id="to-date" class="form-control me-2" />
-                        <select class="form-select">
-                            <option value="">All Firms</option>
-                        </select>
-                    </div> 
-                    -->
+                    </div>
                 </div>
-
-                <!-- Action Buttons -->
                 <div class="mt-3">
                     <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Transaction</a>
+
+
                 </div>
             </header>
 
             <!-- Transactions Section -->
             <section class="transactions mt-4 table-responsive">
                 <!-- Responsive Table -->
-                <table class="table table-bordered">
+                <table class="table table-bordered" id="purchases-table">
                     <thead class="table-light">
                         <tr>
                             <!-- Table Headers -->
@@ -209,7 +203,7 @@
                             <tr>
 
                                 <!-- Table Data -->
-                                <td><%= new Date(item.date).toLocaleDateString() %></td><td><%= item.invoice_number %></td><td><%= item.customer_name %></td><td><%= item.transaction_type %></td><td><%= item.payment_type %></td><td>SAR<%= item.total_amount %></td><td>SAR<%= item.balance_due %></td>
+                                <td class="purchase-date"><%= new Date(item.date).toLocaleDateString() %></td><td><%= item.invoice_number %></td><td><%= item.customer_name %></td><td><%= item.transaction_type %></td><td><%= item.payment_type %></td><td>SAR<%= item.total_amount %></td><td>SAR<%= item.balance_due %></td>
 
                                 <!-- Action Buttons -->
                                 <td class="d-flex">
@@ -273,6 +267,33 @@
       }
     </script>
 
+<script>
+    const fromDateInput = document.getElementById('from-date');
+    const toDateInput = document.getElementById('to-date');
+    const tableRows = document.querySelectorAll('#purchases-table tbody tr');
+
+    function filterRows() {
+        const fromDate = new Date(fromDateInput.value);
+        const toDate = new Date(toDateInput.value);
+
+        tableRows.forEach(row => {
+            const dateCell = row.querySelector('.purchase-date');
+            const rowDate = new Date(dateCell.textContent);
+
+            if (
+                (!isNaN(fromDate) && rowDate < fromDate) || // Check if below the fromDate
+                (!isNaN(toDate) && rowDate > toDate) // Check if above the toDate
+            ) {
+                row.style.display = 'none'; // Hide row
+            } else {
+                row.style.display = ''; // Show row
+            }
+        });
+    }
+
+    fromDateInput.addEventListener('change', filterRows);
+    toDateInput.addEventListener('change', filterRows);
+</script>
 </body>
 
 </html>
