@@ -603,7 +603,6 @@ const businessOwnerController = {
         });
 
         const parties = Object.values(partiesMap);
-        console.log(parties);
         
 
         res.render('businessOwner/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user, parties });
