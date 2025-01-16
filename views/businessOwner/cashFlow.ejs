@@ -121,7 +121,7 @@ function downloadPdf() {
     const tableContent = document.getElementById('reportContainer').cloneNode(true); // Clone the table element
     wrapper.appendChild(tableContent);
 
-    html2pdf().from(wrapper).save();
+    html2pdf().set({filename:'Cash Flow Report'}).from(wrapper).save();
 }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>

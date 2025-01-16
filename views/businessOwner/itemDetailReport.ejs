@@ -60,7 +60,7 @@
                 <input type="text" name="itemId" class="form-control" placeholder="Enter Item Name" list="itemSuggestions"/>
                 <button type="submit" class="btn btn-primary">Get Report</button>
             </div>
-            <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
+            <button type="button" onclick="downloadAndSharePdf()">Download & Share PDF</button>
         </form>
 
         <!-- Bootstrap table with responsiveness -->
@@ -115,28 +115,54 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
 
-       <script>
-        function downloadPdf() {
+    <script>
+        async function downloadAndSharePdf() {
+    const wrapper = document.createElement('div');
 
-            const wrapper = document.createElement('div');
+    const companyName = document.createElement('h2');
+    companyName.textContent = 'Injaz';
+    companyName.style.textAlign = 'center';
+    wrapper.appendChild(companyName);
 
+    const reportHeading = document.createElement('h4');
+    reportHeading.textContent = 'Item Detail Report';
+    reportHeading.style.textAlign = 'center';
+    wrapper.appendChild(reportHeading);
 
-            const companyName = document.createElement('h2');
-            companyName.textContent = 'Injaz';
-            companyName.style.textAlign = 'center'; // Optional styling
-            wrapper.appendChild(companyName);
+    const tableContent = document.getElementById('reportContainer').cloneNode(true);
+    wrapper.appendChild(tableContent);
 
+    const pdfBlob = await html2pdf()
+        .set({ filename: 'Item_Detail_Report.pdf', jsPDF: { unit: 'px', format: 'a4' } }).from(wrapper)
+        .outputPdf('blob');
+        console.log(pdfBlob);
+        
 
-            const reportHeading = document.createElement('h4');
-            reportHeading.textContent = 'Item Detail Report';
-            reportHeading.style.textAlign = 'center'; // Optional styling
-            wrapper.appendChild(reportHeading);
-
-            const tableContent = document.getElementById('reportContainer').cloneNode(true); // Clone the table element
-            wrapper.appendChild(tableContent);
-
-            html2pdf().from(wrapper).save();
+    try {
+        if (navigator.canShare && navigator.canShare({ files: [new File([pdfBlob], 'Item_Detail_Report.pdf')] })) {
+            await navigator.share({
+                files: [new File([pdfBlob], 'Item_Detail_Report.pdf')],
+                title: 'Item Detail Report',
+                text: 'Here is the item detail report.',
+            });
+            console.log('File shared successfully!');
+        } else {
+            alert('Sharing is not supported on this device or browser. The file will be downloaded instead.');
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(pdfBlob);
+            link.download = 'Item_Detail_Report.pdf';
+            link.click();
         }
+    } catch (error) {
+        console.error('Error sharing the file:', error);
+        alert('An error occurred while sharing the file. The file will be downloaded instead.');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = 'Item_Detail_Report.pdf';
+        link.click();
+    }
+}
+
     </script>
     <script>
         const sidebar = document.getElementById('sidebar');

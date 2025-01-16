@@ -168,7 +168,7 @@ function downloadPdf() {
     const tableContent = document.getElementById('reportContainer').cloneNode(true); 
     wrapper.appendChild(tableContent);
 
-    html2pdf().from(wrapper).save();
+    html2pdf().set({filename:'Day Book Report'}).from(wrapper).save();
 }
 </script>
 <script>
