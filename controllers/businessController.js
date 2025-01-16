@@ -820,6 +820,8 @@ const businessOwnerController = {
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [allItems] = await mysql.query(`SELECT * FROM items WHERE user_id = ? AND company_id = ?`,[user.id,companyId])
+        
 
         try {
             const [itemDetails] = await mysql.query(`
@@ -848,15 +850,15 @@ const businessOwnerController = {
                 stock_adjustments ON items.id = stock_adjustments.item_id  -- Only if adjustments are tracked in a separate table
             WHERE 
                 items.item_name = ? AND
-                items.user_id = ?
+                items.user_id = ? AND
+                items.company_id = ?
             GROUP BY 
                 items.id;
-        `, [itemId,user.id]);
+        `, [itemId,user.id,companyId]);
+        console.log(itemDetails);
+        
 
-
-
-
-            res.render('businessOwner/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany })
+            res.render('businessOwner/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany, allItems })
 
         } catch (error) {
             console.error("Error fetching item details:", error);
