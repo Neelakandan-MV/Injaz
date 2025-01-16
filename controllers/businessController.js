@@ -515,9 +515,11 @@ const businessOwnerController = {
                 }
             }
         }
-
-
-        res.redirect('/business-owner/dashboard');
+        if (transactionType === "purchase") {
+         return   res.redirect('/business-owner/purchases');
+        }
+        res.redirect('/business-owner/sales');
+        
     },
 
     addCompany: async (req, res) => {
@@ -600,6 +602,8 @@ const businessOwnerController = {
         });
 
         const parties = Object.values(partiesMap);
+        console.log(parties);
+        
 
         res.render('businessOwner/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user, parties });
     },
@@ -716,7 +720,6 @@ const businessOwnerController = {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
         const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
-        console.log(previousRoute);
 
         res.render('businessOwner/transactionDetails', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, previousRoute })
     },
@@ -754,6 +757,8 @@ const businessOwnerController = {
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
 
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+        console.log(transactionDetails);
+        
         if (transactionDetails[0].balanceDue !== balanceDue && transactionDetails[0].received_amount !== recieved) {
             const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
             await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
@@ -803,7 +808,10 @@ const businessOwnerController = {
         //         ]
         //     );
         // }
-        res.redirect('/business-owner/dashboard');
+        if (transactionType === "purchase") {
+            return   res.redirect('/business-owner/purchases');
+           }
+           res.redirect('/business-owner/sales');
     },
 
     viewItemDetail: async (req, res) => {

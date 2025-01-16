@@ -1,47 +1,50 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Item</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
-            background-color: #f8f9fa;
-            padding-left: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            
+            .table-responsive {
+                overflow-x: auto; 
+            }
         }
 
-        .sidebar {
-            width: 250px;
-            background-color: #343a40;
-            color: white;
-            min-height: 100vh;
+        .btn-primary,
+        .btn-secondary {
+            margin-right: 10px; 
         }
-
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-        }
-
-
+    </style>
+    <style>
         .card {
             border-radius: 10px;
-        }
-
-        .chart {
-            height: 200px;
-            background-color: #f1f1f1;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .company-dropdown {
-            margin-top: 15px;
         }
 
         .form-container {
@@ -64,11 +67,6 @@
             .form-container {
                 padding: 1rem;
             }
-        }
-
-        .main-content {
-            margin-left: 180px;
-            padding: 20px;
         }
 
         .modal-content {
@@ -116,12 +114,6 @@
         }
 
         @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-            }
-        }
-
-        @media (max-width: 768px) {
             .form-container {
                 padding: 1rem;
             }
@@ -134,110 +126,22 @@
                 margin-top: 1rem;
             }
         }
-         /* Mobile Styles */
-         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                width: 100%;
-                height: auto;
-                min-height: 0;
-                display: none;
-                z-index: 10;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .navbar-toggler {
-                border: none;
-                outline: none;
-                z-index: 100;
-                margin-top: -17px;
-            }
-            .navbar-toggler-icon {
-                background-color: rgb(223, 223, 223);
-                
-            }
-        }
-    </style>
+         </style>
 </head>
-
 <body>
-    <div class="d-flex">
-        <div class="sidebar p-3" id="sidebar">
-            <h4 class="text-center"><%= user.name %></h4>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/sales" class="nav-link"><i class="fas fa-shopping-cart"></i> Sales</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/purchases" class="nav-link"><i class="fas fa-shopping-cart"></i> Purchases</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/item-detail" class="nav-link active"><i class="fa-regular fa-file"></i> Item Detail</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/expenses" class="nav-link active"><i class="fa-solid fa-money-bill"></i> Expense</a>
-                </li>
-                <li class="nav-item">
-                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
-                        Company</a>
+   
+    <%- include('./aside.ejs') %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Edit Item</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
 
-                    <div class="row companyClass">
-                        <div class="col-md-12">
-                            <div class="">
-                                <p>
-                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
-                                </p>
 
-                                <% if (!currentCompany) { %>
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
-                                        data-bs-target="#addCompanyModal">
-                                        Add New Company
-                                    </button>
-                                    <% } else { %>
-                                        <div class="company-dropdown">
-                                            <label for="companySwitch">Switch Company</label>
-                                            <select id="companySwitch" class="form-select"
-                                                onchange="location.href='/business-owner/switchCompany/' + this.value;">
-                                                <% companies.forEach(company=> { %>
-                                                    <option value="<%= company.id %>"
-                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
-                                                        <%= company.name %>
-                                                    </option>
-                                                    <% }); %>
-                                            </select>
-                                        </div>
-                                        <% } %>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-        <div class="main-content">
-            <nav class="navbar navbar-light  d-flex justify-content-between d-md-none">
-                <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </nav>
             <section class="form-section mt-4">
                 <div class="form-container">
-                    <h2 class="form-title">Edit Item</h2>
                     <form id="itemForm" action="/business-owner/editItems" method="post" enctype="multipart/form-data">
                         <!-- Row 1: Item Name and HSN -->
                         <div class="row mb-3">
@@ -258,11 +162,9 @@
                             <div class="col-md-6">
                                 <label for="category" class="form-label">Category *</label>
                                 <select class="form-select" id="category" name="category" required>
-                                    <option value="">Select Category</option>
                                     <% if(categories.length){ categories.map((category)=>{ %>
                                         <option value="<%= category.id %>"<%= item.category_id==category.id?'selected':'' %>><%= category.category %></option>
                                         <% })} %>
-                                            <option value="+ Add New Category">+ Add New Category</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -385,38 +287,22 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- JavaScript to trigger the modal -->
-    <script>
-        document.querySelector('#category').addEventListener('change', function () {
-            if (this.value === '+ Add New Category') {
-                var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
-                myModal.show();
-            }
-        });
-
-        document.querySelector('#saveCategory').addEventListener('click', function () {
-            var newCategory = document.querySelector('#newCategory').value;
-            if (newCategory) {
-                var categorySelect = document.querySelector('#category');
-                var newOption = document.createElement('option');
-                newOption.value = newCategory;
-                newOption.textContent = newCategory;
-                categorySelect.appendChild(newOption);
-                categorySelect.value = newCategory;
-                var myModal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-                myModal.hide();
-            }
-        });
-    </script>
-
-    <!-- Generate Item Code Button -->
-    <script>
-            function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
-        }
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const hamburger = document.getElementById('hamburger');
+    
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+    
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    </script>
 </body>
 
 </html>

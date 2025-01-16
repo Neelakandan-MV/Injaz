@@ -1,199 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchases</title>
-    <!-- Bootstrap CSS -->
+    <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <!-- Font Awesome Icons -->
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        html, body {
-            width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        .main-content{
-            padding-left: 20px;
-            padding-top: 20px;
-            width: 100%;
-        }
-
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
         }
-
-        .companyClass {
-            display: none;
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
         }
-
-        .sidebar {
-            width: 250px;
-            background-color: #343a40;
-            color: white;
-            min-height: 100vh;
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
         }
-
-        .sidebar a {
-            color: white;
-            text-decoration: none;
-        }
-
         .card {
+            border: none;
             border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        .chart {
-            height: 200px;
-            background-color: #f1f1f1;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .company-dropdown {
-            margin-top: 15px;
-        }
-
-        /* Mobile Styles */
+        
         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                width: 100%;
-                height: auto;
-                min-height: 0;
-                z-index: 10;
-                display: none; /* Initially hidden */
-            }
-
-            .main-content {
-              padding: 20px;
-                width: 100%;
-            }
-
-            .navbar-toggler {
-                border: none;
-                outline: none;
-                z-index: 100;
-                margin-top: -17px; /* Adjust as needed */
-            }
-
-            .navbar-toggler-icon {
-                background-color: rgb(223, 223, 223);
-            }
             
             .table-responsive {
-                overflow-x: auto; /* Allow horizontal scrolling for tables */
+                overflow-x: auto; 
             }
         }
 
         .btn-primary,
         .btn-secondary {
-            margin-right: 10px; /* Spacing between buttons */
+            margin-right: 10px; 
         }
     </style>
 </head>
-<script>
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
-    }
-    function companyDisplay() {
-            const div = document.querySelector('.companyClass');
-            if (div) {
-                div.style.display = 'block';
-            } else {
-                console.error('Element with class "companyClass" not found.');
-            }
-        }
-    </script>
-
 <body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="sidebar p-3" id="sidebar">
-            <h4 class="text-center"><%= user.name %></h4>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/sales" class="nav-link"><i class="fas fa-shopping-cart"></i> Sales</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/purchases" class="nav-link"><i class="fas fa-shopping-cart"></i> Purchases</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/item-detail" class="nav-link active"><i class="fa-regular fa-file"></i> Item Detail</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/expenses" class="nav-link active"><i class="fa-solid fa-money-bill"></i> Expense</a>
-                </li>
-                <li class="nav-item">
-                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i>
-                        Company</a>
-
-                    <div class="row companyClass">
-                        <div class="col-md-12">
-                            <div class="">
-                                <p>
-                                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
-                                </p>
-
-                                <% if (!currentCompany) { %>
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal"
-                                        data-bs-target="#addCompanyModal">
-                                        Add New Company
-                                    </button>
-                                    <% } else { %>
-                                        <div class="company-dropdown">
-                                            <label for="companySwitch">Switch Company</label>
-                                            <select id="companySwitch" class="form-select"
-                                                onchange="location.href='/business-owner/switchCompany/' + this.value;">
-                                                <% companies.forEach(company=> { %>
-                                                    <option value="<%= company.id %>"
-                                                        <%=currentCompany[0].id===company.id ? 'selected' : '' %>>
-                                                        <%= company.name %>
-                                                    </option>
-                                                    <% }); %>
-                                            </select>
-                                        </div>
-                                        <% } %>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <nav class="navbar navbar-light  d-flex justify-content-between d-md-none">
-                <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-            </nav>
-            <header>
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2>Purchases</h2>
+   
+    <%- include('./aside.ejs') %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Purchases</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
+                <div class="d-md-flex justify-content-between align-items-center salesHeading">
                     <div class="filters d-md-flex align-items-center">
-                        <label for="from-date" class="me-2"></label>
+                        <label for="from-date" class="me-2">From</label>
                         <input type="date" id="from-date" class="form-control me-2" />
                         <span class="me-2">To</span>
                         <input type="date" id="to-date" class="form-control me-2" />
@@ -201,10 +62,8 @@
                 </div>
                 <div class="mt-3">
                     <a href="/business-owner/addTransactions" class="btn btn-primary">+ Add Transaction</a>
-
-
                 </div>
-            </header>
+
 
             <!-- Transactions Section -->
             <section class="transactions mt-4 table-responsive">
@@ -319,4 +178,20 @@
   }
   
   </script>
+
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

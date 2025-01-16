@@ -1,343 +1,129 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Transactions</title>
-    <!-- Bootstrap CSS -->
+    <title>Transaction Edit</title>
+    <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <!-- Font Awesome Icons -->
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-       body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-}
-
-.sidebar {
-            width: 350px;
-            background-color: #343a40;
-            color: white;
-            min-height: 100vh;
+        .main-content header {
+            margin-bottom: 20px;
         }
-
-.sidebar a {
-    color: white;
-    text-decoration: none;
-    padding: 10px;
-    display: block;
-}
-
-.sidebar .navbar-toggler {
-    display: none;
-}
-
-.main-content {
-    padding: 20px;
-}
-
-.main-content header {
-    margin-bottom: 20px;
-}
-
-.form-section {
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.form-section h3 {
-    margin-bottom: 20px;
-    font-size: 24px;
-}
-
-.table input {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-}
-
-.table input:focus {
-    border-bottom: 1px solid #007bff;
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-                position: fixed;
-                width: 100%;
-                height: auto;
-                min-height: 0;
-                z-index: 10;
-                display: none; /* Initially hidden */
+        
+        .form-section {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-section h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .table input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+        }
+        
+        .table input:focus {
+            border-bottom: 1px solid #007bff;
+        }
+        
+        @media (max-width: 768px) {          
+                    .table-responsive {
+                        overflow-x: auto; /* Allow horizontal scrolling for tables */
+                    }
+        
+            .form-section {
+                padding: 15px;
             }
-
-            .main-content {
-                margin-left: 0;
-              padding: 20px;
-                width: 100%;
+        
+            .table th, .table td {
+                padding: 8px;
             }
-
-            .navbar-toggler {
-                border: none;
-                outline: none;
-                z-index: 100;
-                margin-top: -17px; /* Adjust as needed */
+        
+            .form-section h3 {
+                font-size: 20px;
             }
-
-            .navbar-toggler-icon {
-                background-color: rgb(223, 223, 223);
+        
+            .table th {
+                font-size: 12px;
             }
+        
+            .table input {
+                padding: 8px;
+                font-size: 14px;
+                width: 70px;
+            }
+        
+            .row label {
+                font-size: 14px;
+            }
+        
+            .form-select {
+                font-size: 14px;
+            }
+        
+            .btn {
+                font-size: 14px;
+            }
+        }
+            </style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
             
             .table-responsive {
-                overflow-x: auto; /* Allow horizontal scrolling for tables */
+                overflow-x: auto; 
             }
+        }
 
-    .form-section {
-        padding: 15px;
-    }
-
-    .table th, .table td {
-        padding: 8px;
-    }
-
-    .form-section h3 {
-        font-size: 20px;
-    }
-
-    .table th {
-        font-size: 12px;
-    }
-
-    .table input {
-        padding: 8px;
-        font-size: 14px;
-    }
-
-    .row label {
-        font-size: 14px;
-    }
-
-    .form-select {
-        font-size: 14px;
-    }
-
-    .btn {
-        font-size: 14px;
-    }
-}
+        .btn-primary,
+        .btn-secondary {
+            margin-right: 10px; 
+        }
     </style>
 
-    <script>
-       // In your JavaScript, maintain a counter for dynamically added rows.
-let currentIndex = <%= transactionProducts.length %>;
-
-function addRow() {
-    const tableBody = document.getElementById("productTableBody");
-    const row = document.createElement("tr");
-    
-    row.innerHTML = `
-        <td>${currentIndex + 1}</td>
-        <td><input type="text" id="productName${currentIndex}" name="products[${currentIndex}][item]" list="productSuggestions" onchange="sugesstion(this, '${currentIndex}')" required></td>
-        <td><input type="number" name="products[${currentIndex}][quantity]" oninput="updateProductTotal(this)" required></td>
-        <td><input type="text" id="unit${currentIndex}" name="products[${currentIndex}][unit]" required ></td>
-        <td><input type="text" id="priceInput${currentIndex}" name="products[${currentIndex}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
-        <td><input type="text" id="discount${currentIndex}" name="products[${currentIndex}][discount]" oninput="updateProductTotal(this)" required ></td>
-        <td><input type="text" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required ></td>
-        <td><input type="text" name="products[${currentIndex}][productTotal]" required ></td>
-        <input type="hidden" id="productId${currentIndex}" name="products[${currentIndex}][productId]" >
-        <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
-    `;
-    
-    tableBody.appendChild(row);
-    currentIndex++; // Increment the index for the next row.
-}
-
-
-        function removeRow(button) {
-            const row = button.closest('tr');
-            row.remove();
-            updateRowNumbers();
-        }
-
-        function updateRowNumbers() {
-            const rows = document.querySelectorAll('#productTableBody tr');
-            rows.forEach((row, index) => {
-                row.cells[0].textContent = index + 1; // Update row number in the first column
-            });
-        }
-
-        function updateProductTotal(input) {
-            const row = input.closest('tr');
-            const quantity = parseFloat(row.querySelector(`[name^="products"][name$="[quantity]"]`)?.value) || 0;
-            const pricePerUnit = parseFloat(row.querySelector(`[name^="products"][name$="[pricePerUnit]"]`)?.value) || 0;
-            const discount = parseFloat(row.querySelector(`[name^="products"][name$="[discount]"]`)?.value) || 0;
-            const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
-
-            let productTotal = quantity * pricePerUnit;
-            productTotal += (productTotal * tax) / 100; // Add tax
-            productTotal -= (productTotal * discount) / 100; // Subtract discount
-
-            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);
-        }
-
-        function validateForm(event) {
-            const rows = document.querySelectorAll('#productTableBody tr');
-            const hasProduct = Array.from(rows).some(row => {
-                return row.querySelector(`[name^="products"][name$="[item]"]`).value.trim() !== '';
-            });
-
-            if (!hasProduct) {
-                alert('Please enter at least one product.');
-                event.preventDefault();
-            }
-        }
-
-       
-        // window.onload = function () {
-        //     for (let i = 0; i < 3; i++) {
-        //         addRow();
-        //     }
-        // };
-    </script>
 </head>
-<datalist id="productSuggestions">
-    <%if(products.length){ products.forEach(product=> {%>
-        <option value="<%= product.item_name %>" >
-            <% })}else{ %>
-                <option value="No Products Found">
-                    <% } %>
-</datalist>
-<datalist id="partySuggestions">
-    <% if (parties.length) { %>
-        <% parties.forEach(party => { %>
-            <option value="<%= party.id %>" label="<%= party.PartyName %>"></option>
-        <% }) %>
-    <% } else { %>
-        <option disabled value="No Party Found">No Party Found</option>
-    <% } %>
-</datalist>
-<script>
-    function sugesstion(element,count) {
-        
-            const selectedProductName = element.value;
-            const products = <%- JSON.stringify(products) %>
-            
-            const selectedProduct = products.find(
-                (product) => product.item_name === selectedProductName
-            );
-            
-
-            if (selectedProduct) {
-                // const row = element.target.closest('tr');
-                document.getElementsByName(`products[${ count }][unit]`)[0].value = selectedProduct.unit;
-                document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = selectedProduct.sale_price;
-                document.getElementsByName(`products[${ count }][discount]`)[0].value = selectedProduct.discount_value;
-                document.getElementsByName(`products[${ count }][tax]`)[0].value = selectedProduct.tax_rate;
-                document.getElementsByName(`products[${ count }][itemId]`)[0].value = selectedProduct.id;
-            }else{
-                document.getElementsByName(`products[${ count }][unit]`)[0].value = ''
-                document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = ''
-                document.getElementsByName(`products[${ count }][discount]`)[0].value = ''
-                document.getElementsByName(`products[${ count }][tax]`)[0].value = ''
-            }
-
-
-    }
-
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
-    }
-
-</script>
-
-
-
 <body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="sidebar p-3" id="sidebar">
-            <h4 class="text-center"><%= user.name %></h4>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="/business-owner/dashboard" class="nav-link"><i class="fas fa-home"></i> Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewParty" class="nav-link"><i class="fas fa-users"></i> Parties</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/viewItems" class="nav-link"><i class="fas fa-box"></i> Items</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/sales" class="nav-link"><i class="fas fa-shopping-cart"></i> Sales</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/purchases" class="nav-link"><i class="fas fa-shopping-cart"></i> Purchases</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/dayBook" class="nav-link"><i class="fas fa-file-invoice"></i> Day Book</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/cashFlow" class="nav-link active"><i class="fas fa-chart-line"></i> Cash Flow</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/item-detail" class="nav-link active"><i class="fa-regular fa-file"></i> Item Detail</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/business-owner/expenses" class="nav-link active"><i class="fa-solid fa-money-bill"></i> Expense</a>
-                </li>
-                <li class="nav-item">
-                    <a onclick="companyDisplay()" href="#" class="nav-link"><i class="fa-solid fa-building"></i> Company</a>
-
-                    <div class="row companyClass">
-                        <div class="col-md-12">
-                            <div class="">
-                                <p><%= currentCompany ? currentCompany.name : 'No company associated' %></p>
-
-                                <% if (!currentCompany) { %>
-                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                                        Add New Company
-                                    </button>
-                                <% } else { %>
-                                    <div class="company-dropdown">
-                                        <label for="companySwitch">Switch Company</label>
-                                        <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
-                                            <% companies.forEach(company => { %>
-                                                <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
-                                                    <%= company.name %>
-                                                </option>
-                                            <% }); %>
-                                        </select>
-                                    </div>
-                                <% } %>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <nav class="navbar navbar-light  d-flex justify-content-between d-md-none">
-                <button class="navbar-toggler" type="button" onclick="toggleSidebar()">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </nav>
-            <header>
-                <h2>Transaction Edit</h2>
-            </header>
-            
-
+   
+    <%- include('./aside.ejs') %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Transaction Edit</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
             <!-- Add Sale Form -->
             <section class="form-section mt-4">
-                <h3>Transaction Details</h3>
                 <form action="/business-owner/transactionEdit" method="POST">
                     <!-- Existing fields -->
                     <div class="row mb-3">
@@ -386,6 +172,7 @@ function addRow() {
                                 <option <%= transactionDetails.payment_type=== 'Online'? 'selected':'' %> value="online">Online</option>
                             </select>
                         </div>
+                        <input type="hidden" value="<%= transactionDetails.id %>" name="transaction_id">
                         
                         <%      let date = new Date( transactionDetails.date );%>
 
@@ -502,5 +289,137 @@ function addRow() {
     }
 
 </script>   
+
+<script>
+    // In your JavaScript, maintain a counter for dynamically added rows.
+let currentIndex = <%= transactionProducts.length %>;
+
+function addRow() {
+ const tableBody = document.getElementById("productTableBody");
+ const row = document.createElement("tr");
+ 
+ row.innerHTML = `
+     <td>${currentIndex + 1}</td>
+     <td><input type="text" id="productName${currentIndex}" name="products[${currentIndex}][item]" list="productSuggestions" onchange="sugesstion(this, '${currentIndex}')" required></td>
+     <td><input type="number" name="products[${currentIndex}][quantity]" oninput="updateProductTotal(this)" required></td>
+     <td><input type="text" id="unit${currentIndex}" name="products[${currentIndex}][unit]" required ></td>
+     <td><input type="text" id="priceInput${currentIndex}" name="products[${currentIndex}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
+     <td><input type="text" id="discount${currentIndex}" name="products[${currentIndex}][discount]" oninput="updateProductTotal(this)" required ></td>
+     <td><input type="text" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required ></td>
+     <td><input type="text" name="products[${currentIndex}][productTotal]" required ></td>
+     <input type="hidden" id="productId${currentIndex}" name="products[${currentIndex}][productId]" >
+     <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
+ `;
+ 
+ tableBody.appendChild(row);
+ currentIndex++; // Increment the index for the next row.
+}
+
+
+     function removeRow(button) {
+         const row = button.closest('tr');
+         row.remove();
+         updateRowNumbers();
+     }
+
+     function updateRowNumbers() {
+         const rows = document.querySelectorAll('#productTableBody tr');
+         rows.forEach((row, index) => {
+             row.cells[0].textContent = index + 1; // Update row number in the first column
+         });
+     }
+
+     function updateProductTotal(input) {
+         const row = input.closest('tr');
+         const quantity = parseFloat(row.querySelector(`[name^="products"][name$="[quantity]"]`)?.value) || 0;
+         const pricePerUnit = parseFloat(row.querySelector(`[name^="products"][name$="[pricePerUnit]"]`)?.value) || 0;
+         const discount = parseFloat(row.querySelector(`[name^="products"][name$="[discount]"]`)?.value) || 0;
+         const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
+
+         let productTotal = quantity * pricePerUnit;
+         productTotal += (productTotal * tax) / 100; // Add tax
+         productTotal -= (productTotal * discount) / 100; // Subtract discount
+
+         row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);
+     }
+
+     function validateForm(event) {
+         const rows = document.querySelectorAll('#productTableBody tr');
+         const hasProduct = Array.from(rows).some(row => {
+             return row.querySelector(`[name^="products"][name$="[item]"]`).value.trim() !== '';
+         });
+
+         if (!hasProduct) {
+             alert('Please enter at least one product.');
+             event.preventDefault();
+         }
+     }
+
+    
+     // window.onload = function () {
+     //     for (let i = 0; i < 3; i++) {
+     //         addRow();
+     //     }
+     // };
+ </script>
+<datalist id="productSuggestions">
+ <%if(products.length){ products.forEach(product=> {%>
+     <option value="<%= product.item_name %>" >
+         <% })}else{ %>
+             <option value="No Products Found">
+                 <% } %>
+</datalist>
+<datalist id="partySuggestions">
+ <% if (parties.length) { %>
+     <% parties.forEach(party => { %>
+         <option value="<%= party.id %>" label="<%= party.PartyName %>"></option>
+     <% }) %>
+ <% } else { %>
+     <option disabled value="No Party Found">No Party Found</option>
+ <% } %>
+</datalist>
+<script>
+ function sugesstion(element,count) {
+     
+         const selectedProductName = element.value;
+         const products = <%- JSON.stringify(products) %>
+         
+         const selectedProduct = products.find(
+             (product) => product.item_name === selectedProductName
+         );
+         
+
+         if (selectedProduct) {
+             // const row = element.target.closest('tr');
+             document.getElementsByName(`products[${ count }][unit]`)[0].value = selectedProduct.unit;
+             document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = selectedProduct.sale_price;
+             document.getElementsByName(`products[${ count }][discount]`)[0].value = selectedProduct.discount_value;
+             document.getElementsByName(`products[${ count }][tax]`)[0].value = selectedProduct.tax_rate;
+             document.getElementsByName(`products[${ count }][itemId]`)[0].value = selectedProduct.id;
+         }else{
+             document.getElementsByName(`products[${ count }][unit]`)[0].value = ''
+             document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = ''
+             document.getElementsByName(`products[${ count }][discount]`)[0].value = ''
+             document.getElementsByName(`products[${ count }][tax]`)[0].value = ''
+         }
+
+
+ }
+</script>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>
 
 </html>

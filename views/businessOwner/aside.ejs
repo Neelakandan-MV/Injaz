@@ -1,0 +1,89 @@
+<div class="sidebar" id="sidebar">
+    <nav class="p-4">
+        <a href="/business-owner/dashboard" class="nav-link">Dashboard</a>
+        <a href="/business-owner/viewParty" class="nav-link">Parties</a>
+        <a href="/business-owner/sales" class="nav-link">Sales</a>
+        <a href="/business-owner/purchases" class="nav-link">Purchases</a>
+        <a href="/business-owner/viewItems" class="nav-link">Items</a>
+        <a href="/business-owner/expenses" class="nav-link">Expense</a>
+        <a href="/business-owner/dayBook" class="nav-link">Day-Book</a>
+        <a href="/business-owner/cashFlow" class="nav-link">Cash-Flow</a>
+        <a href="/business-owner/item-detail" class="nav-link">Item-Report</a>
+        <a href="#">
+        <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
+            <% companies.forEach(company => { %>
+                <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
+                    <%= company.name %>
+                </option>
+            <% }); %>
+        </select></a>
+        <button type="button" class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+            Add New Company
+        </button>
+
+
+
+    </nav>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay"></div>
+
+
+<style>
+    .sidebar {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            z-index: 1050;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        .sidebar.active {
+            transform: translateX(0);
+        }
+        .sidebar .nav-link {
+            color: #333;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1049;
+            display: none;
+        }
+        .overlay.active {
+            display: block;
+        }
+        
+</style>
+ <!-- Modal for Add New Company -->
+ <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCompanyModalLabel">Add New Company</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/business-owner/addCompany" method="POST">
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">Company Name</label>
+                        <input type="text" class="form-control" id="companyName" name="name" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Save Company</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
