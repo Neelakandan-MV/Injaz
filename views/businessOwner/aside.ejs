@@ -1,5 +1,12 @@
 <div class="sidebar" id="sidebar">
     <nav class="p-4">
+        <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
+            <% companies.forEach(company => { %>
+                <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
+                    <%= company.name %>
+                </option>
+            <% }); %>
+        </select>
         <a href="/business-owner/dashboard" class="nav-link">Dashboard</a>
         <a href="/business-owner/viewParty" class="nav-link">Parties</a>
         <a href="/business-owner/sales" class="nav-link">Sales</a>
@@ -9,17 +16,10 @@
         <a href="/business-owner/dayBook" class="nav-link">Day-Book</a>
         <a href="/business-owner/cashFlow" class="nav-link">Cash-Flow</a>
         <a href="/business-owner/item-detail" class="nav-link">Item-Report</a>
-        <a href="#">
-        <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
-            <% companies.forEach(company => { %>
-                <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
-                    <%= company.name %>
-                </option>
-            <% }); %>
-        </select></a>
         <button type="button" class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
             Add New Company
         </button>
+        <a href="/business-owner/logout"><button class="btn btn-danger mt-2">Logout</button></a>
 
 
 

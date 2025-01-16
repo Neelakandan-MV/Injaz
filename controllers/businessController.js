@@ -855,7 +855,6 @@ const businessOwnerController = {
             GROUP BY 
                 items.id;
         `, [itemId,user.id,companyId]);
-        console.log(itemDetails);
         
 
             res.render('businessOwner/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany, allItems })
