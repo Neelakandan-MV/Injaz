@@ -469,13 +469,14 @@ const businessOwnerController = {
     viewAddTransaction: async (req, res) => {
 
         const user = req.session.user
+        const previousRoute = res.locals.previousRoute;
         const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [parties] = await mysql.query(`SELECT * FROM parties WHERE user_id = ?`, [user.id]);
         const today = new Date().toISOString().split('T')[0];
         const companyId = user.company_id;
         const products = await mysql.query("SELECT * FROM items WHERE user_id = ? AND company_id = ?", [user.id, companyId])
-        res.render('businessOwner/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties });
+        res.render('businessOwner/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties,previousRoute });
     },
 
     addTransaction: async (req, res) => {
