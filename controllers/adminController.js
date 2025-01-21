@@ -16,7 +16,9 @@ var storage = multer.diskStorage({
 
 var upload = multer({
     storage: storage,
-}).array("image", 5);
+}).single("image");
+
+
 
 const adminController = {
 
@@ -85,8 +87,6 @@ const adminController = {
             sales.company_id = ? 
             AND sales.transaction_type = 'purchase'
     `, [user.company_id]);
-    console.log(sales);
-
         res.render('admin/sales', { sales });
 
     },
@@ -105,8 +105,6 @@ const adminController = {
                 sales.company_id = ? 
                 AND sales.transaction_type = 'purchase'
         `, [user.company_id]);
-        console.log(purchases);
-
         res.render('admin/purchases', { purchases });
     },
 
@@ -196,10 +194,10 @@ const adminController = {
             } else if (err) {
                 return res.status(500).json(err);
             }
-
             const user = req.session.user;
-
             const companyId = user.company_id;
+            const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
             if (!companyId) {
                 return res.render("admin/error.ejs", { error: 'No company found for this user.' });
@@ -221,22 +219,34 @@ const adminController = {
                 itemCode
             } = req.body;
 
-            const image = req.files.map(file => file.filename);
+            const image = req.file ? req.file.filename : null;
 
             try {
+
                 const [itemExist] = await mysql.query(
-                    "SELECT * FROM items WHERE item_name = ? OR item_code = ?",
-                    [itemName, itemCode]
+                    "SELECT * FROM items WHERE item_name = ? AND user_id = ?",
+                    [itemName, user.id]
                 );
 
                 if (itemExist.length > 0) {
+                    const user = req.session.user;
+                    const companyId = user.company_id;
+                    const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+                    const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+
+                    if (!companyId) {
+                        return res.render("admin/error.ejs", { error: 'No company found for this user.' });
+                    }
+
+                    const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
+
                     const [items] = await mysql.query(`
                         SELECT items.*, categories.category AS categoryName 
                         FROM items 
                         LEFT JOIN categories ON items.category_id = categories.id
                         WHERE items.company_id = ?
                     `, [companyId]);
-                    return res.render('admin/addItems.ejs', { items, error: 'Product with the same name or code already exists.' });
+                    return res.render('admin/addItems.ejs', { items, error: 'Product with the same name or code already exists.', user, categories, companies, currentCompany });
                 }
 
                 const generateItemCode = () => {
@@ -248,7 +258,8 @@ const adminController = {
 
                 const newItemCode = itemCode || generateItemCode();
                 const user_id = req.session.user.id
-
+                console.log(image);
+                
                 await mysql.query(
                     "INSERT INTO items (item_name, item_hsn, category_id, unit, image, sale_price, sale_price_tax_included, discount_value, discount_type, wholesale_price, purchase_price, purchase_price_tax_included, tax_rate, item_code, company_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     [
@@ -256,7 +267,7 @@ const adminController = {
                         itemHSN,
                         category,
                         unit,
-                        JSON.stringify(image),
+                        image || null,
                         salePrice || 0,
                         salePriceTaxIncluded || false,
                         discountValue || 0,
@@ -266,7 +277,7 @@ const adminController = {
                         purchasePriceTaxIncluded || false,
                         taxRate,
                         newItemCode,
-                        companyId,
+                        companyId, // Associating item with company
                         user_id
                     ]
                 );
@@ -278,7 +289,7 @@ const adminController = {
                     WHERE items.company_id = ?
                 `, [companyId]);
 
-                res.render('admin/itemManagement.ejs', { items, user: req.session.user });
+                res.render('admin/itemManagement.ejs', { items, user, companies, currentCompany });
 
             } catch (error) {
                 console.error(error);
@@ -286,6 +297,7 @@ const adminController = {
             }
         });
     },
+
 
     // Fetch items related to the company
     viewItems: async (req, res) => {
@@ -303,9 +315,6 @@ const adminController = {
             LEFT JOIN categories ON items.category_id = categories.id
             WHERE items.company_id = ?
         `, [companyId]);
-        console.log(items);
-        
-
         res.render('admin/itemManagement.ejs', { items, user: req.session.user });
     },
 
@@ -443,15 +452,18 @@ const adminController = {
                 p.Email,
                 p.Address,
                 p.profile_picture,
+                p.PartyStatus,
                 t.id AS transaction_id,
                 t.date AS transaction_date,
                 t.total_amount AS transaction_amount,
-                t.balance_due AS transaction_balance_due
+                t.balance_due AS transaction_balance_due,
+                t.transaction_type As transaction_type
             FROM 
                 parties p
             LEFT JOIN 
                 sales t ON p.id = t.customer_name
-           `);
+                WHERE p.company_id = ?
+           `,[companyId]);
 
         // Initialize a map to group transactions by party ID
         const partiesMap = {};
@@ -467,6 +479,7 @@ const adminController = {
                     email: row.Email,
                     address: row.Address,
                     profile_picture: row.profile_picture,
+                    partyStatus:row.PartyStatus,
                     transactions: []
                 };
             }
@@ -477,14 +490,49 @@ const adminController = {
                     id: row.transaction_id,
                     date: row.transaction_date,
                     amount: row.transaction_amount,
-                    balance_due: row.transaction_balance_due
+                    balance_due: row.transaction_balance_due,
+                    transaction_type: row.transaction_type
                 });
             }
         });
 
         const parties = Object.values(partiesMap);
+        
 
         res.render('admin/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user, parties });
+    },
+    addParty: async (req, res) => {
+        upload(req, res, async function (err) {
+            if (err instanceof multer.MulterError) {
+                return res.status(500).json(err);
+            } else if (err) {
+                return res.status(500).json(err);
+            }
+
+            try {
+                const user = req.session.user;
+                const { name, email, phone, address } = req.body;
+
+                const image = req.file ? req.file.filename : null;
+
+                await mysql.query(
+                    "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture,company_id) VALUES (?,?,?,?,?,?,?)",
+                    [user.id, name, email, phone, address, image, user.company_id]
+                );
+
+                res.redirect('/admin/viewParty');
+            } catch (dbError) {
+                res.status(500).json({ error: "Database operation failed", details: dbError });
+            }
+        });
+    },
+    togglePartyStatus:async (req,res)=>{
+        const {id,status} = req.query
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[id])
+        if(party[0]){
+            await mysql.query(`UPDATE parties set PartyStatus = ? WHERE id = ?`,[status,id])
+            return res.json({currentStatus:status})
+        }
     },
 
     logout: (req, res) => {
@@ -667,12 +715,14 @@ const adminController = {
         const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
 
         const [item] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id])
+        console.log(item[0]);
+        
         
         res.render('admin/itemEdit.ejs',{item:item[0],user,companies,currentCompany,categories})
         
     },
 
-    editItems:async(req,res)=>{
+    editItems: async (req, res) => {
         upload(req, res, async function (err) {
             if (err instanceof multer.MulterError) {
                 return res.status(500).json(err);
@@ -681,6 +731,8 @@ const adminController = {
             }
             const user = req.session.user;
             const companyId = user.company_id;
+            const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
             if (!companyId) {
                 return res.render("admin/error.ejs", { error: 'No company found for this user.' });
@@ -703,9 +755,9 @@ const adminController = {
                 item_id
             } = req.body;
 
-            const [currentItem] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id]);
+            const [currentItem] = await mysql.query(`SELECT * FROM items WHERE id=?`, [item_id]);
 
-            
+
             const image = req.file ? req.file.filename : currentItem[0].image;
 
             try {
@@ -746,17 +798,25 @@ const adminController = {
                         purchasePriceTaxIncluded || false,
                         taxRate,
                         itemCode,
-                        companyId, 
+                        companyId,
                         user_id,
                         item_id
                     ]
-                )
+                );
 
-                res.redirect('/admin/viewItems')
+
+                const [items] = await mysql.query(`
+                    SELECT items.*, categories.category AS categoryName 
+                    FROM items 
+                    LEFT JOIN categories ON items.category_id = categories.id
+                    WHERE items.company_id = ?
+                `, [companyId]);
+
+                res.render('admin/itemManagement.ejs', { items, user, companies, currentCompany });
 
             } catch (error) {
                 console.error(error);
-                return res.render('admin/editItem.ejs', { error: 'An error occurred. Please try again.'});
+                return res.render('admin/itemEdti.ejs', { error: 'An error occurred. Please try again.' });
             }
         });
     },

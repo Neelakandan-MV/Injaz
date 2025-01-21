@@ -289,7 +289,6 @@
     <div class="main-content">
         <section class="form-section mt-4">
             <div class="form-container">
-                <h2 class="form-title">Edit Item</h2>
                 <form id="itemForm" action="/admin/editItems" method="post" enctype="multipart/form-data">
                     <!-- Row 1: Item Name and HSN -->
                     <div class="row mb-3">
@@ -310,11 +309,9 @@
                         <div class="col-md-6">
                             <label for="category" class="form-label">Category *</label>
                             <select class="form-select" id="category" name="category" required>
-                                <option value="">Select Category</option>
                                 <% if(categories.length){ categories.map((category)=>{ %>
                                     <option value="<%= category.id %>"<%= item.category_id==category.id?'selected':'' %>><%= category.category %></option>
                                     <% })} %>
-                                        <option value="+ Add New Category">+ Add New Category</option>
                             </select>
                         </div>
                         <div class="col-md-6">

@@ -240,56 +240,20 @@
                 <h4>Transaction Details</h4>
                 <table id="transactionDetailsTable">
                     <tr>
-                        <th>Transaction ID</th>
+                        <th>Transaction Type</th>
                         <th>Date</th>
                         <th>Amount</th>
                         <th>Balance Due</th>
                     </tr>
                 </table>
             </div>
-            <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+            <!-- <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
                 Add New Party
-            </button>
+            </button> -->
         </div>
     </div>
-    <!-- Modal for Add New Company -->
-    <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addCompanyModalLabel">Add New Party</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form action="/business-owner/addParty" method="POST" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="companyName" class="form-label">Party Name</label>
-                            <input type="text" class="form-control" id="companyName" name="name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Phone Number</label>
-                            <input type="text" class="form-control" id="companyName" name="phone" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control" id="companyName" name="address" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Party Email</label>
-                            <input type="email" class="form-control" id="companyName" name="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="dp" class="form-label">Profile Picture</label>
-                            <input type="file" class="form-control" id="profile" name="image">
-                        </div>
-
-                        <button type="submit" class="btn btn-success">Save Party</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+   
+   
     
 
     <script>
@@ -320,7 +284,7 @@
                 document.getElementById("partyPhone").textContent = party.phone;
                 document.getElementById("partyEmail").textContent = party.email;
                 document.getElementById("partyAddress").textContent = party.address;
-                document.getElementById("partyDP").src = `/uploads/${party.profile_picture?party.profile_picture:'image-1736423096605-197412523'}`;
+                document.getElementById("partyDP").src = `/uploads/${party.profile_picture?party.profile_picture:'image-1737386570443-200304972'}`;
 
                 // Update transaction details table
                 const transactionTable = document.getElementById("transactionDetailsTable");
@@ -332,7 +296,7 @@
                 // Add new rows
                 party.transactions.forEach(transaction => {
                     const row = transactionTable.insertRow();
-                    row.insertCell(0).textContent = transaction.id;
+                    row.insertCell(0).textContent = transaction.transaction_type;
                     row.insertCell(1).textContent = new Date(transaction.date).toLocaleDateString() 
                     row.insertCell(2).textContent = transaction.amount;
                     row.insertCell(3).textContent = transaction.balance_due;

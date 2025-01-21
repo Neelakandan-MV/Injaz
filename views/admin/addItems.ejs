@@ -287,155 +287,156 @@
 <body>
     <%- include('./navbar')  %>
     <div class="main-content">
-        <section class="form-section mt-4">
-            <div class="form-container">
-                <h2 class="form-title">Add Item</h2>
-                <form id="itemForm" action="/admin/addItems" method="post" enctype="multipart/form-data">
-                    <!-- Row 1: Item Name and HSN -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="itemName" class="form-label">Item Name *</label>
-                            <input type="text" class="form-control" id="itemName" name="itemName"
-                                placeholder="Enter item name" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="itemHsn" class="form-label">Item HSN *</label>
-                            <input type="text" class="form-control" id="itemHsn" name="itemHSN"
-                                placeholder="Enter HSN code" required>
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Category and Item Code -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="category" class="form-label">Category</label>
-                            <select class="form-select" id="category" name="category" required>
-                                <option value="">Select Category</option>
-                                <% if(categories.length){ categories.map((category)=>{ %>
-                                    <option value="<%= category.id %>">
-                                        <%= category.category %>
-                                    </option>
-                                    <% })} %>
-                            </select>
-                            <button  class="btn btn-primary mt-3" id="addCategoryButton">+ Add New Category</button>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="itemCode" class="form-label">Item Code</label>
-                            <div class="d-flex align-items-center">
-                                <input type="text" class="form-control me-2" id="itemCode" name="itemCode"
-                                    placeholder="Enter item code">
-                                <button type="button" id="generateCodeButton" class="btn btn-primary btn-sm">Generate
-                                    Code</button>
+            <section class="form-section mt-4">
+                <div class="form-container">
+                    <form id="itemForm" action="/admin/addItems" method="post" enctype="multipart/form-data">
+                        <!-- Row 1: Item Name and HSN -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="itemName" class="form-label">Item Name *</label>
+                                <input type="text" class="form-control" id="itemName" name="itemName"
+                                    placeholder="Enter item name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemHsn" class="form-label">Item HSN</label>
+                                <input type="text" class="form-control" id="itemHsn" name="itemHSN"
+                                    placeholder="Enter HSN code" >
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Row 3: Select Unit -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="unit" class="form-label">Unit</label>
-                            <select class="form-select" id="unit" name="unit" required>
-                                <option value="">Select Unit</option>
-                                <option value="kg">Kilogram</option>
-                                <option value="pcs">Pieces</option>
-                                <option value="packs">Packs</option>
-                                <option value="ltr">Liters</option>
-                            </select>
+                        <!-- Row 2: Category and Item Code -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category *</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    <% if(categories.length){ categories.map((category)=>{ %>
+                                        <option value="<%= category.id %>">
+                                            <%= category.category %>
+                                        </option>
+                                        <% })} %>
+                                </select>
+                                <button  class="btn btn-primary mt-3" id="addCategoryButton">+ Add New Category</button>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemCode" class="form-label">Item Code</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="text" class="form-control me-2" id="itemCode" name="itemCode"
+                                        placeholder="Enter item code">
+                                    <button type="button" id="generateCodeButton"
+                                        class="btn btn-primary btn-sm">Generate
+                                        Code</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="itemImage" class="form-label">Add Item Image</label>
-                            <input type="file" class="form-control" id="itemImage" name="image">
-                        </div>
-                    </div>
 
-                    <!-- Sale Price Section -->
-                    <h5 class="mt-4">Sale Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="salePrice" class="form-label">Sale Price *</label>
-                            <input type="text" class="form-control" id="salePrice" name="salePrice"
-                                placeholder="Enter sale price" required>
+                        <!-- Row 3: Select Unit -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="unit" class="form-label">Unit</label>
+                                <select class="form-select" id="unit" name="unit" >
+                                    <option value="">Select Unit</option>
+                                    <option value="kg">Kilogram</option>
+                                    <option value="pcs">Pieces</option>
+                                    <option value="packs">Packs</option>
+                                    <option value="ltr">Liters</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemImage" class="form-label">Add Item Image</label>
+                                <input type="file" class="form-control" id="itemImage" name="image">
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label for="salePriceTax" class="form-label">Tax</label>
-                            <select class="form-select" id="salePriceTax" name="salePriceTaxIncluded">
-                                <option value="false">Without Tax</option>
-                                <option value="true">With Tax</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="discount" class="form-label">Discount (%)</label>
-                            <input type="text" class="form-control" id="discount" name="discountValue"
-                                placeholder="Enter discount">
-                        </div>
-                    </div>
 
-                    <!-- Wholesale Price Section -->
-                    <h5 class="mt-4">Wholesale Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="wholesalePrice" class="form-label">Wholesale Price</label>
-                            <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice"
-                                placeholder="Enter wholesale price">
+                        <!-- Sale Price Section -->
+                        <h5 class="mt-4">Sale Price</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="salePrice" class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="salePrice" name="salePrice"
+                                    placeholder="Enter sale price" >
+                            </div>
+                            <div class="col-md-4">
+                                <label for="salePriceTax" class="form-label">Tax</label>
+                                <select class="form-select" id="salePriceTax" name="salePriceTaxIncluded">
+                                    <option value="false">Without Tax</option>
+                                    <option value="true">With Tax</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="discount" class="form-label">Discount (%)</label>
+                                <input type="number" class="form-control" id="discount" name="discountValue"
+                                    placeholder="Enter discount">
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Purchase Price Section -->
-                    <h5 class="mt-4">Purchase Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="purchasePrice" class="form-label">Purchase Price *</label>
-                            <input type="text" class="form-control" id="purchasePrice" name="purchasePrice"
-                                placeholder="Enter purchase price" required>
+                        <!-- Wholesale Price Section -->
+                        <h5 class="mt-4">Wholesale Price</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="wholesalePrice" name="wholesalePrice"
+                                    placeholder="Enter wholesale price">
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="purchaseTax" class="form-label">Tax</label>
-                            <select class="form-select" id="purchaseTax" name="purchasePriceTaxIncluded">
-                                <option value="false">Without Tax</option>
-                                <option value="true">With Tax</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <!-- Tax Rate Section -->
-                    <h5 class="mt-4">Tax Rate</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="taxRate" class="form-label">Tax Rate *</label>
-                            <input type="text" class="form-control" id="taxRate" name="taxRate"
-                                placeholder="Enter tax rate" required>
+                        <!-- Purchase Price Section -->
+                        <h5 class="mt-4">Purchase Price</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="purchasePrice" class="form-label">Amount </label>
+                                <input type="number" class="form-control" id="purchasePrice" name="purchasePrice"
+                                    placeholder="Enter purchase price" >
+                            </div>
+                            <div class="col-md-6">
+                                <label for="purchaseTax" class="form-label">Tax</label>
+                                <select class="form-select" id="purchaseTax" name="purchasePriceTaxIncluded">
+                                    <option value="false">Without Tax</option>
+                                    <option value="true">With Tax</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Save Button -->
-                    <button type="submit" class="btn btn-primary w-100">Save</button>
-                </form>
-            </div>
-        </section>
-    </div>
+                        <!-- Tax Rate Section -->
+                        <h5 class="mt-4">Tax Rate</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="taxRate" class="form-label">Rate(%)</label>
+                                <input type="text" class="form-control" id="taxRate" name="taxRate"
+                                    placeholder="Enter tax rate" >
+                            </div>
+                        </div>
 
-        <!-- Add New Category Modal -->
-        <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form action="/admin/addCategory" method="post">
-                        <div class="modal-body">
-                            <input type="text" class="form-control" id="newCategory" name="category"
-                                placeholder="Enter new category name" required>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="saveCategory">Save Category</button>
-                        </div>
+                        <!-- Save Button -->
+                        <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
                 </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Add New Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/business-owner/addCategory" method="post">
+                    <div class="modal-body">
+                        <input type="text" class="form-control" id="newCategory" name="category"
+                            placeholder="Enter new category name" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="saveCategory">Save Category</button>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 

@@ -41,9 +41,6 @@ exports.login = async (req, res) => {
 
     if (user.role === 'admin') {
       res.redirect('/admin/dashboard');
-      console.log(req.session.user);
-      
-
     }
 
     if (user.role === 'businessOwner') {

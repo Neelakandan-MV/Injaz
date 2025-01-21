@@ -18,21 +18,21 @@ router.post('/switch-company', (req, res) => {
 });
 
 router.get('/business-owner/dashboard',isLogged,businessController.viewDashboard);
-router.get('/business-owner/addItems',isLogged,businessController.viewAddItems);
-router.post('/business-owner/addItems',isLogged,businessController.AddItems);
-router.get('/business-owner/editItems',isLogged,businessController.viewEditItems);
-router.post('/business-owner/editItems',isLogged,businessController.editItems);
+// router.get('/business-owner/addItems',isLogged,businessController.viewAddItems);
+// router.post('/business-owner/addItems',isLogged,businessController.AddItems);
+// router.get('/business-owner/editItems',isLogged,businessController.viewEditItems);
+// router.post('/business-owner/editItems',isLogged,businessController.editItems);
 router.get('/business-owner/viewItems',isLogged,businessController.viewItems);
 router.post('/business-owner/addCategory',isLogged,businessController.addCategory);
 router.get('/business-owner/sales',isLogged,businessController.viewSales);
 router.get('/business-owner/purchases',isLogged,businessController.viewPurchases);
 router.get('/business-owner/addTransactions',isLogged,businessController.viewAddTransaction);
 router.post('/business-owner/addTransactions',isLogged,businessController.addTransaction);
-router.post('/business-owner/addCompany',isLogged,businessController.addCompany);
+// router.post('/business-owner/addCompany',isLogged,businessController.addCompany);
 router.get('/business-owner/switchCompany/:id',isLogged,businessController.switchCompany);
 router.get('/business-owner/viewParty',isLogged,businessController.viewParty);
 router.get('/business-owner/logout',isLogged,businessController.logout);
-router.post('/business-owner/addParty',isLogged,businessController.addParty);
+// router.post('/business-owner/addParty',isLogged,businessController.addParty);
 router.get('/business-owner/dayBook',isLogged,businessController.viewDayBook);
 router.get('/business-owner/cashflow',isLogged,businessController.viewCashFlow);
 router.get('/business-owner/transactionDetails',isLogged,businessController.transactionDetails);
@@ -44,12 +44,12 @@ router.get('/business-owner/addExpense',isLogged,businessController.viewAddExpen
 router.post('/business-owner/addExpense',isLogged,businessController.addExpense);
 router.get('/business-owner/expenses',isLogged,businessController.viewExpense);
 router.post('/business-owner/addExpenseCategory',isLogged,businessController.addExpenseCategory);
+router.get('/business-owner/totalReceivable',isLogged,businessController.totalReceivable);
+router.get('/business-owner/totalPayable',isLogged,businessController.totalPayable);
+router.get('/business-owner/cashInHand',isLogged,businessController.viewCashInHand);
 
+// router.get('/business-owner/downloadPdf',isLogged,businessController.downloadCashFlow);
 
-
-
-// router.get('/register',businessController.viewRegister)
-// router.post('/register',businessController.handleRegister)
 
 
 

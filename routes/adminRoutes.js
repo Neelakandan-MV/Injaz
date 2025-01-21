@@ -43,6 +43,8 @@ router.get('/admin/itemWiseProfitAndLoss',isLoggedAdmin,adminController.viewItem
 router.get('/admin/cashFlow',isLoggedAdmin,adminController.viewCashFlow);
 router.get('/admin/dayBook',isLoggedAdmin,adminController.viewDayBook);
 router.get('/admin/viewParty',isLoggedAdmin,adminController.viewParty);
+router.post('/admin/addParty',isLoggedAdmin,adminController.addParty);
+router.get('/admin/updatePartyStatus',isLoggedAdmin,adminController.togglePartyStatus);
 router.get('/admin/viewStockReport',isLoggedAdmin,adminController.viewStockReport);
 router.get('/admin/adjustStock',isLoggedAdmin,adminController.viewAdjustStock);
 router.get('/admin/adjustStockDetails',isLoggedAdmin,adminController.viewAdjustStockDetails);
