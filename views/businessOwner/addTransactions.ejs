@@ -367,6 +367,7 @@ function sugesstion(element,count) {
         if (selectedProduct) {
             // const row = element.target.closest('tr');
             document.getElementsByName(`products[${count}][unit]`)[0].value = selectedProduct.unit;
+            
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
             document.getElementsByName(`products[${count}][discount]`)[0].value = selectedProduct.discount_value;
             document.getElementsByName(`products[${count}][tax]`)[0].value = selectedProduct.tax_rate;

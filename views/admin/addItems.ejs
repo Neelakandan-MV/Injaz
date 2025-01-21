@@ -369,16 +369,91 @@
                                     placeholder="Enter discount">
                             </div>
                         </div>
+                        <button type="button" class="btn btn-primary mt-2" onclick="wholeSaleDisplay()">Add Wholesale Price</button>
+                        <button type="button" class="btn btn-primary mt-2" onclick="serviceChargeDisplay()">Add Service Charge</button>
 
-                        <!-- Wholesale Price Section -->
-                        <h5 class="mt-4">Wholesale Price</h5>
+                        <div id="wholesale" style="display: none;">
+                        <h5 class="mt-4">Wholesale Price 1</h5>
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="wholesalePrice" name="wholesaleQuantity1"
+                                    placeholder="Enter wholesale Quantity">
+                                </div>
+                                <div class="col-md-4">
                                 <label for="wholesalePrice" class="form-label">Amount</label>
-                                <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice"
+                                <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice1"
                                     placeholder="Enter wholesale price">
-                            </div>
+                                </div>
                         </div>
+                        <h5 class="mt-4">Wholesale Price 2</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="wholesalePrice" name="wholesaleQuantity2"
+                                    placeholder="Enter wholesale Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice2"
+                                    placeholder="Enter wholesale price">
+                                </div>
+                        </div>
+                        <h5 class="mt-4">Wholesale Price 3</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="wholesalePrice" name="wholesaleQuantity3"
+                                    placeholder="Enter wholesale Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice3"
+                                    placeholder="Enter wholesale price">
+                                </div>
+                        </div>
+                        </div>
+                        <div id="serviceCharge" style="display: none;">
+                        <h5 class="mt-4">Service Charge 1</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="serviceCharge" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="serviceCharge" name="serviceChargeQuantity1"
+                                    placeholder="Enter Service Charge Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="serviceCharge1"
+                                    placeholder="Enter Service Charge">
+                                </div>
+                        </div>
+                        <h5 class="mt-4">Service Charge 2</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="serviceCharge" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="serviceCharge" name="serviceChargeQuantity2"
+                                    placeholder="Enter Service Charge Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="serviceCharge2"
+                                    placeholder="Enter Service Charge">
+                                </div>
+                        </div>
+                        <h5 class="mt-4">Service Charge 3</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="serviceCharge" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="serviceCharge" name="serviceChargeQuantity3"
+                                    placeholder="Enter Service Charge Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="serviceCharge3"
+                                    placeholder="Enter Service Charge">
+                                </div>
+                        </div>
+                    </div>
 
                         <!-- Purchase Price Section -->
                         <h5 class="mt-4">Purchase Price</h5>
@@ -479,6 +554,26 @@
                 const generatedCode = `${prefix}-${randomNumber}-${timestamp}`;
                 document.getElementById("itemCode").value = generatedCode;
             });
+        </script>
+
+        <script>
+            function wholeSaleDisplay(){
+                const wholesale = document.getElementById('wholesale');
+                if(wholesale.style.display == 'none'){
+                    wholesale.style.display = 'block'
+                }else{
+                    wholesale.style.display = 'none'
+                }
+            }
+            function serviceChargeDisplay(){
+                const serviceCharge = document.getElementById('serviceCharge');
+                if(serviceCharge.style.display == 'none'){
+                    serviceCharge.style.display = 'block'
+                }else{
+                     serviceCharge.style.display = 'none'
+                }
+                
+            }
         </script>
 </body>
 
