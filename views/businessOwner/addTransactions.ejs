@@ -277,9 +277,9 @@
         row.innerHTML = `
             <td></td>
             <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
-            <td><input type="number" name="products[${count}][quantity]" oninput="updateProductTotal(this)" required></td>
-            <td><input type="text" id="unit${count}" name="products[${count}][unit]" required ></td>
-            <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
+            <td><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this)" required></td>
+            <td><input type="text"  id="unit${count}" name="products[${count}][unit]" required ></td>
+            <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this)" onchange="updateWholesalePrice()" required ></td>
             <td><input type="text" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required ></td>
             <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this)" required ></td>
             <td><input type="text" name="products[${count}][productTotal]" required ></td>
@@ -312,10 +312,23 @@
         const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
 
         let productTotal = quantity * pricePerUnit;
-        productTotal += (productTotal * tax) / 100; // Add tax
-        productTotal -= (productTotal * discount) / 100; // Subtract discount
+        productTotal += (productTotal * tax) / 100;
+        productTotal -= (productTotal * discount) / 100;
 
         row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);
+
+
+        // if(selectedProduct.wholesale_price_1 >0 || selectedProduct.wholesale_price_2>0 || selectedProduct.wholesale_price_3>0){
+        //         if(selectedProduct.wholesale_quantity_1 > quantity && selectedProduct.wholesale_quantity_2 < quantity){
+        //             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1        
+        //         }else if(selectedProduct.wholesale_quantity_2 >= quantity && selectedProduct.wholesale_quantity_3 < quantity){
+        //             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_2        
+        //         }else if(selectedProduct.wholesale_quantity_3 >= quantity){
+        //             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_3        
+        //         }else{
+                   
+        //         }
+        //     }
     }
 
     function validateForm(event) {
@@ -364,10 +377,10 @@ function sugesstion(element,count) {
             (product) => product.item_name === selectedProductName
         );
         
+        
         if (selectedProduct) {
             // const row = element.target.closest('tr');
             document.getElementsByName(`products[${count}][unit]`)[0].value = selectedProduct.unit;
-            
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
             document.getElementsByName(`products[${count}][discount]`)[0].value = selectedProduct.discount_value;
             document.getElementsByName(`products[${count}][tax]`)[0].value = selectedProduct.tax_rate;

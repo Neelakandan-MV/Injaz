@@ -40,6 +40,7 @@ router.get('/business-owner/transactionDetails',isLogged,businessController.tran
 router.get('/business-owner/transactionDelete',isLogged,businessController.transactionDelete);
 router.get('/business-owner/transactionEdit',isLogged,businessController.viewtransactionEdit);
 router.post('/business-owner/transactionEdit',isLogged,businessController.transactionEdit);
+router.get('/business-owner/removeProduct',isLogged,businessController.removeProductFromTrasaction);
 router.get('/business-owner/item-detail',isLogged,businessController.viewItemDetail);
 router.get('/business-owner/addExpense',isLogged,businessController.viewAddExpense);
 router.post('/business-owner/addExpense',isLogged,businessController.addExpense);

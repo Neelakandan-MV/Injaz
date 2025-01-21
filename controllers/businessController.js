@@ -912,6 +912,8 @@ const businessOwnerController = {
         const user = req.session.user;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
+        const [currentProductsInTransactions] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id=?`,[transaction_id])
+        
 
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
 
@@ -935,39 +937,84 @@ const businessOwnerController = {
             WHERE id = ?`,
             [partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id]
         );
-
-        // for (let product of products) {
-        //     await mysql.query(`
-        //         UPDATE sale_products
-        //         SET  
-        //             item_id = ?, 
-        //             quantity = ?, 
-        //             price = ?, 
-        //             discount = ?, 
-        //             tax_rate = ?, 
-        //             total = ?, 
-        //             company_id = ?, 
-        //             product_name = ?, 
-        //             unit = ?
-        //         WHERE id = ?`,
-        //         [
-        //             product.productId,
-        //             product.quantity,
-        //             product.pricePerUnit,
-        //             product.discount,
-        //             product.tax,
-        //             product.productTotal,
-        //             user.company_id,
-        //             product.item,
-        //             product.unit,
-        //             product.productId
-        //         ]
-        //     );
-        // }
+        
+        for (let product of products) {
+            await mysql.query(`
+                UPDATE sale_products
+                SET  
+                    item_id = ?, 
+                    quantity = ?, 
+                    price = ?, 
+                    discount = ?, 
+                    tax_rate = ?, 
+                    total = ?, 
+                    company_id = ?, 
+                    product_name = ?, 
+                    unit = ?
+                WHERE id = ?`,
+                [
+                    product.itemId,
+                    product.quantity,
+                    product.pricePerUnit,
+                    product.discount,
+                    product.tax,
+                    product.productTotal,
+                    user.company_id,
+                    product.item,
+                    product.unit,
+                    product.saleProduct_id
+                ]
+            );
+           
+        } 
+        if(currentProductsInTransactions.length < products.length){
+            for(let i= currentProductsInTransactions.length; i<products.length;i++){
+            await mysql.query(`
+                INSERT INTO sale_products (
+                    item_id, 
+                    sale_id,
+                    quantity, 
+                    price, 
+                    discount, 
+                    tax_rate, 
+                    total, 
+                    company_id, 
+                    product_name, 
+                    unit
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    products[i].itemId,
+                    products[i].saleId,
+                    products[i].quantity,
+                    products[i].pricePerUnit,
+                    products[i].discount,
+                    products[i].tax,
+                    products[i].productTotal,
+                    user.company_id,
+                    products[i].item,
+                    products[i].unit
+                ]
+            );
+        }                
+        }
+        
         if (transactionType === "purchase") {
             return res.redirect('/business-owner/purchases');
         }
         res.redirect('/business-owner/sales');
+    },
+    removeProductFromTrasaction:async(req,res)=>{
+        const {id,quantity} = req.query
+        console.log(id,quantity);
+        const [sale_item] = await mysql.query(`SELECT * FROM sale_products WHERE id=?`,[id])
+        const item_id = sale_item[0].item_id
+        await mysql.query(`UPDATE items set stock = stock - ? WHERE id=?`,[quantity,item_id])
+        if(id){
+        await mysql.query(`DELETE FROM sale_products WHERE id = ?`, [id]);
+        res.json({success:'Removed From Transaction History'})
+        }
+        
     },
 
     viewItemDetail: async (req, res) => {

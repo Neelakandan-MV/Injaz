@@ -220,14 +220,14 @@
                             <% transactionProducts.forEach((product,index) => { %>
                                 <tr>
                               <td><%= index+1 %></td>
-                              <td><input type="text" id="productName<%= index %>" name="products[<%= index %>][item]" list="productSuggestions" onchange="sugesstion(this,'<%= index %>')" value="<%= product.product_name %>" readonly></td>
-                              <td><input type="number" name="products[<%= index %>][quantity]" oninput="updateProductTotal(this)" value="<%= product.quantity %>" readonly></td>
+                              <td><input type="text" id="productName<%= index %>" name="products[<%= index %>][item]" list="productSuggestions" onchange="sugesstion(this,'<%= index %>')" value="<%= product.product_name %>" ></td>
+                              <td><input type="number" name="products[<%= index %>][quantity]" oninput="updateProductTotal(this)" value="<%= product.quantity %>" ></td>
                               <td><input type="text" id="unit<%= index %>" name="products[<%= index %>][unit]" value="<%= product.unit %>" required ></td>
-                              <td><input type="text" id="priceInput<%= index %>" name="products[<%= index %>][pricePerUnit]" oninput="updateProductTotal(this)" value="<%= product.price %>" readonly ></td>
-                              <td><input type="text" id="discount<%= index %>" name="products[<%= index %>][discount]" oninput="updateProductTotal(this)" value="<%= product.discount %>" readonly ></td>
-                              <td><input type="text" name="products[<%= index %>][tax]" oninput="updateProductTotal(this)" value="<%= product.tax_rate %>" readonly ></td>
-                              <td><input type="text" name="products[<%= index %>][productTotal]" value="<%= product.total %>" readonly ></td>
-                              <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)" disabled>Remove</button></td>
+                              <td><input type="text" id="priceInput<%= index %>" name="products[<%= index %>][pricePerUnit]" oninput="updateProductTotal(this)" value="<%= product.price %>"  ></td>
+                              <td><input type="text" id="discount<%= index %>" name="products[<%= index %>][discount]" oninput="updateProductTotal(this)" value="<%= product.discount %>"  ></td>
+                              <td><input type="text" name="products[<%= index %>][tax]" oninput="updateProductTotal(this)" value="<%= product.tax_rate %>"  ></td>
+                              <td><input type="text" name="products[<%= index %>][productTotal]" value="<%= product.total %>"  ></td>
+                              <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this,'<%= product.id %>','<%=product.quantity%>')">Remove</button></td>
                               <input type="hidden" id="saleProduct_id" name="products[<%= index %>][saleProduct_id]" value="<%= product.id %>">
                               <input type="hidden" id="itemId" name="products[<%= index %>][itemId]" value="<%= product.item_id %>" >
                               <input type="hidden" id="productId" name="products[<%= index %>][saleId]" value="<%= product.sale_id %>" >
@@ -238,7 +238,7 @@
                     </table>
                 </div>
                     <!-- <p style="font-size: 12px; color: rgba(255, 0, 0, 0.7);">Note: Please remove the unwanted rows</p> -->
-                    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()" disabled>Add Row</button>
+                    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()" >Add Row</button>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -308,6 +308,8 @@ function addRow() {
      <td><input type="text" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required ></td>
      <td><input type="text" name="products[${currentIndex}][productTotal]" required ></td>
      <input type="hidden" id="productId${currentIndex}" name="products[${currentIndex}][productId]" >
+     <input type="hidden" id="itemId" name="products[${currentIndex}][itemId]" value="" >
+     <input type="hidden" id="productId" name="products[${currentIndex}][saleId]" value="" >
      <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
  `;
  
@@ -316,10 +318,25 @@ function addRow() {
 }
 
 
-     function removeRow(button) {
-         const row = button.closest('tr');
-         row.remove();
-         updateRowNumbers();
+     function removeRow(button,id,quantity) {
+
+        Swal.fire({
+        title: "Do you want Remove?",
+        showDenyButton: true,
+        confirmButtonText: "Save",
+        denyButtonText: `Don't save`
+        }).then((result) => {
+        if (result.isConfirmed) {
+         Swal.fire("Saved!", "", "success");
+              fetch(`/business-owner/removeProduct?id=${id}&&quantity=${quantity}`)
+          const row = button.closest('tr');
+          row.remove();
+            updateRowNumbers();
+  } else if (result.isDenied) {
+    Swal.fire("Changes are not saved", "", "info");
+  }
+});
+
      }
 
      function updateRowNumbers() {
@@ -383,6 +400,7 @@ function addRow() {
      
          const selectedProductName = element.value;
          const products = <%- JSON.stringify(products) %>
+         const transaction_products = <%-JSON.stringify(transactionProducts[0])%>
          
          const selectedProduct = products.find(
              (product) => product.item_name === selectedProductName
@@ -396,6 +414,8 @@ function addRow() {
              document.getElementsByName(`products[${ count }][discount]`)[0].value = selectedProduct.discount_value;
              document.getElementsByName(`products[${ count }][tax]`)[0].value = selectedProduct.tax_rate;
              document.getElementsByName(`products[${ count }][itemId]`)[0].value = selectedProduct.id;
+             document.getElementsByName(`products[${ count }][saleId]`)[0].value = transaction_products.sale_id;
+             
          }else{
              document.getElementsByName(`products[${ count }][unit]`)[0].value = ''
              document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = ''
@@ -421,5 +441,5 @@ function addRow() {
         overlay.classList.remove('active');
     });
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </html>
