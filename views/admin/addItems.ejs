@@ -353,7 +353,7 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="salePrice" class="form-label">Amount</label>
-                                <input type="number" class="form-control" id="salePrice" name="salePrice"
+                                <input type="text" class="form-control" id="salePrice" name="salePrice"
                                     placeholder="Enter sale price" >
                             </div>
                             <div class="col-md-4">
@@ -365,7 +365,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="discount" class="form-label">Discount (%)</label>
-                                <input type="number" class="form-control" id="discount" name="discountValue"
+                                <input type="text" class="form-control" id="discount" name="discountValue"
                                     placeholder="Enter discount">
                             </div>
                         </div>
@@ -375,7 +375,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="wholesalePrice" class="form-label">Amount</label>
-                                <input type="number" class="form-control" id="wholesalePrice" name="wholesalePrice"
+                                <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice"
                                     placeholder="Enter wholesale price">
                             </div>
                         </div>
@@ -385,7 +385,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="purchasePrice" class="form-label">Amount </label>
-                                <input type="number" class="form-control" id="purchasePrice" name="purchasePrice"
+                                <input type="text" class="form-control" id="purchasePrice" name="purchasePrice"
                                     placeholder="Enter purchase price" >
                             </div>
                             <div class="col-md-6">
@@ -424,7 +424,7 @@
                     <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="/business-owner/addCategory" method="post">
+                <form action="/admin/addCategory" method="post">
                     <div class="modal-body">
                         <input type="text" class="form-control" id="newCategory" name="category"
                             placeholder="Enter new category name" required>

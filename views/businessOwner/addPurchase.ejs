@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Sale</title>
+    <title>Add Transaction</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
@@ -118,7 +118,7 @@
     <div class="main-content">
         <!-- Header Section -->
         <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Add Sale</h1>
+            <h1 class="fw-bold">Add Purchase</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
 
@@ -129,14 +129,8 @@
                 <form action="/business-owner/addTransactions" method="POST">
                     <!-- Existing fields -->
                     <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="date" class="form-label">Transaction Type *</label>
-                            <select id="transaction" name="transactionType" class="form-select" required onclick="ijsadij(this)">
-                                <option value="">Choose one option</option>
-                                <option value="purchase">Purchase</option>
-                                <option value="sale">Sale</option>
-                            </select>
-                        </div>
+                        <input type="hidden" value="purchase" name="transactionType">
+                        
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="partyName" class="form-label">Party Name *</label>
@@ -367,7 +361,7 @@ function sugesstion(element,count) {
         if (selectedProduct) {
             // const row = element.target.closest('tr');
             document.getElementsByName(`products[${count}][unit]`)[0].value = selectedProduct.unit;
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.purchase_price;
             document.getElementsByName(`products[${count}][discount]`)[0].value = selectedProduct.discount_value;
             document.getElementsByName(`products[${count}][tax]`)[0].value = selectedProduct.tax_rate;
             document.getElementsByName(`products[${count}][productId]`)[0].value = selectedProduct.id;

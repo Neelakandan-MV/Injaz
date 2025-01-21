@@ -27,7 +27,7 @@ exports.login = async (req, res) => {
 
     let company_id = null;
     if (user.role === 'businessOwner' || user.role === 'admin' || user.role === 'superAdmin') {
-      const [companyRows] = await db.execute('SELECT * FROM companies WHERE user_id = ?', [user.id]);
+      const [companyRows] = await db.execute('SELECT * FROM companies');
       if (companyRows.length > 0) {
         if (companyRows.length > 1) {
           company_id = companyRows[1].id;

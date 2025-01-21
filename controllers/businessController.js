@@ -57,7 +57,7 @@ const businessOwnerController = {
     viewPurchases: async (req, res) => {
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
@@ -86,7 +86,7 @@ const businessOwnerController = {
     viewSales: async (req, res) => {
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
@@ -116,13 +116,11 @@ const businessOwnerController = {
 
     // Fetch dashboard data related to the logged-in user's company
     viewDashboard: async (req, res) => {
-
-
         try {
             const apiKey = process.env.EXCHANGE_RATE_API_KEY
 
             const user = req.session.user;
-            const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+            const [companyData] = await mysql.query(`SELECT * FROM companies`);
             const companyId = user.company_id;
             const currentCompany = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
@@ -227,7 +225,7 @@ const businessOwnerController = {
     viewAddItems: async (req, res) => {
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
@@ -249,7 +247,7 @@ const businessOwnerController = {
             }
             const user = req.session.user;
             const companyId = user.company_id;
-            const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+            const [companies] = await mysql.query(`SELECT * FROM companies`);
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
             if (!companyId) {
@@ -284,7 +282,7 @@ const businessOwnerController = {
                 if (itemExist.length > 0) {
                     const user = req.session.user;
                     const companyId = user.company_id;
-                    const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+                    const [companies] = await mysql.query(`SELECT * FROM companies`);
                     const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
                     if (!companyId) {
@@ -354,7 +352,7 @@ const businessOwnerController = {
         const { item_id } = req.query
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
 
@@ -374,7 +372,7 @@ const businessOwnerController = {
             }
             const user = req.session.user;
             const companyId = user.company_id;
-            const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+            const [companies] = await mysql.query(`SELECT * FROM companies`);
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
             if (!companyId) {
@@ -469,7 +467,7 @@ const businessOwnerController = {
         const user = req.session.user;
 
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
@@ -507,7 +505,7 @@ const businessOwnerController = {
     addCategory: async (req, res) => {
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
@@ -546,11 +544,25 @@ const businessOwnerController = {
     },
 
     // View for adding sales
-    viewAddTransaction: async (req, res) => {
+    viewAddSale: async (req, res) => {
 
         const user = req.session.user
         const previousRoute = res.locals.previousRoute;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [parties] = await mysql.query(`SELECT * FROM parties WHERE PartyStatus = '1' AND company_id = ?`, [user.company_id]);
+        const today = new Date().toISOString().split('T')[0];
+        const companyId = user.company_id;
+        const products = await mysql.query(
+            "SELECT * FROM items WHERE company_id = ? AND stock >0", [ companyId]);
+
+        res.render('businessOwner/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties, previousRoute });
+    },
+    viewAddPurchase: async (req, res) => {
+
+        const user = req.session.user
+        const previousRoute = res.locals.previousRoute;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [parties] = await mysql.query(`SELECT * FROM parties WHERE PartyStatus = '1' AND company_id = ?`, [user.company_id]);
         const today = new Date().toISOString().split('T')[0];
@@ -558,7 +570,7 @@ const businessOwnerController = {
         const products = await mysql.query(
             "SELECT * FROM items WHERE company_id = ?", [ companyId]);
 
-        res.render('businessOwner/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties, previousRoute });
+        res.render('businessOwner/addPurchase.ejs', { date: today, products: products[0], currentCompany, companies, user, parties, previousRoute });
     },
 
     addTransaction: async (req, res) => {
@@ -639,7 +651,7 @@ const businessOwnerController = {
     viewParty: async (req, res) => {
         const user = req.session.user
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [results] = await mysql.query(`
             SELECT 
@@ -775,7 +787,7 @@ const businessOwnerController = {
 
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
@@ -823,7 +835,7 @@ const businessOwnerController = {
         const companyId = user.company_id;
 
         // Fetch companies and current company
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
 
         // Fetch all cash flows sorted by date
@@ -861,7 +873,7 @@ const businessOwnerController = {
         const companyId = user.company_id;
         const transaction_id = req.query.id
         const previousRoute = res.locals.previousRoute
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
         const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
@@ -881,7 +893,7 @@ const businessOwnerController = {
         const user = req.session.user
         const companyId = user.company_id;
         const transaction_id = req.query.id
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
         const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
@@ -962,7 +974,7 @@ const businessOwnerController = {
         const { itemId } = req.query;
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [allItems] = await mysql.query(`SELECT * FROM items WHERE  company_id = ?`, [companyId])
 
@@ -1012,7 +1024,7 @@ const businessOwnerController = {
     viewExpense: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ?`, [company_id])
 
@@ -1039,7 +1051,7 @@ const businessOwnerController = {
     viewAddExpense: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [categories] = await mysql.query('SELECT * FROM expense_category');
         res.render('businessOwner/addExpense.ejs', { categories, companies, currentCompany, user });
@@ -1118,7 +1130,7 @@ const businessOwnerController = {
 
     totalReceivable: async (req, res) => {
         const user = req.session.user;
-        const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companyData] = await mysql.query(`SELECT * FROM companies`);
         const companyId = user.company_id;
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
     
@@ -1147,7 +1159,7 @@ const businessOwnerController = {
 
     totalPayable: async (req, res) => {
         const user = req.session.user;
-        const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+        const [companyData] = await mysql.query(`SELECT * FROM companies`);
         const companyId = user.company_id;
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
     
@@ -1176,7 +1188,7 @@ const businessOwnerController = {
     viewCashInHand : async(req,res)=>{
         try {
             const user = req.session.user
-            const [companyData] = await mysql.query(`SELECT * FROM companies WHERE user_id = ?`, [user.id]);
+            const [companyData] = await mysql.query(`SELECT * FROM companies`);
             const companyId = user.company_id;
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
             const [totalCashInHand] = await mysql.query(`

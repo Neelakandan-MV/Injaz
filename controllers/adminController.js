@@ -151,8 +151,8 @@ const adminController = {
         const { name, email, password } = req.body
         const hashedPassword = await bcrypt.hash(password, 10);
         await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, 'businessOwner'])
-        const [addedUser] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
-        await mysql.query("INSERT INTO companies (user_id,name,created_at) VALUES (?,?,?)", [addedUser[0].id, 'Main', new Date()])
+        // const [addedUser] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
+        // await mysql.query("INSERT INTO companies (user_id,name,created_at) VALUES (?,?,?)", [addedUser[0].id, 'Main', new Date()])
         res.redirect('/admin/userManagement')
     },
     userBlock: async (req, res) => {
