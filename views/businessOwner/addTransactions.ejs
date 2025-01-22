@@ -129,14 +129,7 @@
                 <form action="/business-owner/addTransactions" method="POST">
                     <!-- Existing fields -->
                     <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="date" class="form-label">Transaction Type *</label>
-                            <select id="transaction" name="transactionType" class="form-select" required onclick="ijsadij(this)">
-                                <option value="">Choose one option</option>
-                                <option value="purchase">Purchase</option>
-                                <option value="sale">Sale</option>
-                            </select>
-                        </div>
+                        <input type="hidden" value="sale" name="transactionType">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="partyName" class="form-label">Party Name *</label>
@@ -185,7 +178,7 @@
                     <!-- Products Table -->
                     <h4>Products</h4>
                     <div class="table-responsive">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered" id="table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -197,7 +190,8 @@
                                 </th>
                                 <th>Discount (%)</th>
                                 <th>Tax (%)</th>
-                                <th>Total</th>
+                                <th>Total (SAR)</th>
+                                <th>Delivered</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -212,13 +206,39 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="TotalAmount" class="form-label">Total *</label>
-                            <input type="text" id="totalAmount" name="totalAmount" class="form-control" required>
+                            <input type="text" id="totalAmount" name="totalAmount" class="form-control" onchange="updateBalanceDue()" required>
                         </div>
                     </div>
+                    <button type="button" class="btn btn-warning mb-3" onclick="roundTotal()">Round Total</button>
+                    <button type="button" class="btn btn-warning mb-3" onclick="roundDecimalsOnly()">Round Decimals</button>
+                    <script>
+                        function roundTotal() {
+                         const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                         
+                         if (!isNaN(totalAmount)) {
+                             const roundedTotal = Math.round(totalAmount / 5) * 5;
+                             document.getElementById('totalAmount').value = roundedTotal;
+                             updateBalanceDue()
+                         } else {
+                             alert('Please enter a valid number');
+                         }
+                     }
+                     function roundDecimalsOnly() {
+                         const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                         
+                         if (!isNaN(totalAmount)) {
+                             const roundedDecimals = totalAmount.toFixed(2);
+                             document.getElementById('totalAmount').value = roundedDecimals;
+                             updateBalanceDue()
+                         } else {
+                             alert('Please enter a valid number');
+                         }
+                     }
+                     </script>
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="recieved" id="remaining" class="form-label">Received *</label>
-                            <input type="text" id="received" name="recieved" class="form-control" required>
+                            <input type="text" id="received" name="recieved" class="form-control" oninput="updateReceived()" required>
                         </div>
                         <div class="col-md-3">
                             <label for="balanceDue" class="form-label">Balance Due *</label>
@@ -275,6 +295,7 @@
         count++;
 
         row.innerHTML = `
+        <tr>
             <td></td>
             <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
             <td><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this)" required></td>
@@ -282,19 +303,61 @@
             <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this)" onchange="updateWholesalePrice()" required ></td>
             <td><input type="text" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required ></td>
             <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this)" required ></td>
-            <td><input type="text" name="products[${count}][productTotal]" required ></td>
+            <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
+            <td><input type="text" id="deliveredQuantity" name="products[${count}][deliveredQuantity]"></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
-            <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
+            <td><div class="d-flex"><button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,${count})">Free</button>
+            <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
+            </tr>
         `;
 
         table.appendChild(row);
         updateRowNumbers();
     }
+    function makeFree(element,count){
+        const row = element.closest('tr')
+        row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = 0;
+        productTotalInput = document.getElementById('productTotal');
+        productTotalInput.dispatchEvent(new Event('change'));
+    }
+    
+    function updateSaleTotal() {
+    const element = document.getElementById('table')
+    const rows = element.querySelectorAll('tr'); 
+    const saleTotalInput = document.getElementById('totalAmount')
+    let total = 0;
+
+    rows.forEach((row) => {
+        const productTotalInput = row.querySelector(`[name^="products"][name$="[productTotal]"]`);
+        if (productTotalInput) {
+            total += parseFloat(productTotalInput.value) || 0; 
+        }
+    });
+    saleTotalInput.value = total
+    saleTotalInput.dispatchEvent(new Event('change'));
+    
+}
+function updateBalanceDue(){
+    const saleTotalInput = document.getElementById('totalAmount')
+    const balanceDue = document.getElementById('balanceDue')
+    const received = document.getElementById('received')
+    balanceDue.value = saleTotalInput.value;
+    received.value = 0
+}
+function updateReceived(){
+    const saleTotalInput = document.getElementById('totalAmount')
+    const balanceDue = document.getElementById('balanceDue')
+    const received = document.getElementById('received')
+    balanceDue.value = Number(saleTotalInput.value).toFixed(4)- Number(received.value).toFixed(4);
+}
+
 
     function removeRow(button) {
         const row = button.closest('tr');
         row.remove();
         updateRowNumbers();
+        productTotalInput = document.getElementById('productTotal');
+        productTotalInput.dispatchEvent(new Event('change'));
     }
 
     function updateRowNumbers() {
@@ -317,18 +380,8 @@
 
         row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);
 
-
-        // if(selectedProduct.wholesale_price_1 >0 || selectedProduct.wholesale_price_2>0 || selectedProduct.wholesale_price_3>0){
-        //         if(selectedProduct.wholesale_quantity_1 > quantity && selectedProduct.wholesale_quantity_2 < quantity){
-        //             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1        
-        //         }else if(selectedProduct.wholesale_quantity_2 >= quantity && selectedProduct.wholesale_quantity_3 < quantity){
-        //             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_2        
-        //         }else if(selectedProduct.wholesale_quantity_3 >= quantity){
-        //             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_3        
-        //         }else{
-                   
-        //         }
-        //     }
+        productTotalInput = document.getElementById('productTotal');
+        productTotalInput.dispatchEvent(new Event('change'));
     }
 
     function validateForm(event) {

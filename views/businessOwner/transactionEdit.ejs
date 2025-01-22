@@ -138,8 +138,6 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="partyName" class="form-label">Party Name *</label>
-                                <!-- <input type="text" id="partyName" name="partyName" class="form-control"
-                                    placeholder="Enter Party ID"  list="partySuggestions" required> -->
     
                                     <select name="partyName" id="partyName" class="form-control" placeholder="Enter Party Name" on onchange="partyChange(this)" required>
                                         <option value="">Choose Party</option>
@@ -168,31 +166,16 @@
                             <label for="Payment Type">Payment Type *</label>
                             <select id="paymentType" name="paymentType" class="form-select">
                                 <option <%= transactionDetails.payment_type === 'Cash'? 'selected':'' %> value="cash">Cash</option>
-                                <!-- <option value="credit">Credit</option> -->
                                 <option <%= transactionDetails.payment_type=== 'Online'? 'selected':'' %> value="online">Online</option>
                             </select>
                         </div>
                         <input type="hidden" value="<%= transactionDetails.id %>" name="transaction_id">
+                       
                         
-                        <%      let date = new Date( transactionDetails.date );%>
-
-                            
-                        <%  const day = String(date.getDate()).padStart(2, '0'); // Ensure 2 digits%>
-                          <%  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based%>
-                          <%const year = date.getFullYear();%>
-                          <%const formattedDate = `${day}-${month}-${year}`;%>
-                          <script>
-                            function dateChange() {
-                                const dateSelector = document.getElementById('date')
-                                dateSelector.type = 'date'
-                            }
-                          </script>
-                            
                         <div class="col-md-3">
-                            <label for="date" class="form-label">Date *</label>
-                            <input type="text" id="date" name="date" class="form-control" value="<%= formattedDate %>" onclick="dateChange()" >
+                            <label for="form-date" class="form-label">Date *</label>
+                            <input type="date" id="form-date" name="date" class="form-control">
                         </div>
-                        
                     </div>
                     
                     </div>
@@ -200,7 +183,7 @@
                     <!-- Products Table -->
                     <h4>Products</h4>
                     <div class="table-responsive">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered" id="table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -212,8 +195,10 @@
                                 </th>
                                 <th>Discount (%)</th>
                                 <th>Tax (%)</th>
-                                <th>Total</th>
+                                <th>Total (SAR)</th>
+                                <th>Delivered<p style="font-size: 12px; color: gray;">(Balance)</p></th>
                                 <th>Action</th>
+                                
                             </tr>
                         </thead>
                         <tbody id="productTableBody">
@@ -226,11 +211,17 @@
                               <td><input type="text" id="priceInput<%= index %>" name="products[<%= index %>][pricePerUnit]" oninput="updateProductTotal(this)" value="<%= product.price %>"  ></td>
                               <td><input type="text" id="discount<%= index %>" name="products[<%= index %>][discount]" oninput="updateProductTotal(this)" value="<%= product.discount %>"  ></td>
                               <td><input type="text" name="products[<%= index %>][tax]" oninput="updateProductTotal(this)" value="<%= product.tax_rate %>"  ></td>
-                              <td><input type="text" name="products[<%= index %>][productTotal]" value="<%= product.total %>"  ></td>
-                              <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this,'<%= product.id %>','<%=product.quantity%>')">Remove</button></td>
+                              <td><input type="text" id="productId" name="products[<%= index %>][productTotal]" onchange="updateSaleTotal(this)" value="<%= product.total %>"  ></td>
+                              <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[<%= index %>][deliveredQuantity]" value="<%= product.delivered_quantity?product.delivered_quantity:'N/A' %>"><span style="color: rgb(95, 95, 95);">(<%= product.delivered_quantity? product.quantity - product.delivered_quantity:'N/A'  %>)</span></div></td>
+                              <td>
+                                <div class="d-flex">
+                                    <button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,'<%= index %>')">Free</button>
+                                    <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this,'<%= product.id %>','<%=product.quantity%>')">Remove</button>
+                                </div>
+                              </td>
                               <input type="hidden" id="saleProduct_id" name="products[<%= index %>][saleProduct_id]" value="<%= product.id %>">
                               <input type="hidden" id="itemId" name="products[<%= index %>][itemId]" value="<%= product.item_id %>" >
-                              <input type="hidden" id="productId" name="products[<%= index %>][saleId]" value="<%= product.sale_id %>" >
+                              <input type="hidden" id="sale_id" name="products[<%= index %>][saleId]" value="<%= product.sale_id %>" >
                             </tr>
                               <% });  %>
                               
@@ -243,13 +234,39 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="TotalAmount" class="form-label">Total *</label>
-                            <input type="text" id="totalAmount" name="totalAmount" class="form-control" value="<%= transactionDetails.total_amount%>" required>
+                            <input type="text" id="totalAmount" name="totalAmount" class="form-control" value="<%= transactionDetails.total_amount%>" onchange="updateBalanceDue()" required>
                         </div>
                     </div>
+                    <button type="button" class="btn btn-warning mb-3" onclick="roundTotal()">Round Total</button>
+                    <button type="button" class="btn btn-warning mb-3" onclick="roundDecimalsOnly()">Round Decimals</button>
+                    <script>
+                        function roundTotal() {
+                         const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                         
+                         if (!isNaN(totalAmount)) {
+                             const roundedTotal = Math.round(totalAmount / 5) * 5;
+                             document.getElementById('totalAmount').value = roundedTotal;
+                             updateBalanceDue()
+                         } else {
+                             alert('Please enter a valid number');
+                         }
+                     }
+                     function roundDecimalsOnly() {
+                         const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                         
+                         if (!isNaN(totalAmount)) {
+                             const roundedDecimals = totalAmount.toFixed(2);
+                             document.getElementById('totalAmount').value = roundedDecimals;
+                             updateBalanceDue()
+                         } else {
+                             alert('Please enter a valid number');
+                         }
+                     }
+                     </script>
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="recieved" id="remaining" class="form-label">Received *</label>
-                            <input type="text" id="received" name="recieved" class="form-control" value="<%= transactionDetails.received_amount %>" required>
+                            <input type="text" id="received" name="recieved" class="form-control" value="<%= transactionDetails.received_amount %>" oninput="updateReceived()" required>
                         </div>
                         <div class="col-md-3">
                             <label for="balanceDue" class="form-label">Balance Due *</label>
@@ -268,15 +285,6 @@
     
 </body>
 <script>
-    function ijsadij(element) {
-        const transactionType = element.value;
-        
-        if (transactionType === 'sale'){
-            document.getElementById('remaining').textContent = 'Received *';
-        }else{
-            document.getElementById('remaining').textContent = 'Paid *';
-        }
-    }
 
     function partyChange(element){
         const phoneInput = document.getElementById('phone')
@@ -288,7 +296,22 @@
         })    
     }
 
+    
 </script>   
+<script>
+    const backend_date = <%- JSON.stringify(transactionDetails.date) %>;
+
+    function setTransactionDate() {
+        const dateInput = document.getElementById('form-date');
+        const dateObject = new Date(backend_date);
+        const localDate = new Date(dateObject.getTime() - dateObject.getTimezoneOffset() * 60000);
+        const formattedDate = localDate.toISOString().split('T')[0];
+        dateInput.value = formattedDate;
+    }
+
+
+    window.onload = setTransactionDate;
+</script>
 
 <script>
     // In your JavaScript, maintain a counter for dynamically added rows.
@@ -299,6 +322,7 @@ function addRow() {
  const row = document.createElement("tr");
  
  row.innerHTML = `
+ <tr>
      <td>${currentIndex + 1}</td>
      <td><input type="text" id="productName${currentIndex}" name="products[${currentIndex}][item]" list="productSuggestions" onchange="sugesstion(this, '${currentIndex}')" required></td>
      <td><input type="number" name="products[${currentIndex}][quantity]" oninput="updateProductTotal(this)" required></td>
@@ -306,11 +330,14 @@ function addRow() {
      <td><input type="text" id="priceInput${currentIndex}" name="products[${currentIndex}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
      <td><input type="text" id="discount${currentIndex}" name="products[${currentIndex}][discount]" oninput="updateProductTotal(this)" required ></td>
      <td><input type="text" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required ></td>
-     <td><input type="text" name="products[${currentIndex}][productTotal]" required ></td>
-     <input type="hidden" id="productId${currentIndex}" name="products[${currentIndex}][productId]" >
+     <td><input type="text" id="productTotal" name="products[${currentIndex}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
+      <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[${currentIndex}][deliveredQuantity]" ><span style="color: rgb(95, 95, 95);">(N/A)</span></div></td>
+     <input type="hidden" id="productId" name="products[${currentIndex}][productId]" >
      <input type="hidden" id="itemId" name="products[${currentIndex}][itemId]" value="" >
-     <input type="hidden" id="productId" name="products[${currentIndex}][saleId]" value="" >
-     <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button></td>
+     
+     <td><div class="d-flex"><button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,${currentIndex})">Free</button>
+            <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></div></td>
+            </tr>
  `;
  
  tableBody.appendChild(row);
@@ -332,6 +359,8 @@ function addRow() {
           const row = button.closest('tr');
           row.remove();
             updateRowNumbers();
+            productTotalInput = document.getElementById('productTotal');
+        productTotalInput.dispatchEvent(new Event('change'));
   } else if (result.isDenied) {
     Swal.fire("Changes are not saved", "", "info");
   }
@@ -354,10 +383,13 @@ function addRow() {
          const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
 
          let productTotal = quantity * pricePerUnit;
-         productTotal += (productTotal * tax) / 100; // Add tax
-         productTotal -= (productTotal * discount) / 100; // Subtract discount
+         productTotal += (productTotal * tax) / 100; 
+         productTotal -= (productTotal * discount) / 100; 
 
          row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);
+
+         productTotalInput = document.getElementById('productTotal');
+        productTotalInput.dispatchEvent(new Event('change'));
      }
 
      function validateForm(event) {
@@ -372,12 +404,6 @@ function addRow() {
          }
      }
 
-    
-     // window.onload = function () {
-     //     for (let i = 0; i < 3; i++) {
-     //         addRow();
-     //     }
-     // };
  </script>
 <datalist id="productSuggestions">
  <%if(products.length){ products.forEach(product=> {%>
@@ -400,17 +426,19 @@ function addRow() {
      
          const selectedProductName = element.value;
          const products = <%- JSON.stringify(products) %>
-         const transaction_products = <%-JSON.stringify(transactionProducts[0])%>
+         const transaction_products = <%-JSON.stringify(transactionProducts)%>
          
          const selectedProduct = products.find(
              (product) => product.item_name === selectedProductName
          );
+         const transaction_type = <%-JSON.stringify(transactionDetails.transaction_type)%>
+         console.log(transaction_type);
          
 
          if (selectedProduct) {
              // const row = element.target.closest('tr');
              document.getElementsByName(`products[${ count }][unit]`)[0].value = selectedProduct.unit;
-             document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = selectedProduct.sale_price;
+             document.getElementsByName(`products[${ count }][pricePerUnit]`)[0].value = transaction_type =='purchase'? selectedProduct.purchase_price : selectedProduct.sale_price ;
              document.getElementsByName(`products[${ count }][discount]`)[0].value = selectedProduct.discount_value;
              document.getElementsByName(`products[${ count }][tax]`)[0].value = selectedProduct.tax_rate;
              document.getElementsByName(`products[${ count }][itemId]`)[0].value = selectedProduct.id;
@@ -422,9 +450,45 @@ function addRow() {
              document.getElementsByName(`products[${ count }][discount]`)[0].value = ''
              document.getElementsByName(`products[${ count }][tax]`)[0].value = ''
          }
-
-
  }
+
+ function makeFree(element,count){
+        const row = element.closest('tr')
+        row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = 0;
+        productTotalInput = document.getElementById('productTotal');
+        productTotalInput.dispatchEvent(new Event('change'));
+    }
+    
+    function updateSaleTotal() {
+    const element = document.getElementById('table')
+    const rows = element.querySelectorAll('tr'); 
+    const saleTotalInput = document.getElementById('totalAmount')
+    let total = 0;
+
+    rows.forEach((row) => {
+        const productTotalInput = row.querySelector(`[name^="products"][name$="[productTotal]"]`);
+        if (productTotalInput) {
+            total += parseFloat(productTotalInput.value) || 0; 
+        }
+    });
+    saleTotalInput.value = total
+    saleTotalInput.dispatchEvent(new Event('change'));
+    
+}
+function updateBalanceDue(){
+    const saleTotalInput = document.getElementById('totalAmount')
+    const balanceDue = document.getElementById('balanceDue')
+    const received = document.getElementById('received')
+    balanceDue.value = saleTotalInput.value;
+    received.value = 0
+}
+function updateReceived(){
+    const saleTotalInput = document.getElementById('totalAmount')
+    const balanceDue = document.getElementById('balanceDue')
+    const received = document.getElementById('received')
+    balanceDue.value = Number(saleTotalInput.value).toFixed(4)- Number(received.value).toFixed(4);
+}
+
 </script>
 <script>
     const sidebar = document.getElementById('sidebar');

@@ -96,7 +96,7 @@
                                     <% }) %>
                                 </select>
                             </div>
-                            <button class="btn btn-secondary mb-2" data-bs-toggle="modal" data-bs-target="#addCompanyModal">Add New Category</button>
+                            <button class="btn btn-secondary mb-2" data-bs-toggle="modal" data-bs-target="#addExpense">Add New Category</button>
                             <!-- Expense Number -->
                             <!-- <div class="mb-3">
                                 <label for="expenseNumber" class="form-label">Expense Number</label>
@@ -126,17 +126,17 @@
 </div>
 
      <!-- Modal for Add New Company -->
-     <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel" aria-hidden="true">
+     <div class="modal fade" id="addExpense" tabindex="-1" aria-labelledby="addCompanyModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addCompanyModalLabel">Add New Company</h5>
+                    <h5 class="modal-title" id="addCompanyModalLabel">Add New Expense</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form action="/business-owner/addExpenseCategory" method="POST">
                         <div class="mb-3">
-                            <label for="companyName" class="form-label">Category Name</label>
+                            <label for="companyName" class="form-label">Expense Category</label>
                             <input type="text" class="form-control" id="category_name" name="name" required>
                         </div>
                         <button type="submit" class="btn btn-success">Save</button>

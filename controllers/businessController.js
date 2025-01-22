@@ -579,6 +579,8 @@ const businessOwnerController = {
         const user = req.session.user
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
+        console.log(products);
+        
 
 
         const sales = await mysql.query("INSERT INTO sales (customer_name, user_id, company_id, date, invoice_number, payment_type, total_amount, received_amount, balance_due, created_at, transaction_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
@@ -596,7 +598,7 @@ const businessOwnerController = {
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
 
         if (products) {
-            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
+            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
 
             //controlling stock
             if (transactionType === "purchase") {
@@ -806,8 +808,6 @@ const businessOwnerController = {
                 sales.created_at BETWEEN ? AND ? AND
                 sales.company_id = ?
         `, [startOfDay, endOfDay, companyId]);
-        console.log("items", items);
-        console.log("date", date);
 
         let total_money_in = 0
         let total_money_out = 0
@@ -822,8 +822,6 @@ const businessOwnerController = {
         let day_book_total = total_money_in - Number(total_money_out)
         if (date) {
             const data = { items, total_money_in, total_money_out, day_book_total }
-            console.log("data", data);
-
             return res.json(data)
         }
 
@@ -902,8 +900,6 @@ const businessOwnerController = {
         const [current_party] = await mysql.query('SELECT * FROM parties WHERE id = ?', transactionDetails[0].customer_name)
         const previousRoute = res.locals.previousRoute
 
-
-
         res.render('businessOwner/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0], current_party: current_party[0], previousRoute })
     },
     transactionEdit: async (req, res) => {
@@ -937,13 +933,14 @@ const businessOwnerController = {
             WHERE id = ?`,
             [partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id]
         );
-        
+        if(products && products?.length){
         for (let product of products) {
             await mysql.query(`
                 UPDATE sale_products
                 SET  
                     item_id = ?, 
                     quantity = ?, 
+                    delivered_quantity = ?,
                     price = ?, 
                     discount = ?, 
                     tax_rate = ?, 
@@ -955,6 +952,7 @@ const businessOwnerController = {
                 [
                     product.itemId,
                     product.quantity,
+                    product.deliveredQuantity,
                     product.pricePerUnit,
                     product.discount,
                     product.tax,
@@ -974,6 +972,7 @@ const businessOwnerController = {
                     item_id, 
                     sale_id,
                     quantity, 
+                    delivered_quantity,
                     price, 
                     discount, 
                     tax_rate, 
@@ -982,11 +981,12 @@ const businessOwnerController = {
                     product_name, 
                     unit
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
                 [
                     products[i].itemId,
-                    products[i].saleId,
+                    transaction_id,
                     products[i].quantity,
+                    products[i].deliveredQuantity,
                     products[i].pricePerUnit,
                     products[i].discount,
                     products[i].tax,
@@ -998,6 +998,7 @@ const businessOwnerController = {
             );
         }                
         }
+    }
         
         if (transactionType === "purchase") {
             return res.redirect('/business-owner/purchases');
@@ -1008,7 +1009,7 @@ const businessOwnerController = {
         const {id,quantity} = req.query
         console.log(id,quantity);
         const [sale_item] = await mysql.query(`SELECT * FROM sale_products WHERE id=?`,[id])
-        const item_id = sale_item[0].item_id
+        const item_id = sale_item[0]?.item_id
         await mysql.query(`UPDATE items set stock = stock - ? WHERE id=?`,[quantity,item_id])
         if(id){
         await mysql.query(`DELETE FROM sale_products WHERE id = ?`, [id]);
@@ -1108,7 +1109,7 @@ const businessOwnerController = {
         const company_id = user.company_id;
         const { category_id, expense_number, date, amount } = req.body
         await mysql.query(`INSERT INTO expenses (category_id,expense_number,date,amount,company_id) VALUES(?,?,?,?,?)`, [category_id, expense_number, date, amount, company_id])
-        res.redirect('/business-owner/dashboard');
+        res.redirect('/business-owner/expenses');
 
     },
     addExpenseCategory: async (req, res) => {
