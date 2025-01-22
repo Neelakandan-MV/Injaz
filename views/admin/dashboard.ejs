@@ -15,27 +15,39 @@
     <main>
         <section class="overview">
             <h2>Business Overview</h2>
-            <div class="stat-cards">
-                <div class="stat-card">
-                    <h3>Total Cash Inflow</h3>
-                    <p>SAR <%= total_cash_inflow[0]?.total_cash_inflow || 0 %>
-                    </p>
+          
+            <div class="row">
+            
+                <div class="col-md-6 mb-3">
+                    <a href="/admin/totalReceivable">
+                    <div class="card p-4 text-center bg-light">
+                        <h5>Total Receivable</h5>
+                        <p class="text-success display-6">SAR <%= totalReceivable ? totalReceivable : 0 %></p>
+                        <!-- <p class="text-muted">You don’t have any receivables as of now.</p> -->
+                    </div></a>
                 </div>
-
-                <div class="stat-card">
-                    <h3>Total Cash Outflow</h3>
-                    <p>SAR <%= total_cash_outflow[0]?.total_cash_outflow || 0 %>
-                    </p>
+                <div class="col-md-6 mb-3">
+                    <a href="/admin/totalPayable">
+                    <div class="card p-4 text-center bg-light">
+                        <h5>Total Payable</h5>
+                        <p class="display-6" style="color: red;">SAR <%= totalPayable ? totalPayable : 0 %></p>
+                        <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
+                    </div></a>
                 </div>
-                <div class="stat-card">
-                    <h3>Total Expenses</h3>
-                    <p>SAR <%= total_expenses[0]?.total_expenses || 0 %>
-                    </p>
+                <div class="col-md-6 mb-3">
+                    <a href="/admin/cashInHand">
+                    <div class="card p-4 text-center bg-light">
+                        <h5>Cash In Hand</h5>
+                        <p class="display-6" style="color: <%=totalCashInHand?.cash_in_hand>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= totalCashInHand[0] ? totalCashInHand[0].cash_in_hand : 0 %></p>
+                        <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
+                    </div></a>
                 </div>
-                <div class="stat-card">
-                    <h3>Total Profit</h3>
-                    <p>SAR <%= total_profit[0]?.total_profit || 0 %>
-                    </p>
+                <div class="col-md-6">
+                    
+                    <div class="card p-4 text-center bg-light">
+                        <h5>Total Stock Value</h5>
+                        <p class="display-6" style="color: <%= stockValue>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= Number(stockValue).toFixed(4) %></p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -135,8 +147,13 @@
                                 </a>
                             </div>
                             <div class="col-md-3 mb-3">
-                                <a href="/admin/addTransactions">
-                                    <div class="card p-3 smallCard"><span>Add Sale/Purchase</span></div>
+                                <a href="/admin/addSale">
+                                    <div class="card p-3 smallCard"><span>Add Sale</span></div>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="/admin/addPurchase">
+                                    <div class="card p-3 smallCard"><span>Add Purchase</span></div>
                                 </a>
                             </div>
                         </div>
@@ -394,6 +411,30 @@
 
 
 <style>
+
+.card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .card p {
+            margin: 0;
+        }
+        .most-used-cards a {
+            text-decoration: none;
+            color: #333;
+        }
+        .most-used-cards .card {
+            transition: all 0.3s ease-in-out;
+        }
+        .most-used-cards .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
     .smallCard {
         display: flex;
         justify-content: center;

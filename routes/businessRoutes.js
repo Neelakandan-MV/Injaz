@@ -46,9 +46,8 @@ router.get('/business-owner/addExpense',isLogged,businessController.viewAddExpen
 router.post('/business-owner/addExpense',isLogged,businessController.addExpense);
 router.get('/business-owner/expenses',isLogged,businessController.viewExpense);
 router.post('/business-owner/addExpenseCategory',isLogged,businessController.addExpenseCategory);
-router.get('/business-owner/totalReceivable',isLogged,businessController.totalReceivable);
-router.get('/business-owner/totalPayable',isLogged,businessController.totalPayable);
-router.get('/business-owner/cashInHand',isLogged,businessController.viewCashInHand);
+
+
 
 // router.get('/business-owner/downloadPdf',isLogged,businessController.downloadCashFlow);
 

@@ -30,37 +30,134 @@ const adminController = {
             const [companies] = await mysql.query(`SELECT * FROM companies`);
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
-            const [total_cash_inflow] = await mysql.query(`
-                SELECT SUM(amount) AS total_cash_inflow 
-                FROM cash_flows 
-                WHERE money_type = 'money_in' AND company_id = ?;
-            `, [user.company_id]);
+            // const [total_cash_inflow] = await mysql.query(`
+            //     SELECT SUM(amount) AS total_cash_inflow 
+            //     FROM cash_flows 
+            //     WHERE money_type = 'money_in' AND company_id = ?;
+            // `, [user.company_id]);
 
-            const [total_cash_outflow] = await mysql.query(`
-                SELECT SUM(amount) AS total_cash_outflow 
-                FROM cash_flows 
-                WHERE money_type = 'money_out' AND company_id = ?;
-            `, [user.company_id]);
+            // const [total_cash_outflow] = await mysql.query(`
+            //     SELECT SUM(amount) AS total_cash_outflow 
+            //     FROM cash_flows 
+            //     WHERE money_type = 'money_out' AND company_id = ?;
+            // `, [user.company_id]);
 
-            const [total_expenses] = await mysql.query(`
-                SELECT SUM(amount) AS total_expenses 
-                FROM expenses 
-                WHERE company_id = ?;
-            `, [user.company_id]);
+            // const [total_expenses] = await mysql.query(`
+            //     SELECT SUM(amount) AS total_expenses 
+            //     FROM expenses 
+            //     WHERE company_id = ?;
+            // `, [user.company_id]);
 
-            const [total_profit] = await mysql.query(`
+            // const [total_profit] = await mysql.query(`
+            //     SELECT 
+            //         (SELECT SUM(amount) FROM cash_flows WHERE money_type = 'money_in' AND company_id = ?) - 
+            //         (SELECT SUM(amount) FROM cash_flows WHERE money_type = 'money_out' AND company_id = ?) - 
+            //         (SELECT SUM(amount) FROM expenses WHERE company_id = ?) AS total_profit;
+            // `, [user.company_id, user.company_id, user.company_id])
+
+
+            const companyId = user.company_id;
+
+            if (!companyId) {
+                return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
+            }
+
+            const [partyWisePayable] = await mysql.query(`
                 SELECT 
-                    (SELECT SUM(amount) FROM cash_flows WHERE money_type = 'money_in' AND company_id = ?) - 
-                    (SELECT SUM(amount) FROM cash_flows WHERE money_type = 'money_out' AND company_id = ?) - 
-                    (SELECT SUM(amount) FROM expenses WHERE company_id = ?) AS total_profit;
-            `, [user.company_id, user.company_id, user.company_id])
+                    p.id AS party_id,
+                    p.PartyName AS party_name,
+                    SUM(s.balance_due) AS total_payable
+                FROM 
+                    parties p
+                LEFT JOIN 
+                    sales s ON p.id = s.customer_name
+                WHERE 
+                    p.company_id = ?
+                    AND s.transaction_type = 'purchase'
+                GROUP BY 
+                    p.id, p.PartyName
+            `, [companyId]);
+           
+            const [partyWiseReceivable] = await mysql.query(`
+                SELECT 
+                    p.id AS party_id,
+                    p.PartyName AS party_name,
+                    SUM(s.balance_due) AS total_receivable
+                FROM 
+                    parties p
+                LEFT JOIN 
+                    sales s ON p.id = s.customer_name
+                WHERE 
+                    p.company_id = ?
+                    AND s.transaction_type = 'sale'
+                GROUP BY 
+                    p.id, p.PartyName
+            `, [companyId]);
+           
+
+
+            const totalPayable = partyWisePayable.reduce((acc, transaction) => {
+                    return acc+Number(transaction.total_payable)
+            }, 0);
+
+            const totalReceivable = partyWiseReceivable.reduce((acc, transaction) => {
+                return acc+Number(transaction.total_receivable)
+            }, 0);
+
+            const [totalCashInHand] = await mysql.query(`
+                SELECT 
+                    company_id, 
+                    user_id, 
+                    SUM(cash_flow) AS cash_in_hand
+                FROM (
+                    -- Cash flow from sales
+                    SELECT 
+                        company_id, 
+                        user_id, 
+                        CASE 
+                            WHEN transaction_type = 'sale' THEN received_amount 
+                            WHEN transaction_type = 'purchase' THEN -received_amount 
+                            ELSE 0 
+                        END AS cash_flow
+                    FROM 
+                        sales 
+                    WHERE 
+                        payment_type = 'Cash'
+            
+                    UNION ALL
+            
+                    -- Cash flow from expenses
+                    SELECT 
+                        company_id, 
+                        NULL AS user_id, 
+                        -amount AS cash_flow
+                    FROM 
+                        expenses
+                ) AS combined_cash_flows
+                WHERE company_id = ?
+                GROUP BY company_id
+            `, [companyId]);
+
+            const [items] = await mysql.query(`
+                SELECT items.*, categories.category AS categoryName 
+                FROM items 
+                LEFT JOIN categories ON items.category_id = categories.id
+                WHERE items.company_id = ? AND items.user_id = ?
+            `, [companyId, user.id]);
+    
+            const stockValue = items.reduce((accumulator, item) => {
+                return accumulator + Number(item.purchase_price) * Number(item.stock);
+            }, 0);
+
+            console.log(totalCashInHand);
+            
 
             res.render('admin/dashboard.ejs', {
                 title: "Admin Dashboard",
-                total_cash_inflow,
-                total_cash_outflow,
-                total_expenses,
-                total_profit,
+                totalCashInHand,
+                totalPayable,
+                totalReceivable,
+                stockValue,
                 currentCompany,
                 companies,
                 apiKey
@@ -379,18 +476,35 @@ const adminController = {
             });
         }
     },
+    viewAddSale: async (req, res) => {
 
-    // View for adding sales
-    viewAddTransaction: async (req, res) => {
         const user = req.session.user
-        const [companies] = await mysql.query(`SELECT * FROM companies`,);
+        const previousRoute = res.locals.previousRoute;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [parties] = await mysql.query(`SELECT * FROM parties`);
+        const [parties] = await mysql.query(`SELECT * FROM parties WHERE PartyStatus = '1' AND company_id = ?`, [user.company_id]);
         const today = new Date().toISOString().split('T')[0];
         const companyId = user.company_id;
-        const products = await mysql.query("SELECT * FROM items")
-        res.render('admin/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties });
+        const products = await mysql.query(
+            "SELECT * FROM items WHERE company_id = ? AND stock >0", [ companyId]);
+
+        res.render('admin/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties, previousRoute });
     },
+    viewAddPurchase: async (req, res) => {
+
+        const user = req.session.user
+        const previousRoute = res.locals.previousRoute;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [parties] = await mysql.query(`SELECT * FROM parties WHERE PartyStatus = '1' AND company_id = ?`, [user.company_id]);
+        const today = new Date().toISOString().split('T')[0];
+        const companyId = user.company_id;
+        const products = await mysql.query(
+            "SELECT * FROM items WHERE company_id = ?", [ companyId]);
+
+        res.render('admin/addPurchase.ejs', { date: today, products: products[0], currentCompany, companies, user, parties, previousRoute });
+    },
+
 
     addTransaction: async (req, res) => {
         const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType } = req.body
@@ -840,6 +954,114 @@ const adminController = {
                 console.error(error);
                 return res.render('admin/itemEdti.ejs', { error: 'An error occurred. Please try again.' });
             }
+        });
+    },
+
+    viewCashInHand : async(req,res)=>{
+        try {
+            const user = req.session.user
+            const [companyData] = await mysql.query(`SELECT * FROM companies`);
+            const companyId = user.company_id;
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+            const [totalCashInHand] = await mysql.query(`
+                SELECT 
+                    company_id, 
+                    user_id, 
+                    SUM(cash_flow) AS cash_in_hand
+                FROM (
+                    -- Cash flow from sales
+                    SELECT 
+                        company_id, 
+                        user_id, 
+                        CASE 
+                            WHEN transaction_type = 'sale' THEN received_amount 
+                            WHEN transaction_type = 'purchase' THEN -received_amount 
+                            ELSE 0 
+                        END AS cash_flow
+                    FROM 
+                        sales 
+                    WHERE 
+                        payment_type = 'Cash'
+            
+                    UNION ALL
+            
+                    -- Cash flow from expenses
+                    SELECT 
+                        company_id, 
+                        NULL AS user_id, 
+                        -amount AS cash_flow
+                    FROM 
+                        expenses
+                ) AS combined_cash_flows
+                WHERE company_id = ?
+                GROUP BY company_id
+            `, [companyId]);
+            
+            const [transactionDetails] = await mysql.query(`SELECT s.received_amount, s.transaction_type, s.date, p.PartyName FROM sales s LEFT JOIN parties p ON s.customer_name = p.id WHERE s.payment_type = 'Cash' AND s.company_id = ?`,[companyId])
+            const [expenses] = await mysql.query(`SELECT e.amount AS received_amount, c.category_name AS transaction_type, date FROM expenses e LEFT JOIN expense_category c ON e.category_id = c.id WHERE e.company_id = ?`, [companyId]);
+            console.log(totalCashInHand);
+            
+            res.render('admin/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses],totalCashInHand})
+        } catch (error) {
+            console.error(error);
+            
+        }
+    },
+    totalReceivable: async (req, res) => {
+        const user = req.session.user;
+        const [companyData] = await mysql.query(`SELECT * FROM companies`);
+        const companyId = user.company_id;
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+    
+        const [partyWiseReceivable] = await mysql.query(`
+            SELECT 
+                p.id AS party_id,
+                p.PartyName AS party_name,
+                SUM(s.balance_due) AS total_receivable
+            FROM 
+                parties p
+            LEFT JOIN 
+                sales s ON p.id = s.customer_name
+            WHERE 
+                p.company_id = ?
+                AND s.transaction_type = 'sale'
+            GROUP BY 
+                p.id, p.PartyName
+        `, [companyId]);
+    
+        res.render('admin/totalReceivable.ejs', {
+            companies: companyData,
+            currentCompany: currentCompany,
+            partyWiseReceivable 
+        });
+    },
+
+    totalPayable: async (req, res) => {
+        const user = req.session.user;
+        const [companyData] = await mysql.query(`SELECT * FROM companies`);
+        const companyId = user.company_id;
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+    
+        const [partyWisePayable] = await mysql.query(`
+            SELECT 
+                p.id AS party_id,
+                p.PartyName AS party_name,
+                SUM(s.balance_due) AS total_receivable
+            FROM 
+                parties p
+            LEFT JOIN 
+                sales s ON p.id = s.customer_name
+            WHERE 
+                p.company_id = ?
+                AND s.transaction_type = 'purchase'
+            GROUP BY 
+                p.id, p.PartyName
+        `, [companyId]);
+    
+        res.render('admin/totalPayable.ejs', {
+            companies: companyData,
+            currentCompany: currentCompany,
+            partyWisePayable 
         });
     },
 

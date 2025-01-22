@@ -177,8 +177,8 @@
                     <td><%= item.sale_price %></td>
                     <td><%= item.quantity_in %></td>
                     <td><%= item.quantity_out %></td>
-                    <td class="d-flex"><a href="/admin/adjustStock?item_id=<%= item.id %>" class="btn btn-success">Adjust Stock</a>
-                    <a href="/admin/adjustStockDetails?item_id=<%= item.id %>" class="btn btn-success">View</a></td>
+                    <td class="d-flex"><a href="/admin/adjustStock?item_id=<%= item.id %>" class="btn btn-success btn-sm">Adjust Stock</a>
+                    <a href="/admin/adjustStockDetails?item_id=<%= item.id %>" class="btn btn-success btn-sm ms-2">View</a></td>
                 </tr>
             <% }) %>
         </tbody>

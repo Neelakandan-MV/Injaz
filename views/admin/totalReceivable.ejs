@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash In Hand</title>
+    <title>Total Receivable</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
@@ -34,6 +34,7 @@
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
 
         .most-used-cards a {
@@ -63,6 +64,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-top: 10px;
             overflow-y: scroll;
+            
         }
 
         .transaction-table h4 {
@@ -92,42 +94,41 @@
         .transaction-table td {
             color: #495057;
         }
-
     </style>
 </head>
 
 <body>
-    <%- include('./aside.ejs') %>
-        <div class="main-content">
-            <header class="mb-4 d-flex justify-content-between align-items-center">
-                <h1 class="fw-bold">Cash In Hand</h1>
-                <i class="fas fa-bars hamburger" id="hamburger"></i>
-            </header>
-
-            <div class="transaction-table">
-                <table id="Payable">
-                    <thead>
-                        <tr>
-                            <th>Transaction Details</th>
-                            <th>Date</th>
-                            <th>Amount(SAR)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% transactionDetails.forEach(element=> { %>
-                            <tr>
-                                <td><h5> <%= element.transaction_type %></h5><% if(element.PartyName){ %><span><%= element.PartyName %></span><% } %></td>
-                                <td><%= element.date.toLocaleDateString() %></td>
-                                <td style="color:<%=element.transaction_type == 'purchase'? 'green':'red'%>"><%= element.received_amount %></td>
-                            </tr>
-                            <% }); %>
-                    </tbody>
-                </table>
-            </div>
+    <%- include('./navbar')  %>
+    <div class="main-content">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Party Wise Receivable</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
         </div>
+
+        <div class="transaction-table">
+            <h4></h4>
+            <table id="Receivable">
+                <thead>
+                <tr>
+                    <th>Parties</th>
+                    <th>Receivable</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% partyWiseReceivable.forEach(receivable => { %>
+                    <% if(receivable.total_receivable > 0){ %>
+                    <tr>
+                        <td><%= receivable.party_name %></td>
+                        <td>SAR <%= receivable.total_receivable %></td>
+                    </tr>
+                <% }}); %>
+            </tbody>
+            </table>
+        </div>
+    </div>
 </body>
-<!-- script for hamburgur -->
-<script>
+  <!-- script for hamburgur -->
+  <script>
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
     const hamburger = document.getElementById('hamburger');
@@ -142,5 +143,4 @@
         overlay.classList.remove('active');
     });
 </script>
-
 </html>

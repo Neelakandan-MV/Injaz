@@ -32,7 +32,8 @@ router.get('/admin/viewItems',isLoggedAdmin,adminController.viewItems);
 router.get('/admin/addItems',isLoggedAdmin,adminController.viewAddItems);
 router.post('/admin/addItems',isLoggedAdmin,adminController.AddItems);
 router.post('/admin/addCategory',isLoggedAdmin,adminController.addCategory);
-router.get('/admin/addTransactions',isLoggedAdmin,adminController.viewAddTransaction);
+router.get('/admin/addSale',isLoggedAdmin,adminController.viewAddSale);
+router.get('/admin/addPurchase',isLoggedAdmin,adminController.viewAddPurchase);
 router.post('/admin/addTransactions',isLoggedAdmin,adminController.addTransaction);
 router.get('/admin/reports',isLoggedAdmin,adminController.viewReports);
 router.get('/admin/expense',isLoggedAdmin,adminController.viewExpense);
@@ -51,6 +52,9 @@ router.get('/admin/adjustStockDetails',isLoggedAdmin,adminController.viewAdjustS
 router.post('/admin/adjustStock',isLoggedAdmin,adminController.adjustStock);
 router.get('/admin/editItems',isLoggedAdmin,adminController.viewEditItems);
 router.post('/admin/editItems',isLoggedAdmin,adminController.editItems);
+router.get('/admin/cashInHand',isLoggedAdmin,adminController.viewCashInHand);
+router.get('/admin/totalReceivable',isLoggedAdmin,adminController.totalReceivable);
+router.get('/admin/totalPayable',isLoggedAdmin,adminController.totalPayable);
   
 
 module.exports = router;

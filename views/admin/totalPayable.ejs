@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Total Receivable</title>
+    <title>Total Payable</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
@@ -34,6 +34,7 @@
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
 
         .most-used-cards a {
@@ -63,7 +64,6 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-top: 10px;
             overflow-y: scroll;
-            
         }
 
         .transaction-table h4 {
@@ -97,28 +97,28 @@
 </head>
 
 <body>
-    <%- include('./aside.ejs') %>
+    <%- include('./navbar')  %>
     <div class="main-content">
-        <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Party Wise Receivable</h1>
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Party Wise Payable</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
-        </header>
+        </div>
 
         <div class="transaction-table">
             <h4></h4>
-            <table id="Receivable">
+            <table id="Payable">
                 <thead>
                 <tr>
                     <th>Parties</th>
-                    <th>Receivable</th>
+                    <th>Payable</th>
                 </tr>
             </thead>
             <tbody>
-                <% partyWiseReceivable.forEach(receivable => { %>
-                    <% if(receivable.total_receivable > 0){ %>
+                <% partyWisePayable.forEach(payable => { %>
+                    <% if(payable.total_receivable >0){ %>
                     <tr>
-                        <td><%= receivable.party_name %></td>
-                        <td>SAR <%= receivable.total_receivable %></td>
+                        <td><%= payable.party_name %></td>
+                        <td>SAR <%= payable.total_receivable %></td>
                     </tr>
                 <% }}); %>
             </tbody>

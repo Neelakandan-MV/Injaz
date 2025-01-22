@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Sale</title>
+    <title>Add Purchase</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
@@ -113,28 +113,25 @@
 </head>
 <body>
    
-    <%- include('./aside.ejs') %>
+    <%- include('./navbar')  %>
     <!-- Main Content -->
     <div class="main-content">
         <!-- Header Section -->
-        <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Add Sale</h1>
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Add Purchase</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
-        </header>
+        </div>
 
 
 
             <!-- Add Sale Form -->
             <section class="form-section mt-4">
-                <form action="/business-owner/addTransactions" method="POST">
-                    <!-- Existing fields -->
+                <form action="/admin/addTransactions" method="POST">
                     <div class="row mb-3">
-                        <input type="hidden" value="sale" name="transactionType">
+                        <input type="hidden" value="purchase" name="transactionType">
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="partyName" class="form-label">Party Name *</label>
-                            <!-- <input type="text" id="partyName" name="partyName" class="form-control"
-                                placeholder="Enter Party ID"  list="partySuggestions" required> -->
 
                                 <select name="partyName" id="partyName" class="form-control" placeholder="Enter Party Name" onchange="partyChange(this)" required>
                                     <option value="">Choose Party</option>
@@ -191,7 +188,6 @@
                                 <th>Discount (%)</th>
                                 <th>Tax (%)</th>
                                 <th>Total (SAR)</th>
-                                <th>Delivered</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -211,33 +207,35 @@
                     </div>
                     <button type="button" class="btn btn-warning mb-3" onclick="roundTotal()">Round Total</button>
                     <button type="button" class="btn btn-warning mb-3" onclick="roundDecimalsOnly()">Round Decimals</button>
+
                     <script>
-                        function roundTotal() {
-                         const totalAmount = parseFloat(document.getElementById('totalAmount').value);
-                         
-                         if (!isNaN(totalAmount)) {
-                             const roundedTotal = Math.round(totalAmount / 5) * 5;
-                             document.getElementById('totalAmount').value = roundedTotal;
-                             updateBalanceDue()
-                         } else {
-                             alert('Please enter a valid number');
-                         }
-                     }
-                     function roundDecimalsOnly() {
-                         const totalAmount = parseFloat(document.getElementById('totalAmount').value);
-                         
-                         if (!isNaN(totalAmount)) {
-                             const roundedDecimals = totalAmount.toFixed(2);
-                             document.getElementById('totalAmount').value = roundedDecimals;
-                             updateBalanceDue()
-                         } else {
-                             alert('Please enter a valid number');
-                         }
-                     }
-                     </script>
+                       function roundTotal() {
+                        const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                        
+                        if (!isNaN(totalAmount)) {
+                            const roundedTotal = Math.round(totalAmount / 5) * 5;
+                            document.getElementById('totalAmount').value = roundedTotal;
+                            updateBalanceDue()
+                        } else {
+                            alert('Please enter a valid number');
+                        }
+                    }
+                    function roundDecimalsOnly() {
+                        const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                        
+                        if (!isNaN(totalAmount)) {
+                            const roundedDecimals = totalAmount.toFixed(2);
+                            document.getElementById('totalAmount').value = roundedDecimals;
+                            updateBalanceDue()
+                        } else {
+                            alert('Please enter a valid number');
+                        }
+                    }
+                    </script>
+
                     <div class="row mb-3">
                         <div class="col-md-3">
-                            <label for="recieved" id="remaining" class="form-label">Received *</label>
+                            <label for="recieved" id="remaining" class="form-label">Paid *</label>
                             <input type="text" id="received" name="recieved" class="form-control" oninput="updateReceived()" required>
                         </div>
                         <div class="col-md-3">
@@ -247,7 +245,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end mt-3">
-                        <button type="submit" class="btn btn-primary">Save Sale</button>
+                        <button type="submit" class="btn btn-primary">Save Purchase</button>
                         <a href="<%= previousRoute %>" class="btn btn-secondary ms-2">Cancel</a>
                     </div>
                 </form>
@@ -257,15 +255,7 @@
     
 </body>
 <script>
-    function ijsadij(element) {
-        const transactionType = element.value;
-        
-        if (transactionType === 'sale'){
-            document.getElementById('remaining').textContent = 'Received *';
-        }else{
-            document.getElementById('remaining').textContent = 'Paid *';
-        }
-    }
+    
 
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -298,13 +288,12 @@
         <tr>
             <td></td>
             <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
-            <td><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this,'${count}')" required></td>
+            <td><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this)" required></td>
             <td><input type="text"  id="unit${count}" name="products[${count}][unit]" required ></td>
-            <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this,'${count}')" onchange="updateWholesalePrice()" required ></td>
-            <td><input type="text" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this,'${count}')" required ></td>
-            <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this,'${count}')" required ></td>
+            <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this)" onchange="updateWholesalePrice()" required ></td>
+            <td><input type="text" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required ></td>
+            <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this)" required ></td>
             <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
-            <td><input type="text" id="deliveredQuantity" name="products[${count}][deliveredQuantity]"></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
             <td><div class="d-flex"><button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,${count})">Free</button>
             <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
@@ -363,48 +352,13 @@ function updateReceived(){
     function updateRowNumbers() {
         const rows = document.querySelectorAll('#productTableBody tr');
         rows.forEach((row, index) => {
-            row.cells[0].textContent = index + 1;
+            row.cells[0].textContent = index + 1; // Update row number in the first column
         });
     }
 
-    function updateProductTotal(input,count) {
+    function updateProductTotal(input) {
         const row = input.closest('tr');
-    
-        const selectedProductName = row.querySelector(`input[id^="productName"]`).value;
-
-        const products = <%- JSON.stringify(products) %>
-        
-        const selectedProduct = products.find((product) => product.item_name == selectedProductName);
-        
-        
         const quantity = parseFloat(row.querySelector(`[name^="products"][name$="[quantity]"]`)?.value) || 0;
-// whole sale
-    if(selectedProduct.wholesale_quantity_1 > 0){
-
-        if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
-        }else if(quantity>=selectedProduct.wholesale_quantity_2 && quantity<selectedProduct.wholesale_quantity_3){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_2;
-        }else if(quantity>=selectedProduct.wholesale_quantity_3){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_3;
-        }else if(quantity<selectedProduct.wholesale_quantity_1){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
-        }
-
-    }
-    
-
-        if(quantity >= 1 && quantity < selectedProduct.service_charge_quantity_1){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.service_charge_1) + Number(selectedProduct.sale_price)
-        }else if(quantity >= selectedProduct.service_charge_quantity_1 && quantity < selectedProduct.service_charge_quantity_2){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.service_charge_2) + Number(selectedProduct.sale_price)
-        }else if(quantity >= selectedProduct.service_charge_quantity_2 && quantity < selectedProduct.service_charge_quantity_3){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.service_charge_3) + Number(selectedProduct.sale_price)
-        }else{
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.sale_price)
-        }
-    
-            
         const pricePerUnit = parseFloat(row.querySelector(`[name^="products"][name$="[pricePerUnit]"]`)?.value) || 0;
         const discount = parseFloat(row.querySelector(`[name^="products"][name$="[discount]"]`)?.value) || 0;
         const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
@@ -469,7 +423,7 @@ function sugesstion(element,count) {
         if (selectedProduct) {
             // const row = element.target.closest('tr');
             document.getElementsByName(`products[${count}][unit]`)[0].value = selectedProduct.unit;
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.purchase_price;
             document.getElementsByName(`products[${count}][discount]`)[0].value = selectedProduct.discount_value;
             document.getElementsByName(`products[${count}][tax]`)[0].value = selectedProduct.tax_rate;
             document.getElementsByName(`products[${count}][productId]`)[0].value = selectedProduct.id;
