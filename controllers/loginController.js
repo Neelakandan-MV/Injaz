@@ -3,7 +3,9 @@ const db = require('../mySql');
 
 
 exports.showLoginPage = (req, res) => {
+  if(!req.session.user){
   res.render('auth/login', { error: null });
+  }
 };
 
 // Handle login logic for both admin and business owners
@@ -37,7 +39,9 @@ exports.login = async (req, res) => {
       }
     }
     
+    
     req.session.user = { ...user, company_id }; 
+  
 
     if (user.role === 'admin') {
       res.redirect('/admin/dashboard');

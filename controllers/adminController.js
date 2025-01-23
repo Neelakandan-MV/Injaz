@@ -149,7 +149,6 @@ const adminController = {
                 return accumulator + Number(item.purchase_price) * Number(item.stock);
             }, 0);
 
-            console.log(totalCashInHand);
             
 
             res.render('admin/dashboard.ejs', {
@@ -170,27 +169,65 @@ const adminController = {
 
 
     viewSales: async (req, res) => {
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
-        const user = req.session.user
-    const [sales] = await mysql.query(`
-        SELECT 
-            sales.*, 
-            parties.PartyName AS customer_name
-        FROM 
-            sales
-        LEFT JOIN 
-            parties ON sales.customer_name = parties.id
-        WHERE 
-            sales.company_id = ? 
-            AND sales.transaction_type = 'purchase'
-    `, [user.company_id]);
-        res.render('admin/sales', { sales });
+        if (!companyId) {
+            return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
+        }
 
+        const [items] = await mysql.query(`
+    SELECT 
+        sales.*, 
+        parties.PartyName AS customer_name
+    FROM 
+        sales
+    LEFT JOIN 
+        parties ON sales.customer_name = parties.id
+    WHERE 
+        sales.company_id = ? 
+        AND sales.transaction_type = 'sale'
+`, [companyId]);
+
+
+        res.render("admin/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
     },
 
-    viewPurchases: async (req, res) => {
+    transactionDelete: async (req, res) => {
+
+        const transaction_id = req.query.id
+        await mysql.query(`DELETE FROM cash_flows WHERE tnx_id = ?`, [transaction_id]);
+        await mysql.query(`DELETE FROM sale_products WHERE sale_id = ?`, [transaction_id]);
+        await mysql.query(`DELETE FROM sales WHERE id = ?`, [transaction_id]);
+        res.redirect('/admin/dashboard')
+    },
+    transactionDetails: async (req, res) => {
         const user = req.session.user
-        const [purchases] = await mysql.query(`
+        const companyId = user.company_id;
+        const transaction_id = req.query.id
+        const previousRoute = res.locals.previousRoute
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+        const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
+
+        res.render('admin/transactionDetails', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, previousRoute })
+    },
+
+
+     viewPurchases: async (req, res) => {
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+
+        if (!companyId) {
+            return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
+        }
+
+        const [items] = await mysql.query(`
             SELECT 
                 sales.*, 
                 parties.PartyName AS customer_name
@@ -201,8 +238,8 @@ const adminController = {
             WHERE 
                 sales.company_id = ? 
                 AND sales.transaction_type = 'purchase'
-        `, [user.company_id]);
-        res.render('admin/purchases', { purchases });
+        `, [companyId]);
+        res.render("admin/purchases.ejs", { title: "Sales", items, currentCompany, companies, user });
     },
 
     viewTransactions: async (req, res) => {
@@ -211,20 +248,23 @@ const adminController = {
         const offset = (page - 1) * limit;
         const [transactions] = await mysql.query(`
             SELECT 
-                id, 
-                invoice_number, 
-                customer_name, 
-                total_amount, 
-                balance_due, 
-                payment_type, 
-                transaction_type, 
-                DATE_FORMAT(date, '%Y-%m-%d') AS date
-            FROM sales
-            WHERE company_id = ?
+                s.id, 
+                s.invoice_number, 
+                s.customer_name, 
+                s.total_amount, 
+                s.balance_due, 
+                s.payment_type, 
+                s.received_amount,
+                s.transaction_type, 
+                DATE_FORMAT(s.date, '%Y-%m-%d') AS date,
+                parties.PartyName AS customer_name
+            FROM sales s
+            LEFT JOIN
+            parties ON s.customer_name = parties.id
+            WHERE s.company_id = ?
             ORDER BY date DESC
             LIMIT ? OFFSET ?
         `, [companyId, parseInt(limit), offset]);
-        
 
         const countResults = await mysql.query(`SELECT COUNT(*) AS total FROM sales;`)
         const totalTransactions = countResults[0].total;
@@ -236,6 +276,137 @@ const adminController = {
             currentPage: parseInt(page),
             limit: parseInt(limit),
         });
+    },
+
+    viewtransactionEdit: async (req, res) => {
+        const user = req.session.user
+        const companyId = user.company_id;
+        const transaction_id = req.query.id
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+        const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
+        const [parties] = await mysql.query(`SELECT * FROM parties WHERE company_id`, [user.company_id]);
+        const products = await mysql.query("SELECT * FROM items WHERE company_id = ?", [companyId])
+        const [current_party] = await mysql.query('SELECT * FROM parties WHERE id = ?', transactionDetails[0].customer_name)
+        const previousRoute = res.locals.previousRoute
+
+        res.render('admin/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0], current_party: current_party[0], previousRoute })
+    },
+    transactionEdit: async (req, res) => {
+        const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;
+        const products = req.body.products;
+        const user = req.session.user;
+        const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
+        const [currentProductsInTransactions] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id=?`,[transaction_id])
+        
+
+        const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+
+        if (transactionDetails[0].balanceDue !== balanceDue && transactionDetails[0].received_amount !== recieved) {
+            const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
+                [party[0].PartyName, created_at, transactionType, money_type, recieved, transaction_id, user.company_id]
+            )
+        }
+        await mysql.query(`
+            UPDATE sales 
+            SET 
+                customer_name = ?, 
+                date = ?, 
+                invoice_number = ?, 
+                payment_type = ?, 
+                total_amount = ?, 
+                received_amount = ?, 
+                balance_due = ?, 
+                transaction_type = ? 
+            WHERE id = ?`,
+            [partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id]
+        );
+        if(products && products?.length){
+        for (let product of products) {
+            await mysql.query(`
+                UPDATE sale_products
+                SET  
+                    item_id = ?, 
+                    quantity = ?, 
+                    delivered_quantity = ?,
+                    price = ?, 
+                    discount = ?, 
+                    tax_rate = ?, 
+                    total = ?, 
+                    company_id = ?, 
+                    product_name = ?, 
+                    unit = ?
+                WHERE id = ?`,
+                [
+                    product.itemId,
+                    product.quantity,
+                    product.deliveredQuantity,
+                    product.pricePerUnit,
+                    product.discount,
+                    product.tax,
+                    product.productTotal,
+                    user.company_id,
+                    product.item,
+                    product.unit,
+                    product.saleProduct_id
+                ]
+            );
+           
+        } 
+        if(currentProductsInTransactions.length < products.length){
+            for(let i= currentProductsInTransactions.length; i<products.length;i++){
+            await mysql.query(`
+                INSERT INTO sale_products (
+                    item_id, 
+                    sale_id,
+                    quantity, 
+                    delivered_quantity,
+                    price, 
+                    discount, 
+                    tax_rate, 
+                    total, 
+                    company_id, 
+                    product_name, 
+                    unit
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
+                [
+                    products[i].itemId,
+                    transaction_id,
+                    products[i].quantity,
+                    products[i].deliveredQuantity,
+                    products[i].pricePerUnit,
+                    products[i].discount,
+                    products[i].tax,
+                    products[i].productTotal,
+                    user.company_id,
+                    products[i].item,
+                    products[i].unit
+                ]
+            );
+        }                
+        }
+    }
+        
+        if (transactionType === "purchase") {
+            return res.redirect('/admin/purchases');
+        }
+        res.redirect('/admin/sales');
+    },
+    removeProductFromTrasaction:async(req,res)=>{
+        const {id,quantity} = req.query
+        console.log(id,quantity);
+        const [sale_item] = await mysql.query(`SELECT * FROM sale_products WHERE id=?`,[id])
+        const item_id = sale_item[0]?.item_id
+        await mysql.query(`UPDATE items set stock = stock - ? WHERE id=?`,[quantity,item_id])
+        if(id){
+        await mysql.query(`DELETE FROM sale_products WHERE id = ?`, [id]);
+        res.json({success:'Removed From Transaction History'})
+        }
+        
     },
 
     viewUser: async (req, res) => {
@@ -366,7 +537,6 @@ const adminController = {
 
                 const newItemCode = itemCode || generateItemCode();
                 const user_id = req.session.user.id
-                console.log(image);
                 
                 await mysql.query(
                     "INSERT INTO items (item_name, item_hsn, category_id, unit, image, sale_price, sale_price_tax_included, discount_value, discount_type, wholesale_price_1, wholesale_quantity_1,wholesale_price_2, wholesale_quantity_2,wholesale_price_3, wholesale_quantity_3,service_charge_quantity_1,service_charge_1,service_charge_quantity_2,service_charge_2,service_charge_quantity_3,service_charge_3, purchase_price, purchase_price_tax_included, tax_rate, item_code, company_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?)",
@@ -396,7 +566,7 @@ const adminController = {
                         purchasePriceTaxIncluded || false,
                         taxRate,
                         newItemCode,
-                        companyId, // Associating item with company
+                        companyId,
                         user_id
                     ]
                 );
@@ -851,7 +1021,6 @@ const adminController = {
         const [categories] = await mysql.query("SELECT * FROM categories WHERE company_id = ?", [companyId]);
 
         const [item] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id])
-        console.log(item[0]);
         
         
         res.render('admin/itemEdit.ejs',{item:item[0],user,companies,currentCompany,categories})
@@ -999,7 +1168,6 @@ const adminController = {
             
             const [transactionDetails] = await mysql.query(`SELECT s.received_amount, s.transaction_type, s.date, p.PartyName FROM sales s LEFT JOIN parties p ON s.customer_name = p.id WHERE s.payment_type = 'Cash' AND s.company_id = ?`,[companyId])
             const [expenses] = await mysql.query(`SELECT e.amount AS received_amount, c.category_name AS transaction_type, date FROM expenses e LEFT JOIN expense_category c ON e.category_id = c.id WHERE e.company_id = ?`, [companyId]);
-            console.log(totalCashInHand);
             
             res.render('admin/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses],totalCashInHand})
         } catch (error) {

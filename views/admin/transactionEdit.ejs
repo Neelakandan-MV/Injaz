@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -86,6 +86,7 @@
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
         .hamburger {
             cursor: pointer;
@@ -113,18 +114,17 @@
 
 </head>
 <body>
-   
-    <%- include('./aside.ejs') %>
+    <%- include('./navbar.ejs') %>
     <!-- Main Content -->
     <div class="main-content">
         <!-- Header Section -->
-        <header class="mb-4 d-flex justify-content-between align-items-center">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
             <h1 class="fw-bold">Transaction Edit</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
-        </header>
+        </div>
             <!-- Add Sale Form -->
             <section class="form-section mt-4">
-                <form action="/business-owner/transactionEdit" method="POST">
+                <form action="/admin/transactionEdit" method="POST">
                     <!-- Existing fields -->
                     <div class="row mb-3">
                         <div class="col-md-6">

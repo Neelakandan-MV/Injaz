@@ -9,6 +9,7 @@ const loginRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const businessRoutes = require('./routes/businessRoutes');
 
+
 const app = express();
 
 // Set up EJS view engine
@@ -60,6 +61,22 @@ async function testConnection() {
 }
 testConnection();
 
-app.listen(3000, () => {
-        console.log('Server is running on http://localhost:3000');
-      })
+// app.listen(3001,'0.0.0.0', () => {
+//         console.log('Server is running on http://localhost:3001');
+//       })
+
+
+
+  const https = require('https');
+const fs = require('fs');
+
+
+
+const options = {
+    key: fs.readFileSync('./certs/localhost-key.pem'), // Path to your SSL key
+    cert: fs.readFileSync('./certs/localhost.pem'), // Path to your SSL certificate
+};
+
+https.createServer(options, app).listen(3001, () => {
+  console.log('Server running on https://localhost:3001');
+});

@@ -122,31 +122,31 @@
     <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
 
     <!-- Delete Functionality Script -->
-    <script>
-      function deleteFuntion(itemId) {
-          Swal.fire({
-              title: "Do you really want to delete?",
-              showDenyButton: false,
-              showCancelButton: true,
-              confirmButtonText: "Save",
-          }).then((result) => {
-              if (result.isConfirmed) {
-                  Swal.fire("Saved!", "", "success");
-                  fetch(`/business-owner/transactionDelete?id=${itemId}`)
-                      .then(() => {
-                          setTimeout(() => {
-                              window.location.reload(); // Reload the page after deletion
-                          }, 200);
-                      })
-                      .catch((error) => {
-                          console.error("Error while deleting:", error);
-                      });
-              } else if (result.isDenied) {
-                  Swal.fire("Changes are not saved", "", "info");
-              }
-          });
-      }
-    </script>
+        <script>
+        function deleteFuntion(itemId) {
+            Swal.fire({
+                title: "Do you really want to delete?",
+                showDenyButton: false,
+                showCancelButton: true,
+                confirmButtonText: "Save",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire("Saved!", "", "success");
+                    fetch(`/business-owner/transactionDelete?id=${itemId}`)
+                        .then(() => {
+                            setTimeout(() => {
+                                window.location.reload(); // Reload the page after deletion
+                            }, 200);
+                        })
+                        .catch((error) => {
+                            console.error("Error while deleting:", error);
+                        });
+                } else if (result.isDenied) {
+                    Swal.fire("Changes are not saved", "", "info");
+                }
+            });
+        }
+        </script>
 
 <script>
     const fromDateInput = document.getElementById('from-date');

@@ -77,10 +77,6 @@ const businessOwnerController = {
                 AND sales.transaction_type = 'purchase'
         `, [companyId]);
 
-
-
-
-
         res.render("businessOwner/purchases.ejs", { title: "Sales", items, currentCompany, companies, user });
     },
     viewSales: async (req, res) => {
@@ -579,10 +575,7 @@ const businessOwnerController = {
         const user = req.session.user
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
-        console.log(products);
         
-
-
         const sales = await mysql.query("INSERT INTO sales (customer_name, user_id, company_id, date, invoice_number, payment_type, total_amount, received_amount, balance_due, created_at, transaction_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
             partyName, user.id, user.company_id, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, created_at, transactionType
         ]);
@@ -594,9 +587,10 @@ const businessOwnerController = {
         console.log("closingCash", closingCash);
 
         const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
+        if(recieved > 0){
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id, opening_cash, closing_cash) VALUES (?,?,?,?,?,?,?,?,?)`,
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
-
+        }
         if (products) {
             await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
 
@@ -1176,13 +1170,36 @@ const businessOwnerController = {
     //     res.download(filePath, `Cash_Flow_Report_${Date.now()}.pdf`);
     // }
 
+
+    addContacts: async (req, res) => {
+        const user = req.session.user;
+        const contactData = req.body;
+        const contacts = contactData.contacts;
+        const [parties] = await mysql.query(`SELECT * FROM parties WHERE company_id =?`, [user.company_id]);
     
+        for (const item of contacts) {
+            const name = item.name[0];
+            const phone = item.tel[0]?.replace(/\D/g, '') || 'No Number found';
+            const email = item.email[0] || null;
+            const address = item.address[0] || null;
+            const image = null;
     
+            const isDuplicate = parties.some(party => party.PartyName == name);
+            if (isDuplicate) {
+                return res.status(409).json({ data: `${name} already exists` }); 
+            }
+    
+            await mysql.query(
+                "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, company_id) VALUES (?,?,?,?,?,?,?)",
+                [user.id, name || 'unknown', email, phone, address, image, user.company_id]
+            );
+        }
+    
+        res.json({ data: 'Contacts imported successfully' });
+    },
     
 
-
-
-
+    
 }
 
 module.exports = businessOwnerController;

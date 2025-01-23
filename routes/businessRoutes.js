@@ -46,6 +46,7 @@ router.get('/business-owner/addExpense',isLogged,businessController.viewAddExpen
 router.post('/business-owner/addExpense',isLogged,businessController.addExpense);
 router.get('/business-owner/expenses',isLogged,businessController.viewExpense);
 router.post('/business-owner/addExpenseCategory',isLogged,businessController.addExpenseCategory);
+router.post('/business-owner/add-contacts',isLogged,businessController.addContacts);
 
 
 

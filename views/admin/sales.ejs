@@ -94,34 +94,52 @@
             <a href="/admin/dashboard"><button>Back</button></a>
         </div>
 
-        <div class="responsive-table">
-            <table>
-                <thead>
+        <section class="transactions mt-4 table-responsive">
+            <!-- Responsive Table -->
+            <table class="table table-bordered" id="purchases-table">
+                <thead class="table-light">
                     <tr>
-                        <th>Invoice Number</th>
-                        <th>Customer Name</th>
-                        <th>Total Amount</th>
-                        <!-- <th>Received Amount</th> -->
-                        <th>Balance Due</th>
-                        <th>Payment Type</th>
-                        <th>Date</th>
+                        <!-- Table Headers -->
+                        <th>Date</th><th>Invoice No.</th><th>Party Name</th><th>Transaction Type</th><th>Payment Type</th><th>Amount</th><th>Balance Due</th><th>Actions</th>
                     </tr>
                 </thead>
+
+                <!-- Table Body -->
                 <tbody>
-                    <% sales.forEach(function(sale) { %>
+                    <% items.forEach(item => { %>
+
                         <tr>
-                            <td><%= sale.invoice_number %></td>
-                            <td><%= sale.customer_name %></td>
-                            <td><%= sale.total_amount %></td>
-                            <!-- <td><%= sale.received_amount %></td> -->
-                            <td><%= sale.balance_due %></td>
-                            <td><%= sale.payment_type %></td>
-                            <td><%= new Date(sale.date).toLocaleDateString() %></td>
+
+                            <!-- Table Data -->
+                            <td class="purchase-date"><%= new Date(item.date).toLocaleDateString() %></td><td><%= item.invoice_number %></td><td><%= item.customer_name %></td><td><%= item.transaction_type %></td><td><%= item.payment_type %></td><td>SAR<%= item.total_amount %></td><td>SAR<%= item.balance_due %></td>
+
+                            <!-- Action Buttons -->
+                            <td class="d-flex">
+                                <a href="/admin/transactionEdit?id=<%=item.id%>" 
+                                   class='btn btn-success btn-sm'><i class='fas fa-edit'></i></a>
+
+                                <!-- Delete Button with Confirmation -->
+                                <a href="#" 
+                                   onclick='deleteFuntion("<%=item.id%>")' 
+                                   class='btn btn-danger btn-sm'><i 
+                                   class='fas fa-trash'></i></a>
+
+                                <!-- View Details Button -->
+                                <a href='/admin/transactionDetails?id=<%=item.id%>' 
+                                   class='btn btn-warning btn-sm'><i 
+                                   class='fa-regular fa-eye'></i></a>
+
+                            </td>
+
                         </tr>
+
                     <% }) %>
+
                 </tbody>
+
             </table>
-        </div>
+
+        </section>
     </div>
 
     <script>
@@ -141,6 +159,32 @@
             });
         }
     </script>
+    <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+         <script>
+            function deleteFuntion(itemId) {
+                Swal.fire({
+                    title: "Do you really want to delete?",
+                    showDenyButton: false,
+                    showCancelButton: true,
+                    confirmButtonText: "Save",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire("Saved!", "", "success");
+                        fetch(`/admin/transactionDelete?id=${itemId}`)
+                            .then(() => {
+                                setTimeout(() => {
+                                    window.location.reload(); // Reload the page after deletion
+                                }, 200);
+                            })
+                            .catch((error) => {
+                                console.error("Error while deleting:", error);
+                            });
+                    } else if (result.isDenied) {
+                        Swal.fire("Changes are not saved", "", "info");
+                    }
+                });
+            }
+            </script>
 
 </body>
 </html>

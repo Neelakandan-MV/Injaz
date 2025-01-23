@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Details</title>
+    <!-- CSS Framework -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .main-content header {
+            margin-bottom: 20px;
+        }
+        
+        .form-section {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-section h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .table input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+        }
+        
+        .table input:focus {
+            border-bottom: 1px solid #007bff;
+        }
+        
+        @media (max-width: 768px) {          
+                    .table-responsive {
+                        overflow-x: auto; /* Allow horizontal scrolling for tables */
+                    }
+        
+            .form-section {
+                padding: 15px;
+            }
+        
+            .table th, .table td {
+                padding: 8px;
+            }
+        
+            .form-section h3 {
+                font-size: 20px;
+            }
+        
+            .table th {
+                font-size: 12px;
+            }
+        
+            .table input {
+                padding: 8px;
+                font-size: 14px;
+                width: 70px;
+            }
+        
+            .row label {
+                font-size: 14px;
+            }
+        
+            .form-select {
+                font-size: 14px;
+            }
+        
+            .btn {
+                font-size: 14px;
+            }
+        }
+            </style>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            
+            .table-responsive {
+                overflow-x: auto; 
+            }
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            margin-right: 10px; 
+        }
+    </style>
+</head>
+<body>
+   
+    <%- include('./navbar.ejs') %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Transaction Details</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </div>
+
+
+
+
+            <!-- Add Sale Form -->
+            <section class="form-section mt-4">
+                <!-- Existing fields -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="" class="form-label">Transaction Type *</label>
+                        <input type="text" value="<%= transactionDetails.transaction_type %>" class="form-control" readonly>                
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="partyName" class="form-label">Party ID *</label>
+                            <input type="text" value="<%= transactionDetails.customer_name %>" class="form-control" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="Invoice Number" class="form-label">Invoice Number *</label>
+                            <input type="text"  class="form-control" value="<%= transactionDetails.invoice_number %>" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="Payment Type">Payment Type *</label>
+                            <input type="text"  class="form-control" value="<%= transactionDetails.payment_type %>" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date" class="form-label">Date *</label>
+                            <input type="text" value="<%= new Date(transactionDetails.date).toLocaleDateString() %>" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Products Table -->
+                <h4>Products</h4>
+
+                <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Price/Unit<p style="font-size: 12px; color: gray;">(Price per Unit)</p></th>
+                            <th>Discount (%)</th>
+                            <th>Tax (%)</th>
+                            <th>Total (SAR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                    <% transactionProducts.forEach((product,index) => { %>
+                        <tr>
+                        <td><%= index+1 %></td>
+                        <td><input type="text" value="<%= product.product_name %>" readonly></td>
+                        <td><input type="text" value="<%= product.quantity %>" readonly></td>
+                        <td><input type="text" value="<%= product.price %>" readonly></td>
+                        <td><input type="text" value="<%= product.discount %>" readonly></td>
+                        <td><input type="text" value="<%= product.tax_rate %>" readonly></td>
+                        <td><input type="text" value="<%= product.total %>" readonly></td>
+                    </tr>
+                    <% });  %>
+                    </tbody>
+                </table>
+            </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="TotalAmount" class="form-label">Total *</label>
+                        <input type="text" value="<%= transactionDetails.total_amount %> SAR" class="form-control" readonly>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="recieved" id="remaining" class="form-label">Received *</label>
+                        <input type="text" value="<%= transactionDetails.received_amount %> SAR" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="balanceDue" class="form-label">Balance Due *</label>
+                        <input type="text" value="<%= transactionDetails.balance_due %> SAR" class="form-control" readonly>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3">
+                    <a href="<%= previousRoute %>" class="btn btn-secondary ms-2">Back</a>
+                </div>
+                </form>
+            </section>
+        </div>
+    </div>
+
+</body>
+<script>
+    function ijsadij(element) {
+        const transactionType = element.value;
+
+        if (transactionType === 'sale') {
+            document.getElementById('remaining').textContent = 'Received *';
+        } else {
+            document.getElementById('remaining').textContent = 'Paid *';
+        }
+    }
+</script>
+<script>
+    let count = 0;
+    function updateRowNumbers() {
+        const rows = document.querySelectorAll('#productTableBody tr');
+        rows.forEach((row, index) => {
+            row.cells[0].textContent = index + 1;
+        });
+    }
+</script>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>
+
+
+</html>
