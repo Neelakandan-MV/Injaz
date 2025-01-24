@@ -20,6 +20,7 @@
         h1 {
             color: #333;
             text-align: center;
+            font-weight: 200;
         }
         table {
             width: 100%;
@@ -79,6 +80,10 @@
                 width: 100%;
                 margin-bottom: 10px;
             }
+            button {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
         }
     </style>
 </head>
@@ -86,7 +91,7 @@
     <%- include('./navbar')  %>
 
     <div class="container">
-        <h1>Sales Transactions</h1>
+        <h2>Sales Transactions</h2 >
 
         <div class="search-bar">
             <input type="text" id="searchInput" placeholder="Search by customer name or invoice number...">
