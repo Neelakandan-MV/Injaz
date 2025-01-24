@@ -347,20 +347,22 @@
                 <thead>
                     <tr>
                         <th>Item Name</th>
-                        <th>Total Sales (SAR)</th>
-                        <th>Total Purchases (SAR)</th>
+                        <!-- <th>Total Sales (SAR)</th>
+                        <th>Total Purchases (SAR)</th> -->
                         <th>Profit (SAR)</th>
                         <th>Loss (SAR)</th>
+                        <th>Total (SAR)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% results.forEach(item => { %>
                         <tr>
                             <td><%= item.item_name %></td>
-                            <td><%= item.total_sales %></td>
-                            <td><%= item.total_purchases %></td>
+                            <!-- <td><%= item.total_sales %></td>
+                            <td><%= item.total_purchases %></td> -->
                             <td><%= item.profit %></td>
                             <td><%= item.loss %></td>
+                            <td><%= item.profit - item.loss%></td>
                         </tr>
                     <% }); %>
                 </tbody>

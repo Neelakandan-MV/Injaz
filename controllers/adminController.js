@@ -19,6 +19,35 @@ var upload = multer({
 }).single("image");
 
 
+const getOpeningCash = async (date, companyId) => {
+    const [result] = await mysql.query(
+        `SELECT closing_cash FROM cash_flows
+         WHERE date < ? AND company_id = ?
+         ORDER BY date DESC LIMIT 1`,
+        [date, companyId]
+    );
+    return result.length > 0 ? result[0].closing_cash : 0;
+};
+
+const calculateClosingCash = async (openingCash, date, companyId) => {
+    const [inflows] = await mysql.query(
+        `SELECT SUM(amount) AS inflow FROM cash_flows
+         WHERE date = ? AND tnx_type = 'purchase' AND company_id = ?`,
+        [date, companyId]
+    );
+    const [outflows] = await mysql.query(
+        `SELECT SUM(amount) AS outflow FROM cash_flows
+         WHERE date = ? AND tnx_type = 'sale' AND company_id = ?`,
+        [date, companyId]
+    );
+    const inflow = inflows[0]?.inflow || 0;
+    const outflow = outflows[0]?.outflow || 0;
+
+    return Number(openingCash) + inflow - outflow;
+};
+
+
+
 
 const adminController = {
 
@@ -682,38 +711,47 @@ const adminController = {
         const user = req.session.user
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
-
+        
         const sales = await mysql.query("INSERT INTO sales (customer_name, user_id, company_id, date, invoice_number, payment_type, total_amount, received_amount, balance_due, created_at, transaction_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
             partyName, user.id, user.company_id, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, created_at, transactionType
         ]);
 
         //saving to cashFLow table
+        const openingCash = await getOpeningCash(created_at, user.company_id);
+        const closingCash = await calculateClosingCash(openingCash, created_at, user.company_id);
+        console.log("openingCash", openingCash);
+        console.log("closingCash", closingCash);
+
         const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
-
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
-            [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id])
-
+        if(recieved > 0){
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id, opening_cash, closing_cash) VALUES (?,?,?,?,?,?,?,?,?)`,
+            [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
+        }
         if (products) {
-            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
-            //managing stock
+            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
+
+            //controlling stock
             if (transactionType === "purchase") {
                 for (const product of products) {
                     await mysql.query(`UPDATE items SET stock = stock + ? WHERE id = ?`, [product.quantity, product.productId]);
+
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
-        [product.productId,'add',product.quantity,product.productTotal,'due to purchase',created_at,user.company_id])
+                        [product.productId, 'add', product.quantity, product.productTotal, 'due to purchase', created_at, user.company_id])
                 }
-                
             } else {
                 for (const product of products) {
                     await mysql.query(`UPDATE items SET stock = stock - ? WHERE id = ?`, [product.quantity, product.productId]);
+
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
-                        [product.productId,'reduce',product.quantity,product.productTotal,'due to sale',created_at,user.company_id])
+                        [product.productId, 'reduce', product.quantity, product.productTotal, 'due to sale', created_at, user.company_id])
                 }
             }
-
         }
+        if (transactionType === "purchase") {
+            return res.redirect('/admin/purchases');
+        }
+        res.redirect('/admin/sales');
 
-        res.redirect('/admin/dashboard');
     },
 
     addCompany: async (req, res) => {
@@ -923,13 +961,39 @@ const adminController = {
 
     },
     viewCashFlow: async (req, res) => {
-        const user = req.session.user
+        const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies`);
-        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [cashFlows] = await mysql.query(`SELECT * FROM cash_flows WHERE company_id = ?`, [companyId])
 
-        res.render('admin/cashFlows.ejs', { cashFlows, companies, currentCompany });
+        // Fetch companies and current company
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+
+        // Fetch all cash flows sorted by date
+        const [cashFlows] = await mysql.query(`SELECT * FROM cash_flows WHERE company_id = ? ORDER BY date ASC`, [companyId]);
+
+        // Calculate opening cash, closing cash, money_in, and money_out
+        let openingCash = 0;
+        let closingCash = 0;
+        let moneyIn = 0;
+        let moneyOut = 0;
+
+        cashFlows.forEach((cashFlow) => {
+            cashFlow.opening_cash = openingCash;
+
+            if (cashFlow.tnx_type === 'sale') {
+                moneyIn += Number(cashFlow.amount);
+                openingCash += Number(cashFlow.amount);
+            } else if (cashFlow.tnx_type === 'purchase') {
+                moneyOut += Number(cashFlow.amount);
+                openingCash -= Number(cashFlow.amount);
+            }
+
+            cashFlow.closing_cash = openingCash;
+            closingCash = openingCash; // Update closing cash after the last transaction
+        });
+
+        // Pass aggregate values and cashFlows to the frontend
+        res.render('admin/cashFlows.ejs', { currentCompany, companies, user, cashFlows, closingCash, moneyIn, moneyOut });
     },
 
     viewDayBook: async (req, res) => {
@@ -1232,7 +1296,54 @@ const adminController = {
             partyWisePayable 
         });
     },
+    itemReturn:async(req,res)=>{
+        const user = req.session.user
+        const {quantity,item_id} = req.body
+        const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const [sale_product] = await mysql.query(`SELECT * FROM sale_products WHERE id = ?`,[item_id])
+        const sale_id = sale_product[0].sale_id
+        const [sale] = await mysql.query(`SELECT * FROM sales WHERE id = ?`,[sale_id])
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[sale[0].customer_name])
+        let saleTotal = sale[0].total_amount
+        let saleBalanceDue = sale[0].balance_due
+        let saleReceivedAmount = sale[0].received_amount
+        let productTotal = sale_product[0].total
+        let newSaleProductQuanity = sale_product[0].quantity -quantity
+        let salePrice = sale_product[0].price
+        let newDeliveredQuantity = sale_product[0].delivered_quantity-quantity
+        const newProductTotal = productTotal - salePrice*quantity
+        const newSaleTotal = saleTotal - salePrice*quantity
 
+        const totalDiff = salePrice*quantity
+
+
+        await mysql.query(`UPDATE sale_products set quantity = ?, delivered_quantity = ? ,returned_quantity = ?,total = ? WHERE id = ?`,[newSaleProductQuanity,newDeliveredQuantity,quantity,newProductTotal,item_id])
+
+        if(saleBalanceDue > totalDiff){
+            saleBalanceDue = saleBalanceDue - totalDiff
+            await mysql.query(`UPDATE sales set is_returned = true,total_amount =?,balance_due =? WHERE id = ?`,[newSaleTotal,saleBalanceDue,sale_id])
+        }else{
+            saleReceivedAmount = saleReceivedAmount -saleBalanceDue-totalDiff
+            await mysql.query(`UPDATE sales set is_returned = true,total_amount =?,balance_due =?,received_amount =? WHERE id = ?`,[newSaleTotal,saleBalanceDue,saleReceivedAmount,sale_id])
+        }
+
+        const openingCash = await getOpeningCash(created_at, user.company_id);
+        const closingCash = await calculateClosingCash(openingCash, created_at, user.company_id);
+
+        const money_type = sale[0].transactionType === 'sale' ? 'money_out' : 'money_in';
+        
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id, opening_cash, closing_cash) VALUES (?,?,?,?,?,?,?,?,?)`,
+            [party[0].PartyName, created_at, 'Product_Return', totalDiff, money_type, sale[0].id, user.company_id, openingCash, closingCash])
+
+
+        await mysql.query(`UPDATE items set stock = stock + ? WHERE id = ?`,[quantity,sale_product[0].item_id])
+        
+        if(sale[0].transaction_type == 'purchase'){
+            res.redirect('/admin/purchases')
+        }else{
+            res.redirect('/admin/sales')
+        }
+    },
 
 
 };

@@ -83,8 +83,6 @@
         <header>
             <div class="d-flex justify-content-between align-items-center">
                 <a href="/business-owner/addSale" class="btn btn-primary">+ Add Sale</a>
-              
-                <a href="/business-owner/downloadPdf" class="btn btn-warning mt" onclick="invoiceDownload()">Download Report</a>
             </div>
         </header>
         <section class="cashflow-summary mb-4 mt-3">
@@ -97,7 +95,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mt-2">
                     <div class="card text-center">
                         <div class="card-header">Closing Cash</div>
                         <div class="card-body">
@@ -105,7 +103,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mt-2">
                     <div class="card text-center">
                         <div class="card-header">Money In</div>
                         <div class="card-body">
@@ -113,7 +111,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mt-2">
                     <div class="card text-center">
                         <div class="card-header">Money Out</div>
                         <div class="card-body">
@@ -131,8 +129,9 @@
       
       <div class="content">
         <div class="money-in active">
+            <a href="#" class="btn btn-warning mt" onclick="moneyInDownload()">Download Report</a>
 
-            <section class="transactions mt-4 table-responsive" id="reportContainer">
+            <section class="transactions mt-4 table-responsive" id="moneyIn">
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
@@ -163,8 +162,9 @@
           </section>
         </div>
       
-        <div class="money-out">
-            <section class="transactions mt-4 table-responsive" id="reportContainer">
+        <div class="money-out" >
+            <a href="#" class="btn btn-warning mt" onclick="moneyOutDownload()">Download Report</a>
+            <section class="transactions mt-4 table-responsive" id="moneyOut">
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
@@ -213,6 +213,7 @@
       
           // Add 'active' class to the corresponding content
           document.querySelector(`.${tab}`).classList.add('active');
+
         }
       </script>
       
@@ -233,6 +234,50 @@
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
     });
+</script>
+<script>
+    function moneyInDownload() {
+
+const wrapper = document.createElement('div');
+
+
+const companyName = document.createElement('h2');
+companyName.textContent = 'Injaz';
+companyName.style.textAlign = 'center';
+wrapper.appendChild(companyName);
+
+
+const reportHeading = document.createElement('h4');
+reportHeading.textContent = 'Cash Flow Report';
+reportHeading.style.textAlign = 'center';
+wrapper.appendChild(reportHeading);
+
+const tableContent = document.getElementById('moneyIn').cloneNode(true);
+wrapper.appendChild(tableContent);
+
+html2pdf().set({ filename: 'Cash Flow Report' }).from(wrapper).save();
+}
+    function moneyOutDownload() {
+
+const wrapper = document.createElement('div');
+
+
+const companyName = document.createElement('h2');
+companyName.textContent = 'Injaz';
+companyName.style.textAlign = 'center';
+wrapper.appendChild(companyName);
+
+
+const reportHeading = document.createElement('h4');
+reportHeading.textContent = 'Cash Flow Report';
+reportHeading.style.textAlign = 'center';
+wrapper.appendChild(reportHeading);
+
+const tableContent = document.getElementById('moneyOut').cloneNode(true);
+wrapper.appendChild(tableContent);
+
+html2pdf().set({ filename: 'Cash Flow Report' }).from(wrapper).save();
+}
 </script>
 
 </html>

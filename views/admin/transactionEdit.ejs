@@ -86,7 +86,6 @@
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
         .hamburger {
             cursor: pointer;
@@ -114,6 +113,7 @@
 
 </head>
 <body>
+   
     <%- include('./navbar.ejs') %>
     <!-- Main Content -->
     <div class="main-content">
@@ -211,7 +211,9 @@
                               <td>
                                 <div class="d-flex">
                                     <button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,'<%= index %>')">Free</button>
+                                    <button type="button" class="btn btn-warning btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#returnItemModal"  data-item-id="<%= product.id %>">Return</button>
                                     <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this,'<%= product.id %>','<%=product.quantity%>')">Remove</button>
+                                    
                                 </div>
                               </td>
                               <input type="hidden" id="saleProduct_id" name="products[<%= index %>][saleProduct_id]" value="<%= product.id %>">
@@ -279,6 +281,46 @@
     </div>
     
 </body>
+
+<div class="modal fade" id="returnItemModal" tabindex="-1" aria-labelledby="returnItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="returnItemModalLabel">Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+                <p>Item ID: <span id="item-id-display"></span></p>
+                <form action="/admin/return" method="POST">
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">Return Quantity</label>
+                        <input type="text" class="form-control" id="quantity" placeholder="Enter the quantity to return"  name="quantity" required>
+                        <input type="hidden" id="item-id-input" name="item_id">
+                        <!-- <label for="companyName" class="form-label">Reason</label>
+                        <input type="text" class="form-control" id="quantity" placeholder="Enter the Reason for return"  name="reason"> -->
+                    </div>
+                    <button type="submit" class="btn btn-success">Save</button>
+                </form>
+                <script>document.addEventListener('DOMContentLoaded', () => {
+                    const returnItemModal = document.getElementById('returnItemModal');
+                    returnItemModal.addEventListener('show.bs.modal', (event) => {
+                      // Button that triggered the modal
+                      const button = event.relatedTarget;
+                      // Extract value from data-* attribute
+                      const itemId = button.getAttribute('data-item-id');
+                  
+                      // Update the modal content
+                      const itemIdDisplay = document.getElementById('item-id-display');
+                      const itemIdInput = document.getElementById('item-id-input');
+                      itemIdDisplay.textContent = itemId;
+                      itemIdInput.value = itemId;
+                    });
+                  });</script>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 
     function partyChange(element){
@@ -350,7 +392,7 @@ function addRow() {
         }).then((result) => {
         if (result.isConfirmed) {
          Swal.fire("Saved!", "", "success");
-              fetch(`/business-owner/removeProduct?id=${id}&&quantity=${quantity}`)
+              fetch(`/admin/removeProduct?id=${id}&&quantity=${quantity}`)
           const row = button.closest('tr');
           row.remove();
             updateRowNumbers();
@@ -501,4 +543,5 @@ function updateReceived(){
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </html>

@@ -1,153 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cash Flow</title>
-    <!-- Bootstrap CSS -->
+    <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <!-- Font Awesome Icons -->
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-        }
-
-
-        .card {
-            border-radius: 10px;
-        }
-
-        .main-content {
+            background-color: #f4f6f9;
             padding: 20px;
         }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .tabs {
+      display: flex;
+      justify-content: space-around;
+      border-bottom: 2px solid #ccc;
+    }
 
-        /* Mobile Styles */
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      color: white;
+      background-color: #007bff;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .money-in, .money-out {
+      display: none;
+    }
+
+    .money-in.active, .money-out.active {
+      display: block;
+    }
         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                width: 100%;
-                height: auto;
-                min-height: 0;
-                z-index: 10;
-                display: none;
-            }
-
-            .main-content {
-                width: 100%;
-
-            }
-
+            
             .table-responsive {
-                overflow-x: auto;
-                /* Allow horizontal scrolling for tables */
+                overflow-x: auto; 
             }
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            margin-right: 10px; 
         }
     </style>
 </head>
-
 <body>
-    <%- include('./navbar')  %>
-    <!-- Main Content -->
-    <div class="main-content">
+   
+    <%- include('./navbar.ejs') %>
+<div class="main-content">
 
-        <!-- Header -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h1 class="fw-bold">Cash Flow</h1>
+        <i class="fas fa-bars hamburger" id="hamburger"></i>
+    </div>
+
         <div>
             <div class="d-flex justify-content-between align-items-center">
-                <h2>Cash Flow</h2>
-                <!-- <a href="/admin/addTransactions" class="btn btn-primary">+ Add Cash Flow</a> -->
-                <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
-            </div>
-
-            <div>
-                <p>
-                    <%= currentCompany ? currentCompany.name : 'No company associated' %>
-                </p>
-                        <div class="company-dropdown">
-                            <label for="companySwitch">Switch Company</label>
-                            <select id="companySwitch" class="form-select"
-                                onchange="location.href='/admin/switchCompany/' + this.value;">
-                                <% companies.forEach(company=> { %>
-                                    <option value="<%= company.id %>" <%=currentCompany[0].id===company.id ? 'selected'
-                                        : '' %>>
-                                        <%= company.name %>
-                                    </option>
-                                    <% }); %>
-                            </select>
-                        </div>
+                <a href="/admin/addSale" class="btn btn-primary">+ Add Sale</a>
             </div>
         </div>
-
-
-        <!-- Cash Flow Section -->
-        <section class="transactions mt-3 table-responsive" id="reportContainer">
-
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Date</th>
-                        <th>Transaction ID</th>
-                        <th>Name</th>
-                        <th>Transaction Type</th>
-                        <th>Money Type</th>
-                        <th>Amount</th>
-                        <!-- <th>Actions</th> -->
-                    </tr>
-                </thead>
-                <tbody>
-                    <% cashFlows.forEach(cashFlow=> { %>
-                        <tr>
-                            <td>
-                                <%= new Date(cashFlow.date).toLocaleDateString() %>
-                            </td>
-                            <td>
-                                <%= cashFlow.tnx_id %>
-                            </td>
-                            <td>
-                                <%= cashFlow.name %>
-                            </td>
-                            <td>
-                                <%= cashFlow.tnx_type %>
-                            </td>
-                            <td>
-                                <%= cashFlow.money_type %>
-                            </td>
-                            <td>SAR <%= cashFlow.amount %>
-                            </td>
-                        </tr>
-                        <% }) %>
-                </tbody>
-            </table>
+        <section class="cashflow-summary mb-4 mt-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header">Opening Cash</div>
+                        <div class="card-body">
+                            <h5 class="card-title">SAR <%= cashFlows.length > 0 ? cashFlows[0].opening_cash.toFixed(2) : '0.00' %></h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header">Closing Cash</div>
+                        <div class="card-body">
+                            <h5 class="card-title">SAR <%= closingCash.toFixed(2) %></h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header">Money In</div>
+                        <div class="card-body">
+                            <h5 class="card-title">SAR <%= moneyIn.toFixed(2) %></h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-header">Money Out</div>
+                        <div class="card-body">
+                            <h5 class="card-title">SAR <%= moneyOut.toFixed(2) %></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('money-in')">Money In</div>
+        <div class="tab" onclick="switchTab('money-out')">Money Out</div>
+      </div>
+      
+      <div class="content">
+        <div class="money-in active">
+            <a href="#" class="btn btn-warning mt" onclick="moneyInDownload()">Download Report</a>
+
+            <section class="transactions mt-4 table-responsive" id="moneyIn">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Transaction Type</th>
+                            <th>Money Type</th>
+                            <th>Amount</th>
+                            <th>Opening Cash</th>
+                            <th>Closing Cash</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% cashFlows.forEach(cashFlow => { %>
+                            <% if(cashFlow.money_type == 'money_in'){ %>
+                            <tr>
+                                <td><%= new Date(cashFlow.date).toLocaleDateString() %></td>
+                                <td><%= cashFlow.name %></td>
+                                <td><%= cashFlow.tnx_type %></td>
+                                <td><%= cashFlow.money_type %></td>
+                                <td>SAR <%= cashFlow.amount %></td>
+                                <td>SAR <%= Number(cashFlow.opening_cash).toFixed(2) %></td>
+                                <td>SAR <%= Number(cashFlow.closing_cash).toFixed(2) %></td>
+                            </tr>
+                        <% }}) %>
+                    </tbody>
+                </table>
+          </section>
+        </div>
+      
+        <div class="money-out" >
+            <a href="#" class="btn btn-warning mt" onclick="moneyOutDownload()">Download Report</a>
+            <section class="transactions mt-4 table-responsive" id="moneyOut">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Transaction Type</th>
+                            <th>Money Type</th>
+                            <th>Amount</th>
+                            <th>Opening Cash</th>
+                            <th>Closing Cash</th>
+                           
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% cashFlows.forEach(cashFlow => { %>
+                            <% if(cashFlow.money_type == 'money_out'){ %>
+                            <tr>
+                                <td><%= new Date(cashFlow.date).toLocaleDateString() %></td>
+                                <td><%= cashFlow.name %></td>
+                                <td><%= cashFlow.tnx_type %></td>
+                                <td><%= cashFlow.money_type %></td>
+                                <td>SAR <%= cashFlow.amount %></td>
+                                <td>SAR <%= Number(cashFlow.opening_cash).toFixed(2) %></td>
+                                <td>SAR <%= Number(cashFlow.closing_cash).toFixed(2) %></td>
+                            </tr>
+                        <%} }) %>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+      </div>
     </div>
-    </div>
-    
+      
+      <script>
+        function switchTab(tab) {
+          // Remove 'active' class from the currently active tab and content
+          document.querySelector('.tab.active').classList.remove('active');
+          document.querySelector('.content > div.active').classList.remove('active');
+      
+          // Add 'active' class to the clicked tab
+          if (tab === 'money-in') {
+            document.querySelector('.tab:nth-child(1)').classList.add('active');
+          } else if (tab === 'money-out') {
+            document.querySelector('.tab:nth-child(2)').classList.add('active');
+          }
+      
+          // Add 'active' class to the corresponding content
+          document.querySelector(`.${tab}`).classList.add('active');
+
+        }
+      </script>
+      
 </body>
-<script>
-    function downloadPdf() {
 
-        const wrapper = document.createElement('div');
-
-
-        const companyName = document.createElement('h2');
-        companyName.textContent = 'Injaz';
-        companyName.style.textAlign = 'center'; // Optional styling
-        wrapper.appendChild(companyName);
-
-
-        const reportHeading = document.createElement('h4');
-        reportHeading.textContent = 'Cash Flow Report';
-        reportHeading.style.textAlign = 'center'; // Optional styling
-        wrapper.appendChild(reportHeading);
-
-        const tableContent = document.getElementById('reportContainer').cloneNode(true); // Clone the table element
-        wrapper.appendChild(tableContent);
-
-        html2pdf().from(wrapper).save();
-    }
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>
+<script>
+    function moneyInDownload() {
+
+const wrapper = document.createElement('div');
+
+
+const companyName = document.createElement('h2');
+companyName.textContent = 'Injaz';
+companyName.style.textAlign = 'center';
+wrapper.appendChild(companyName);
+
+
+const reportHeading = document.createElement('h4');
+reportHeading.textContent = 'Cash Flow Report';
+reportHeading.style.textAlign = 'center';
+wrapper.appendChild(reportHeading);
+
+const tableContent = document.getElementById('moneyIn').cloneNode(true);
+wrapper.appendChild(tableContent);
+
+html2pdf().set({ filename: 'Cash Flow Report' }).from(wrapper).save();
+}
+    function moneyOutDownload() {
+
+const wrapper = document.createElement('div');
+
+
+const companyName = document.createElement('h2');
+companyName.textContent = 'Injaz';
+companyName.style.textAlign = 'center';
+wrapper.appendChild(companyName);
+
+
+const reportHeading = document.createElement('h4');
+reportHeading.textContent = 'Cash Flow Report';
+reportHeading.style.textAlign = 'center';
+wrapper.appendChild(reportHeading);
+
+const tableContent = document.getElementById('moneyOut').cloneNode(true);
+wrapper.appendChild(tableContent);
+
+html2pdf().set({ filename: 'Cash Flow Report' }).from(wrapper).save();
+}
+</script>
 
 </html>

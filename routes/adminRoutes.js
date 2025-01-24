@@ -59,6 +59,7 @@ router.post('/admin/editItems',isLoggedAdmin,adminController.editItems);
 router.get('/admin/cashInHand',isLoggedAdmin,adminController.viewCashInHand);
 router.get('/admin/totalReceivable',isLoggedAdmin,adminController.totalReceivable);
 router.get('/admin/totalPayable',isLoggedAdmin,adminController.totalPayable);
+router.post('/admin/return',isLoggedAdmin,adminController.itemReturn);
   
 
 module.exports = router;

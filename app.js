@@ -61,8 +61,8 @@ async function testConnection() {
 }
 testConnection();
 
-app.listen(3001,'0.0.0.0', () => {
-        console.log('Server is running on http://localhost:3001');
+app.listen(3000, () => {
+        console.log('Server is running on http://localhost:3000');
       })
 
 
@@ -77,6 +77,6 @@ app.listen(3001,'0.0.0.0', () => {
 //     cert: fs.readFileSync('./certs/localhost.pem'), // Path to your SSL certificate
 // };
 
-// https.createServer(options, app).listen(3001, () => {
-//   console.log('Server running on https://localhost:3001');
+// https.createServer(options, app).listen(3000, () => {
+//   console.log('Server running on https://localhost:3000');
 // });
