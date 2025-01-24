@@ -1345,6 +1345,32 @@ const adminController = {
         }
     },
 
+    addContacts: async (req, res) => {
+        const user = req.session.user;
+        const contactData = req.body;
+        const contacts = contactData.contacts;
+        const [parties] = await mysql.query(`SELECT * FROM parties WHERE company_id =?`, [user.company_id]);
+    
+        for (const item of contacts) {
+            const name = item.name[0];
+            const phone = item.tel[0]?.replace(/\D/g, '') || 'No Number found';
+            const email = item.email[0] || null;
+            const address = item.address[0] || null;
+            const image = null;
+    
+            const isDuplicate = parties.some(party => party.PartyName == name);
+            if (isDuplicate) {
+                return res.status(409).json({ data: `${name} already exists` }); 
+            }
+    
+            await mysql.query(
+                "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, company_id) VALUES (?,?,?,?,?,?,?)",
+                [user.id, name || 'unknown', email, phone, address, image, user.company_id]
+            );
+        }
+        res.json({ data: 'Contacts imported successfully' });
+    },
+
 
 };
 

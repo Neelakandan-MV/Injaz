@@ -405,7 +405,7 @@
                 <h4>Transaction Details</h4>
                 <table id="transactionDetailsTable">
                     <tr>
-                        <th>Transaction ID</th>
+                        <th>Transaction Type</th>
                         <th>Date</th>
                         <th>Amount</th>
                         <th>Balance Due</th>
@@ -415,6 +415,7 @@
             <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
                 Add New Party
             </button>
+            <button type="button" class="btn btn-primary mt-2" onclick="importContacts()">Import Contacts</button>
         </div>
     </div>
     </div>
@@ -439,11 +440,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control" id="companyName" name="address" required>
+                            <input type="text" class="form-control" id="companyName" name="address" >
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Party Email</label>
-                            <input type="email" class="form-control" id="companyName" name="email" required>
+                            <input type="email" class="form-control" id="companyName" name="email">
                         </div>
                         <div class="mb-3">
                             <label for="dp" class="form-label">Profile Picture</label>
@@ -479,9 +480,6 @@
                 // Update party overview
                 document.getElementById("partyName").textContent = party.name;
                 document.getElementById("totalAmount").textContent = party.amount;
-                document.getElementById('partyStatus').value = party.partyStatus
-                document.getElementById('partyId').value = party.id
-                
 
                 // Update party info card
                 document.getElementById("partyInfoName").textContent = party.name;
@@ -501,7 +499,7 @@
                 party.transactions.forEach(transaction => {
                     const row = transactionTable.insertRow();
                     row.insertCell(0).textContent = transaction.transaction_type;
-                    row.insertCell(1).textContent = transaction.date;
+                    row.insertCell(1).textContent = new Date(transaction.date).toLocaleDateString() 
                     row.insertCell(2).textContent = transaction.amount;
                     row.insertCell(3).textContent = transaction.balance_due;
                 });
@@ -511,21 +509,6 @@
         // Initialize with the first party
         updatePartyData();
     </script>
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
-        }
-        function companyDisplay() {
-            const div = document.querySelector('.companyClass');
-            if (div) {
-                div.style.display = 'block';
-            } else {
-                console.error('Element with class "companyClass" not found.');
-            }
-        }
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
         const hamburger = document.querySelector('.hamburger');
         const navMenu = document.querySelector('nav ul');
@@ -567,7 +550,70 @@
         }
         }
     </script>
+
+
+<script>
+    async function importContacts() {
+       if ('contacts' in navigator && 'ContactsManager' in window) {
+           try {
+               const props = ['name', 'tel', 'email', 'address'];
+               const contacts = await navigator.contacts.select(props, { multiple: true });
+               console.log(contacts);
+   
+               // Prepare the contacts to be sent to the server
+   
+               // Send contacts to the server
+               const response = await fetch('/admin/add-contacts', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                   },
+                   body: JSON.stringify({ contacts }),
+               })
+               .then(response => {
+               if (response.ok) {
+                   return response.json();
+               } else if (response.status === 409) {
+                   return response.json().then(data => {
+                       throw new Error(data.data);
+                   });
+               } else {
+                   throw new Error('Failed to import contacts');
+               }
+           })
+           .then(data => {
+               Swal.fire({
+               title: `${data.data}`,
+               icon: "success",
+               draggable: false
+               });
+               setTimeout(()=>{
+                   window.location.reload()
+               },300)
+           })
+           .catch(error => {
+               Swal.fire({
+                   icon: "error",
+                   title: "Oops...",
+                   text: `${error.message}`
+                   });
+           });
+           } catch (error) {
+               console.error('Error accessing contacts:', error);
+           }
+       } else {
+           Swal.fire({
+                   icon: "error",
+                   title: "Oops...",
+                   text: "Contact Picker is not supported on this device.",
+                   footer:'Try again from mobile devices'
+                   });
+       }
+   }
+   
+      </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
