@@ -124,7 +124,15 @@
             <h1 class="fw-bold">Add Purchase</h1>
         </div>
 
-
+        <datalist id="partySuggestions">
+            <% if (parties.length) { %>
+                <% parties.forEach(party => { %>
+                    <option value="<%= party.PartyName %>"></option>
+                <% }) %>
+            <% } else { %>
+                <option disabled value="No Party Found">No Party Found</option>
+            <% } %>
+            </datalist>
 
             <!-- Add Sale Form -->
             <section class="form-section mt-4">
@@ -134,13 +142,8 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="partyName" class="form-label">Party Name *</label>
-
-                                <select name="partyName" id="partyName" class="form-control" placeholder="Enter Party Name" onchange="partyChange(this)" required>
-                                    <option value="">Choose Party</option>
-                                    <% parties.map(party=>{%>
-                                        <option value="<%= party.id %>"><%= party.PartyName %></option>
-                                        <% }) %>
-                                </select>
+                            <input type="text" id="partyName" name="partyId" class="form-control" placeholder="Enter Party Name"  list="partySuggestions" oninput="partyChange(this)" required>
+                            <input type="hidden" id="partyId" name="partyName">
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -161,8 +164,8 @@
                         <div class="col-md-3">
                             <label for="Payment Type">Payment Type *</label>
                             <select id="paymentType" name="paymentType" class="form-select">
+                                <option value="credit">Credit</option>
                                 <option value="cash">Cash</option>
-                                <!-- <option value="credit">Credit</option> -->
                                 <option value="online">Online</option>
                             </select>
                         </div>
@@ -269,11 +272,13 @@
     });
     
     function partyChange(element){
+        const partyId = document.getElementById('partyId')
         const phoneInput = document.getElementById('phone')
         const parties = <%-JSON.stringify(parties)%>
         parties.map(party=>{
-            if(party.id == element.value){
+            if(party.PartyName == element.value){
                 phoneInput.value = party.Phone
+                partyId.value = party.id
             }
         })    
     }
@@ -401,15 +406,6 @@ function updateReceived(){
         <% })}else{ %>
             <option value="No Products Found">
                 <% } %>
-</datalist>
-<datalist id="partySuggestions">
-<% if (parties.length) { %>
-    <% parties.forEach(party => { %>
-        <option value="<%= party.id %>" label="<%= party.PartyName %>"></option>
-    <% }) %>
-<% } else { %>
-    <option disabled value="No Party Found">No Party Found</option>
-<% } %>
 </datalist>
 <script>
 function sugesstion(element,count) {

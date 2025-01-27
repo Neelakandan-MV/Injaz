@@ -644,6 +644,19 @@ const businessOwnerController = {
         res.redirect('/business-owner/dashboard');
     },
 
+    togglePartyStatus:async (req,res)=>{
+        const {id,status} = req.query
+        
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[id])
+        if(party[0]){
+            await mysql.query(`UPDATE parties set PartyStatus = ? WHERE id = ?`,[status,id])
+            return res.json({currentStatus:status})
+        }else{
+
+            return res.status(409).json({ currentStatus:'No Parties Selected' }); 
+        }
+    },
+
     viewParty: async (req, res) => {
         const user = req.session.user
         const companyId = user.company_id;
@@ -757,8 +770,8 @@ const businessOwnerController = {
                 const image = req.file ? req.file.filename : null;
 
                 await mysql.query(
-                    "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture) VALUES (?,?,?,?,?,?)",
-                    [user.id, name, email, phone, address, image]
+                    "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture,company_id) VALUES (?,?,?,?,?,?,?)",
+                    [user.id, name, email, phone, address, image, user.company_id]
                 );
 
                 res.redirect('/business-owner/viewParty');

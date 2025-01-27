@@ -440,14 +440,14 @@ const adminController = {
 
     viewUser: async (req, res) => {
         const currentUser = req.session.user;
-        const [users] = await mysql.query("SELECT * FROM users WHERE role = 'businessOwner';")
+        const [users] = await mysql.query("SELECT * FROM users WHERE role != 'superAdmin'")
         res.render('admin/manageUsers.ejs', { users, currentUser })
     },
 
     addUser: async (req, res) => {
-        const { name, email, password } = req.body
+        const { name, email, password, role } = req.body
         const hashedPassword = await bcrypt.hash(password, 10);
-        await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, 'businessOwner'])
+        await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, role])
         // const [addedUser] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
         // await mysql.query("INSERT INTO companies (user_id,name,created_at) VALUES (?,?,?)", [addedUser[0].id, 'Main', new Date()])
         res.redirect('/admin/userManagement')
@@ -591,9 +591,9 @@ const adminController = {
                         serviceCharge2,
                         serviceChargeQuantity3,
                         serviceCharge3,
-                        purchasePrice,
+                        purchasePrice || 0,
                         purchasePriceTaxIncluded || false,
-                        taxRate,
+                        taxRate || 0,
                         newItemCode,
                         companyId,
                         user_id
@@ -872,11 +872,54 @@ const adminController = {
     },
     togglePartyStatus:async (req,res)=>{
         const {id,status} = req.query
+        console.log(id,status);
+        
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[id])
         if(party[0]){
             await mysql.query(`UPDATE parties set PartyStatus = ? WHERE id = ?`,[status,id])
             return res.json({currentStatus:status})
         }
+    },
+
+    deleteParty:async(req,res)=>{
+        const {partyId} = req.query
+        const [isTrancations] = await mysql.query(`SELECT * FROM sales WHERE customer_name = ?`,[partyId])
+        if(isTrancations.length){
+            return res.json({success:false})    
+        }
+        await mysql.query(`DELETE FROM parties WHERE id = ?`,[partyId])
+        res.json({success:true})
+    },
+
+    viewEditParty:async(req,res)=>{
+        const {partyId} = req.query;
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId]);
+        res.render('admin/partyEdit',{party:party[0]})
+
+    },
+    editParty: async (req, res) => {
+        upload(req, res, async function (err) {
+            if (err instanceof multer.MulterError) {
+                return res.status(500).json(err);
+            } else if (err) {
+                return res.status(500).json(err);
+            }
+
+            try {
+                const user = req.session.user;
+                const { name, email, phone, address,partyId } = req.body;
+
+                const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId]);                
+                const image = req.file ? req.file.filename : party[0].profile_picture;
+                await mysql.query(
+                    "UPDATE parties set PartyName = ?, Email = ?, Phone = ?, Address = ?, profile_picture = ? WHERE id = ?",
+                    [name,email,phone,address,image,partyId]
+                )
+                res.redirect('/admin/viewParty');
+            } catch (dbError) {
+                res.status(500).json({ error: "Database operation failed", details: dbError });
+            }
+        });
     },
 
     logout: (req, res) => {
@@ -1121,13 +1164,25 @@ const adminController = {
                 purchasePriceTaxIncluded,
                 taxRate,
                 itemCode,
-                item_id
+                item_id,
+                wholesaleQuantity1,
+                wholesalePrice1,
+                wholesaleQuantity2,
+                wholesalePrice2,
+                wholesaleQuantity3,
+                wholesalePrice3,
+                serviceChargeQuantity1,
+                serviceCharge1,
+                serviceChargeQuantity2,
+                serviceCharge2,
+                serviceChargeQuantity3,
+                serviceCharge3,
             } = req.body;
 
             const [currentItem] = await mysql.query(`SELECT * FROM items WHERE id=?`, [item_id]);
 
 
-            const image = req.file ? req.file.filename : currentItem[0].image;
+            const image = req.file ? req.file.filename : currentItem[0]?.image;
 
             try {
                 const user_id = req.session.user.id
@@ -1144,7 +1199,18 @@ const adminController = {
                         sale_price_tax_included = ?, 
                         discount_value = ?, 
                         discount_type = ?, 
-                        wholesale_price = ?, 
+                        wholesale_price_1 = ?, 
+                        wholesale_price_2 = ?, 
+                        wholesale_price_3 = ?, 
+                        wholesale_quantity_1 = ?, 
+                        wholesale_quantity_2 = ?, 
+                        wholesale_quantity_3 = ?, 
+                        service_charge_1 = ?,
+                        service_charge_2 = ?,
+                        service_charge_3 = ?,
+                        service_charge_quantity_1 = ?,
+                        service_charge_quantity_2 = ?,
+                        service_charge_quantity_3 = ?,
                         purchase_price = ?, 
                         purchase_price_tax_included = ?, 
                         tax_rate = ?, 
@@ -1162,7 +1228,18 @@ const adminController = {
                         salePriceTaxIncluded || false,
                         discountValue || 0,
                         discountType || null,
-                        wholesalePrice || 0,
+                        wholesalePrice1,
+                        wholesalePrice2,
+                        wholesalePrice3,
+                        wholesaleQuantity1,
+                        wholesaleQuantity2,
+                        wholesaleQuantity3,
+                        serviceCharge1,
+                        serviceCharge2,
+                        serviceCharge3,
+                        serviceChargeQuantity1,
+                        serviceChargeQuantity2,
+                        serviceChargeQuantity3,
                         purchasePrice,
                         purchasePriceTaxIncluded || false,
                         taxRate,
@@ -1172,7 +1249,6 @@ const adminController = {
                         item_id
                     ]
                 );
-
 
                 const [items] = await mysql.query(`
                     SELECT items.*, categories.category AS categoryName 
@@ -1185,7 +1261,7 @@ const adminController = {
 
             } catch (error) {
                 console.error(error);
-                return res.render('admin/itemEdti.ejs', { error: 'An error occurred. Please try again.' });
+                return res.render('admin/itemEdit.ejs', { error: 'An error occurred. Please try again.' });
             }
         });
     },

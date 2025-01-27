@@ -138,15 +138,8 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="partyName" class="form-label">Party Name *</label>
-                            <!-- <input type="text" id="partyName" name="partyName" class="form-control"
-                                placeholder="Enter Party ID"  list="partySuggestions" required> -->
-
-                                <select name="partyName" id="partyName" class="form-control" placeholder="Enter Party Name" onchange="partyChange(this)" required>
-                                    <option value="">Choose Party</option>
-                                    <% parties.map(party=>{%>
-                                        <option value="<%= party.id %>"><%= party.PartyName %></option>
-                                        <% }) %>
-                                </select>
+                            <input type="text" id="partyName" name="partyId" class="form-control" placeholder="Enter Party Name"  list="partySuggestions" oninput="partyChange(this)" required>    
+                            <input type="hidden" id="partyId" name="partyName" required>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -167,8 +160,8 @@
                         <div class="col-md-3">
                             <label for="Payment Type">Payment Type *</label>
                             <select id="paymentType" name="paymentType" class="form-select">
+                                <option value="credit">Credit</option>
                                 <option value="cash">Cash</option>
-                                <!-- <option value="credit">Credit</option> -->
                                 <option value="online">Online</option>
                             </select>
                         </div>
@@ -193,8 +186,8 @@
                                 </th>
                                 <th>Price/Unit<p style="font-size: 12px; color: gray;">(Price per Unit)</p>
                                 </th>
-                                <th>Discount (%)</th>
-                                <th>Tax (%)</th>
+                                <!-- <th>Discount (%)</th>
+                                <th>Tax (%)</th> -->
                                 <th>Total (SAR)</th>
                                 <th>Delivered</th>
                                 <th>Action</th>
@@ -282,11 +275,13 @@
     });
     
     function partyChange(element){
+        const partyId = document.getElementById('partyId')
         const phoneInput = document.getElementById('phone')
         const parties = <%-JSON.stringify(parties)%>
         parties.map(party=>{
-            if(party.id == element.value){
+            if(party.PartyName == element.value){
                 phoneInput.value = party.Phone
+                partyId.value = party.id
             }
         })    
     }
@@ -306,8 +301,8 @@
             <td><div class="d-flex"><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this,'${count}')" required><span class="stockDisplay" id="stockDisplay${count}"></span></div></td>
             <td><input type="text"  id="unit${count}" name="products[${count}][unit]" required ></td>
             <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this,'${count}')" onchange="updateWholesalePrice()" required ></td>
-            <td><input type="text" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this,'${count}')" required ></td>
-            <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this,'${count}')" required ></td>
+            <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this,'${count}')" required >
+            <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this,'${count}')" required>
             <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
             <td><input type="text" id="deliveredQuantity" name="products[${count}][deliveredQuantity]"></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
@@ -455,14 +450,14 @@ function updateReceived(){
                 <% } %>
 </datalist>
 <datalist id="partySuggestions">
-<% if (parties.length) { %>
-    <% parties.forEach(party => { %>
-        <option value="<%= party.id %>" label="<%= party.PartyName %>"></option>
-    <% }) %>
-<% } else { %>
-    <option disabled value="No Party Found">No Party Found</option>
-<% } %>
-</datalist>
+    <% if (parties.length) { %>
+        <% parties.forEach(party => { %>
+            <option value="<%= party.PartyName %>"></option>
+        <% }) %>
+    <% } else { %>
+        <option disabled value="No Party Found">No Party Found</option>
+    <% } %>
+    </datalist>
 <script>
 function sugesstion(element,count) {
     

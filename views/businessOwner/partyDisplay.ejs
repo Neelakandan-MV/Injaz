@@ -1,28 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parties</title>
-    <!-- CSS Framework -->
+    <title>Party Page</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f9;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+
         }
-        .main-content {
-            max-width: 1200px;
-            margin: 0 auto;
+        header {
+        background-color: #3498db;
+        color: #fff;
+        padding: 15px 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .navbar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .navbar h1 {
+        font-size: 20px;
+        margin: 0;
+        color: white;
+    }
+
+    nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+
+    nav ul li {
+        margin-left: 10px;
+    }
+
+    nav ul li a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 14px;
+        padding: 8px 12px;
+        border-radius: 5px;
+    }
+
+    nav ul li a:hover {
+        background-color: #2980b9;
+    }
+
+    .hamburger {
+        display: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+        background: none;
+        border: none;
+    }
+    .row a{
+            text-decoration: none;
         }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .navbar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        nav ul {
+            flex-direction: column;
+            display: none;
+            width: 100%;
+            background-color: #3498db;
+            padding: 10px 0;
+            margin-top: 10px;
+        }
+
+        nav ul li {
+            margin: 0;
+            text-align: center;
+        }
+
+        nav ul li a {
+            display: block;
+            padding: 10px;
+        }
+
+        nav ul.show {
+            display: flex;
+        }
+
         .hamburger {
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: #333;
+            display: block;
         }
+
+        table {
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        button {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .table-responsive {
+            margin-top: 10px;
+        }
+    }
+
+
         .container {
             display: flex;
             flex: 1;
@@ -30,10 +136,10 @@
             gap: 20px;
             justify-content: space-between;
             flex-wrap: wrap;
-            position: absolute;
-            margin-left: 240px;
-            /* overflow-y: scroll; */   
+            
         }
+
+        /* Left table */
         .left-table {
             flex: 1;
             background-color: #ffffff;
@@ -41,8 +147,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             min-width: 300px;
-            /* height: 90vh; */
-            margin-bottom: 25px;
+            height: 90vh;
         }
 
         .left-table h4 {
@@ -51,7 +156,7 @@
             color: #495057;
         }
 
-        #partySelector {
+        .select {
             width: 100%;
             padding: 8px;
             margin-bottom: 20px;
@@ -143,20 +248,17 @@
             color: #495057;
         }
 
-        .companyClass {
-            display: none;
-        }
-
         /* Responsive Design for Mobile Devices */
         @media screen and (max-width: 768px) {
-
+            body {
+                overflow: auto;
+            }
 
             .container {
                 flex-direction: column;
                 gap: 10px;
                 margin-left: 0px;
             }
-
 
             .left-table,
             .right-section {
@@ -173,25 +275,87 @@
             }
         }
 
-        
+        @media screen and (max-width: 480px) {
+
+            .left-table,
+            .right-section {
+                padding: 15px;
+            }
+
+            .select {
+                font-size: 0.9em;
+                padding: 6px;
+            }
+
+            .left-table th,
+            .left-table td,
+            .transaction-table th,
+            .transaction-table td {
+                padding: 8px;
+            }
+
+            .transaction-table td {
+                font-size: 0.9em;
+            }
+
+            .party-info-card p {
+                font-size: 0.9em;
+            }
+
+            .party-info-card h3 {
+                font-size: 1.3em;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        .chart {
+            height: 200px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+
+            .main-content {
+                margin-left: 0;
+            }
+
+        }
     </style>
 </head>
+
 <body>
-   
-    <%- include('./aside.ejs') %>
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Header Section -->
-        <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Parties</h1>
-            <i class="fas fa-bars hamburger" id="hamburger"></i>
-        </header>
+
+    <datalist id="partiesList">
+        <% parties.forEach(party=> {%>
+            <option value="<%= party.name %>"></option>
+                <% })%>
+        </datalist>
+
+    <%- include('./aside.ejs')  %>
+
+    <div class="container">
         <!-- Left table -->
         <div class="left-table">
             <h4>Party Overview</h4>
-            <select id="partySelector" onchange="updatePartyData()">
-                <!-- Party options will be added dynamically -->
-            </select>
+                <input
+                    type="text" id="partySearchInput" placeholder="Search for a party..." class="form-control mb-3" oninput="selectParty(this.value)" list="partiesList"/>
             <table>
                 <tr>
                     <th>Party Name</th>
@@ -199,9 +363,17 @@
                 </tr>
                 <tr>
                     <th>Total Amount</th>
-                    <td id="totalAmount"></td>
+                    <td id="totalAmount">$0</td>
                 </tr>
             </table>
+            <!-- <label for="partyStatus" class="mt-3">Party Status</label> -->
+            <!-- <select class="select " id="partyStatus" onchange="updatePartyStatus(this.value)">
+                <option value="1">Active</option>
+                <option value="0">Hidden</option>
+            </select> -->
+            <!-- <button type="button" class="btn btn-danger" onclick="deleteParty()">Delete Party</button> -->
+            <input type="hidden" id="partyId">
+
         </div>
 
         <!-- Right section -->
@@ -247,142 +419,241 @@
                     </tr>
                 </table>
             </div>
-            <!-- <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
+            <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addPartyModal">
                 Add New Party
-            </button> -->
-            <button type="button" class="btn btn-primary" onclick="importContacts()">Import Contacts</button>
+            </button>
+            <button type="button" class="btn btn-primary mt-2" onclick="importContacts()">Import Contacts</button>
+            <button type="button" class="btn btn-secondary mt-2" onclick="editParty()">Edit Party</button>
         </div>
     </div>
-   
-   <script>
- async function importContacts() {
-    if ('contacts' in navigator && 'ContactsManager' in window) {
-        try {
-            const props = ['name', 'tel', 'email', 'address'];
-            const contacts = await navigator.contacts.select(props, { multiple: true });
-            console.log(contacts);
+    </div>
+    <!-- Modal for Add New Company -->
+    <div class="modal fade" id="addPartyModal" tabindex="-1" aria-labelledby="addPartyModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPartyModalLabel">Add New Party</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/business-owner/addParty" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="companyName" class="form-label">Party Name</label>
+                            <input type="text" class="form-control" id="companyName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="companyName" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="companyName" name="address" >
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Party Email</label>
+                            <input type="email" class="form-control" id="companyName" name="email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="dp" class="form-label">Profile Picture</label>
+                            <input type="file" class="form-control" id="profile" name="image">
+                        </div>
 
-            // Prepare the contacts to be sent to the server
+                        <button type="submit" class="btn btn-success">Save Party</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            // Send contacts to the server
-            const response = await fetch('/business-owner/add-contacts', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ contacts }),
-            })
-            .then(response => {
-            if (response.ok) {
-                return response.json();
-            } else if (response.status === 409) {
-                return response.json().then(data => {
-                    throw new Error(data.data);
-                });
-            } else {
-                throw new Error('Failed to import contacts');
-            }
-        })
-        .then(data => {
-            Swal.fire({
-            title: `${data.data}`,
-            icon: "success",
-            draggable: false
-            });
-            setTimeout(()=>{
-                window.location.reload()
-            },300)
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: `${error.message}`
-                });
-        });
-        } catch (error) {
-            console.error('Error accessing contacts:', error);
+    <script>
+       const parties = <%- JSON.stringify(parties) %>;
+
+
+function selectParty(partyName) {
+    const party = parties.find((p) => p.name == partyName);
+    if (party) {
+        // Update the party overview
+        document.getElementById("partyId").value = party.id;
+        // document.getElementById("partyStatus").value = party.partyStatus;
+        document.getElementById("partyName").textContent = party.name;
+        document.getElementById("totalAmount").textContent = party.amount;
+
+        // Update the party info card
+        document.getElementById("partyInfoName").textContent = party.name;
+        document.getElementById("partyPhone").textContent = party.phone;
+        document.getElementById("partyEmail").textContent = party.email;
+        document.getElementById("partyAddress").textContent = party.address;
+        document.getElementById("partyDP").src = `/uploads/${
+            party.profile_picture || "image-1737386570443-200304972"
+        }`;
+
+        // Update transaction details table
+        const transactionTable = document.getElementById(
+            "transactionDetailsTable"
+        );
+        const rows = transactionTable.getElementsByTagName("tr");
+        for (let i = rows.length - 1; i > 0; i--) {
+            transactionTable.deleteRow(i);
         }
-    } else {
-        Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: "Contact Picker is not supported on this device.",
-                footer:'Try again from mobile devices'
-                });
+        party.transactions.forEach((transaction) => {
+            const row = transactionTable.insertRow();
+            row.insertCell(0).textContent = transaction.transaction_type;
+            row.insertCell(1).textContent = new Date(
+                transaction.date
+            ).toLocaleDateString();
+            row.insertCell(2).textContent = transaction.amount;
+            row.insertCell(3).textContent = transaction.balance_due;
+        });
     }
 }
 
-   </script>
-    
 
+// if (parties.length > 0) {
+//     selectParty(parties[0].id);
+// }
+
+    </script>
     <script>
-        // Example party data
-        const parties = <%-JSON.stringify(parties)%>
-
-        // Populate the party selector dropdown
-        const partySelector = document.getElementById("partySelector");
-        parties.forEach(party => {
-            const option = document.createElement("option");
-            option.value = party.id;
-            option.textContent = party.name;
-            partySelector.appendChild(option);
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('nav ul');
+    
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('show');
         });
-
-        // Function to update the data when a new party is selected
-        function updatePartyData() {
-            const selectedPartyId = document.getElementById("partySelector").value;
-            const party = parties.find(p => p.id == selectedPartyId);
-
-            if (party) {
-                // Update party overview
-                document.getElementById("partyName").textContent = party.name;
-                document.getElementById("totalAmount").textContent = party.amount;
-
-                // Update party info card
-                document.getElementById("partyInfoName").textContent = party.name;
-                document.getElementById("partyPhone").textContent = party.phone;
-                document.getElementById("partyEmail").textContent = party.email;
-                document.getElementById("partyAddress").textContent = party.address;
-                document.getElementById("partyDP").src = `/uploads/${party.profile_picture?party.profile_picture:'image-1737386570443-200304972'}`;
-
-                // Update transaction details table
-                const transactionTable = document.getElementById("transactionDetailsTable");
-                // Clear previous rows
-                const rows = transactionTable.getElementsByTagName("tr");
-                for (let i = rows.length - 1; i > 0; i--) {
-                    transactionTable.deleteRow(i);
-                }
-                // Add new rows
-                party.transactions.forEach(transaction => {
-                    const row = transactionTable.insertRow();
-                    row.insertCell(0).textContent = transaction.transaction_type;
-                    row.insertCell(1).textContent = new Date(transaction.date).toLocaleDateString() 
-                    row.insertCell(2).textContent = transaction.amount;
-                    row.insertCell(3).textContent = transaction.balance_due;
+    </script>
+    <!-- <script>
+        async function updatePartyStatus(){
+            const partyStatus = document.getElementById('partyStatus').value
+            const partyId = document.getElementById('partyId').value
+            
+            try {
+            const response = await fetch(`/business-owner/updatePartyStatus?id=${partyId}&&status=${partyStatus}`);
+            if (response.ok) {
+                const result = await response.json();
+                document.getElementById('partyStatus').value = result.currentStatus;
+                Swal.fire({
+                title: "Successfully Updated the Party Status",
+                icon: "success",
+                draggable: true
+                });
+            } else {
+                console.error('Failed to update party status');
+                Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong!",
                 });
             }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Something went wrong. Please try again later.');
+        }
+        }
+    </script> -->
+
+    <script>
+        async function deleteParty(){
+            const partyId = document.getElementById('partyId').value;
+            const response = await fetch(`/business-owner/deleteParty?partyId=${partyId}`)
+            if(response.ok){
+                const result = await response.json(); 
+                if(result.success){
+                    Swal.fire({
+                title: "Successfully Deleted the Party.",
+                icon: "success",
+                });
+                setTimeout(()=>{
+                    window.location.reload()
+                },300)
+                }else{
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "This Party can't be deleted!",
+                        footer: "Transaction are available with this Party"
+                        });
+                }
+            }else{
+                Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong!",
+                });
+            }
+            
         }
 
-        // Initialize with the first party
-        updatePartyData();
-    </script>
-    <!-- script for hamburgur -->
-     <script>
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const hamburger = document.getElementById('hamburger');
 
-        hamburger.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        });
 
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-        });
+
+        async function editParty(){
+            const partyId = document.getElementById('partyId').value;
+            window.location.href = `/business-owner/editParty?partyId=${partyId}`;
+        }
     </script>
+
+
+<script>
+    async function importContacts() {
+       if ('contacts' in navigator && 'ContactsManager' in window) {
+           try {
+               const props = ['name', 'tel', 'email', 'address'];
+               const contacts = await navigator.contacts.select(props, { multiple: true });
+               console.log(contacts);
+   
+               // Prepare the contacts to be sent to the server
+   
+               // Send contacts to the server
+               const response = await fetch('/admin/add-contacts', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                   },
+                   body: JSON.stringify({ contacts }),
+               })
+               .then(response => {
+               if (response.ok) {
+                   return response.json();
+               } else if (response.status === 409) {
+                   return response.json().then(data => {
+                       throw new Error(data.data);
+                   });
+               } else {
+                   throw new Error('Failed to import contacts');
+               }
+           })
+           .then(data => {
+               Swal.fire({
+               title: `${data.data}`,
+               icon: "success",
+               draggable: false
+               });
+               setTimeout(()=>{
+                   window.location.reload()
+               },300)
+           })
+           .catch(error => {
+               Swal.fire({
+                   icon: "error",
+                   title: "Oops...",
+                   text: `${error.message}`
+                   });
+           });
+           } catch (error) {
+               console.error('Error accessing contacts:', error);
+           }
+       } else {
+           Swal.fire({
+                   icon: "error",
+                   title: "Oops...",
+                   text: "Contact Picker is not supported on this device.",
+                   footer:'Try again from mobile devices'
+                   });
+       }
+   }
+   
+      </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>

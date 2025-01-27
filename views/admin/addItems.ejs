@@ -278,24 +278,18 @@
                         </div>
 
                         <!-- Sale Price Section -->
-                        <h5 class="mt-4">Sale Price</h5>
                         <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="salePrice" class="form-label">Amount</label>
+                            <div class="col-md-6">
+                                <label for="salePrice" class="form-label">Sale Price</label>
                                 <input type="text" class="form-control" id="salePrice" name="salePrice"
                                     placeholder="Enter sale price" >
                             </div>
-                            <div class="col-md-4">
-                                <label for="salePriceTax" class="form-label">Tax</label>
-                                <select class="form-select" id="salePriceTax" name="salePriceTaxIncluded">
-                                    <option value="false">Without Tax</option>
-                                    <option value="true">With Tax</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="discount" class="form-label">Discount (%)</label>
-                                <input type="text" class="form-control" id="discount" name="discountValue"
-                                    placeholder="Enter discount">
+
+                              <!-- Purchase Price Section -->
+
+                            <div class="col-md-6">
+                                <label for="purchasePrice" class="form-label">Purchase Price </label>
+                                <input type="text" class="form-control" id="purchasePrice" name="purchasePrice" placeholder="Enter purchase price" >
                             </div>
                         </div>
                         <button type="button" class="btn btn-primary mt-2" onclick="wholeSaleDisplay()">Add Wholesale Price</button>
@@ -384,30 +378,18 @@
                         </div>
                     </div>
 
-                        <!-- Purchase Price Section -->
-                        <h5 class="mt-4">Purchase Price</h5>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="purchasePrice" class="form-label">Amount </label>
-                                <input type="text" class="form-control" id="purchasePrice" name="purchasePrice"
-                                    placeholder="Enter purchase price" >
-                            </div>
-                            <div class="col-md-6">
-                                <label for="purchaseTax" class="form-label">Tax</label>
-                                <select class="form-select" id="purchaseTax" name="purchasePriceTaxIncluded">
-                                    <option value="false">Without Tax</option>
-                                    <option value="true">With Tax</option>
-                                </select>
-                            </div>
-                        </div>
 
+                    
                         <!-- Tax Rate Section -->
-                        <h5 class="mt-4">Tax Rate</h5>
+                        <h5 class="mt-4"> Rate</h5>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="taxRate" class="form-label">Rate(%)</label>
-                                <input type="text" class="form-control" id="taxRate" name="taxRate"
-                                    placeholder="Enter tax rate" >
+                                <label for="taxRate" class="form-label">Tax Rate(%)</label>
+                                <input type="text" class="form-control" id="taxRate" name="taxRate" placeholder="Enter tax rate" >
+                            </div>
+                            <div class="col-md-6">
+                                <label for="discount" class="form-label">Discount (%)</label>
+                                <input type="text" class="form-control" id="discount" name="discountValue" placeholder="Enter discount">
                             </div>
                         </div>
 

@@ -33,7 +33,8 @@ router.post('/business-owner/addTransactions',isLogged,businessController.addTra
 router.get('/business-owner/switchCompany/:id',isLogged,businessController.switchCompany);
 router.get('/business-owner/viewParty',isLogged,businessController.viewParty);
 router.get('/business-owner/logout',isLogged,businessController.logout);
-// router.post('/business-owner/addParty',isLogged,businessController.addParty);
+router.post('/business-owner/addParty',isLogged,businessController.addParty);
+router.get('/business-owner/updatePartyStatus',isLogged,businessController.togglePartyStatus);
 router.get('/business-owner/dayBook',isLogged,businessController.viewDayBook);
 router.get('/business-owner/cashflow',isLogged,businessController.viewCashFlow);
 router.get('/business-owner/transactionDetails',isLogged,businessController.transactionDetails);

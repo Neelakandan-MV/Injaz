@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Edit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <%- include('./navbar')  %>
+<div class="main-content mt-5">
+    <div class="container col-md-6">
+        <form action="/admin/editParty" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="companyName" class="form-label">Party Name</label>
+                <input type="text" class="form-control" value="<%= party.PartyName %>" id="companyName" name="name" required>
+                <input type="hidden" value="<%= party.id %>" name="partyId">
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="text" class="form-control" value="<%= party.Phone %>" id="companyName" name="phone" required>
+            </div>
+            <div class="mb-3">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control" value="<%= party.Address %>" id="companyName" name="address" >
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Party Email</label>
+                <input type="email" class="form-control" value="<%= party.Email %>" id="companyName" name="email">
+            </div>
+            <div class="mb-3">
+                <label for="dp" class="form-label">Profile Picture</label>
+                <br>
+                <% if(party.profile_picture){ %>
+                <img
+                    class="img-sm img-thumbnail mt-3 edit-img"
+                    src="/uploads/<%= party.profile_picture %>"
+                    alt="Profile Picture"
+                    id="profilePicture"
+                    style="cursor: pointer;"
+                >
+                <!-- Hidden file input -->
+                <input
+                    type="file"
+                    id="imageInput"
+                    name="image"
+                    style="display: none;"
+                    accept="image/*"
+                >
+                <% }else{ %>
+                    <input type="file" name="image" class="form-control" accept="image/*">
+                    <% } %>
+            </div>
+            
+           
+            
+            <script>
+                // Handle image click to trigger the file selector
+                const profilePicture = document.getElementById('profilePicture');
+                const imageInput = document.getElementById('imageInput');
+            
+                profilePicture.addEventListener('click', () => {
+                    imageInput.click(); // Programmatically click the hidden input
+                });
+            
+                // Optionally preview the selected image
+                imageInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            profilePicture.src = e.target.result; // Set the new image preview
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            </script>
+            
+
+            <button type="submit" class="btn btn-success">Save Party</button>
+        </form>
+</div>
+</div>
+
+<style>.img-sm {
+    width: 120px;
+    height: 90px;
+}
+
+    .edit-img:hover {
+        opacity: 0.8;
+        transition: opacity 0.3s;
+        }
+
+</style>
+    
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>

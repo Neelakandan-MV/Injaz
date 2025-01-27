@@ -113,7 +113,16 @@
 
 </head>
 <body>
-   
+    <datalist id="partySuggestions">
+        <% if (parties.length) { %>
+            <% parties.forEach(party => { %>
+                <option value="<%= party.PartyName %>"></option>
+            <% }) %>
+        <% } else { %>
+            <option disabled value="No Party Found">No Party Found</option>
+        <% } %>
+        </datalist>
+
     <%- include('./aside.ejs') %>
     <!-- Main Content -->
     <div class="main-content">
@@ -133,13 +142,8 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="partyName" class="form-label">Party Name *</label>
-    
-                                    <select name="partyName" id="partyName" class="form-control" placeholder="Enter Party Name" on onchange="partyChange(this)" required>
-                                        <option value="">Choose Party</option>
-                                        <% parties.map(party=>{%>
-                                            <option value="<%= party.id %>" <%= transactionDetails.customer_name == party.id ? 'selected' : '' %>><%= party.PartyName %></option>
-                                            <% }) %>
-                                    </select>
+                                <input type="text" id="partyName" name="partyId" class="form-control" placeholder="Enter Party Name"  list="partySuggestions" oninput="partyChange(this)" value="<%= current_party.PartyName %>" required>
+                                <input type="hidden" id="partyId" name="partyName" value="<%= current_party.id %>" required>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -160,6 +164,7 @@
                         <div class="col-md-3">
                             <label for="Payment Type">Payment Type *</label>
                             <select id="paymentType" name="paymentType" class="form-select">
+                                <option <%= transactionDetails.payment_type === 'Credit'? 'selected':'' %> value="credit">Credit</option>
                                 <option <%= transactionDetails.payment_type === 'Cash'? 'selected':'' %> value="cash">Cash</option>
                                 <option <%= transactionDetails.payment_type=== 'Online'? 'selected':'' %> value="online">Online</option>
                             </select>
@@ -188,8 +193,6 @@
                                 </th>
                                 <th>Price/Unit<p style="font-size: 12px; color: gray;">(Price per Unit)</p>
                                 </th>
-                                <th>Discount (%)</th>
-                                <th>Tax (%)</th>
                                 <th>Total (SAR)</th>
                                 <th>Delivered<p style="font-size: 12px; color: gray;">(Balance)</p></th>
                                 <th>Action</th>
@@ -204,10 +207,10 @@
                               <td><input type="number" name="products[<%= index %>][quantity]" oninput="updateProductTotal(this)" value="<%= product.quantity %>" ></td>
                               <td><input type="text" id="unit<%= index %>" name="products[<%= index %>][unit]" value="<%= product.unit %>" required ></td>
                               <td><input type="text" id="priceInput<%= index %>" name="products[<%= index %>][pricePerUnit]" oninput="updateProductTotal(this)" value="<%= product.price %>"  ></td>
-                              <td><input type="text" id="discount<%= index %>" name="products[<%= index %>][discount]" oninput="updateProductTotal(this)" value="<%= product.discount %>"  ></td>
-                              <td><input type="text" name="products[<%= index %>][tax]" oninput="updateProductTotal(this)" value="<%= product.tax_rate %>"  ></td>
+                              <input type="hidden" id="discount<%= index %>" name="products[<%= index %>][discount]" oninput="updateProductTotal(this)" value="<%= product.discount %>"  >
+                              <input type="hidden" name="products[<%= index %>][tax]" oninput="updateProductTotal(this)" value="<%= product.tax_rate %>"  >
                               <td><input type="text" id="productId" name="products[<%= index %>][productTotal]" onchange="updateSaleTotal(this)" value="<%= product.total %>"  ></td>
-                              <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[<%= index %>][deliveredQuantity]" value="<%= product.delivered_quantity?product.delivered_quantity:'N/A' %>"><span style="color: rgb(95, 95, 95);">(<%= product.delivered_quantity? product.quantity - product.delivered_quantity:'N/A'  %>)</span></div></td>
+                              <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[<%= index %>][deliveredQuantity]" value="<%= product.delivered_quantity?product.delivered_quantity:'0' %>"><span style="color: rgb(95, 95, 95);">(<%= product.delivered_quantity? product.quantity - product.delivered_quantity:product.quantity  %>)</span></div></td>
                               <td>
                                 <div class="d-flex">
                                     <button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,'<%= index %>')">Free</button>
@@ -324,11 +327,13 @@
 <script>
 
     function partyChange(element){
+        const partyId = document.getElementById('partyId')
         const phoneInput = document.getElementById('phone')
         const parties = <%-JSON.stringify(parties)%>
         parties.map(party=>{
-            if(party.id == element.value){
+            if(party.PartyName == element.value){
                 phoneInput.value = party.Phone
+                partyId.value = party.id
             }
         })    
     }
@@ -365,8 +370,8 @@ function addRow() {
      <td><input type="number" name="products[${currentIndex}][quantity]" oninput="updateProductTotal(this)" required></td>
      <td><input type="text" id="unit${currentIndex}" name="products[${currentIndex}][unit]" required ></td>
      <td><input type="text" id="priceInput${currentIndex}" name="products[${currentIndex}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
-     <td><input type="text" id="discount${currentIndex}" name="products[${currentIndex}][discount]" oninput="updateProductTotal(this)" required ></td>
-     <td><input type="text" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required ></td>
+     <input type="hidden" id="discount${currentIndex}" name="products[${currentIndex}][discount]" oninput="updateProductTotal(this)" required >
+     <input type="hidden" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required >
      <td><input type="text" id="productTotal" name="products[${currentIndex}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
       <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[${currentIndex}][deliveredQuantity]" ><span style="color: rgb(95, 95, 95);">(N/A)</span></div></td>
      <input type="hidden" id="productId" name="products[${currentIndex}][productId]" >

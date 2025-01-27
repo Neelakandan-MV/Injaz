@@ -342,14 +342,20 @@
 
 <body>
 
+    <datalist id="partiesList">
+        <% parties.forEach(party=> {%>
+            <option value="<%= party.name %>"></option>
+                <% })%>
+        </datalist>
+
     <%- include('./navbar')  %>
 
     <div class="container">
         <!-- Left table -->
         <div class="left-table">
             <h4>Party Overview</h4>
-            <select class="select" id="partySelector" onchange="updatePartyData()">
-            </select>
+                <input
+                    type="text" id="partySearchInput" placeholder="Search for a party..." class="form-control mb-3" oninput="selectParty(this.value)" list="partiesList"/>
             <table>
                 <tr>
                     <th>Party Name</th>
@@ -365,6 +371,7 @@
                 <option value="1">Active</option>
                 <option value="0">Hidden</option>
             </select>
+            <button type="button" class="btn btn-danger" onclick="deleteParty()">Delete Party</button>
             <input type="hidden" id="partyId">
 
         </div>
@@ -416,6 +423,7 @@
                 Add New Party
             </button>
             <button type="button" class="btn btn-primary mt-2" onclick="importContacts()">Import Contacts</button>
+            <button type="button" class="btn btn-secondary mt-2" onclick="editParty()">Edit Party</button>
         </div>
     </div>
     </div>
@@ -459,55 +467,52 @@
     </div>
 
     <script>
-        // Example party data
-        const parties = <%-JSON.stringify(parties)%>
+       const parties = <%- JSON.stringify(parties) %>;
 
-        // Populate the party selector dropdown
-        const partySelector = document.getElementById("partySelector");
-        parties.forEach(party => {
-            const option = document.createElement("option");
-            option.value = party.id;
-            option.textContent = party.name;
-            partySelector.appendChild(option);
-        });
 
-        // Function to update the data when a new party is selected
-        function updatePartyData() {
-            const selectedPartyId = document.getElementById("partySelector").value;
-            const party = parties.find(p => p.id == selectedPartyId);
+function selectParty(partyName) {
+    const party = parties.find((p) => p.name == partyName);
+    if (party) {
+        // Update the party overview
+        document.getElementById("partyId").value = party.id;
+        document.getElementById("partyStatus").value = party.partyStatus;
+        document.getElementById("partyName").textContent = party.name;
+        document.getElementById("totalAmount").textContent = party.amount;
 
-            if (party) {
-                // Update party overview
-                document.getElementById("partyName").textContent = party.name;
-                document.getElementById("totalAmount").textContent = party.amount;
+        // Update the party info card
+        document.getElementById("partyInfoName").textContent = party.name;
+        document.getElementById("partyPhone").textContent = party.phone;
+        document.getElementById("partyEmail").textContent = party.email;
+        document.getElementById("partyAddress").textContent = party.address;
+        document.getElementById("partyDP").src = `/uploads/${
+            party.profile_picture || "image-1737386570443-200304972"
+        }`;
 
-                // Update party info card
-                document.getElementById("partyInfoName").textContent = party.name;
-                document.getElementById("partyPhone").textContent = party.phone;
-                document.getElementById("partyEmail").textContent = party.email;
-                document.getElementById("partyAddress").textContent = party.address;
-                document.getElementById("partyDP").src = `/uploads/${party.profile_picture?party.profile_picture:'image-1737386570443-200304972'}`;
-
-                // Update transaction details table
-                const transactionTable = document.getElementById("transactionDetailsTable");
-                // Clear previous rows
-                const rows = transactionTable.getElementsByTagName("tr");
-                for (let i = rows.length - 1; i > 0; i--) {
-                    transactionTable.deleteRow(i);
-                }
-                // Add new rows
-                party.transactions.forEach(transaction => {
-                    const row = transactionTable.insertRow();
-                    row.insertCell(0).textContent = transaction.transaction_type;
-                    row.insertCell(1).textContent = new Date(transaction.date).toLocaleDateString() 
-                    row.insertCell(2).textContent = transaction.amount;
-                    row.insertCell(3).textContent = transaction.balance_due;
-                });
-            }
+        // Update transaction details table
+        const transactionTable = document.getElementById(
+            "transactionDetailsTable"
+        );
+        const rows = transactionTable.getElementsByTagName("tr");
+        for (let i = rows.length - 1; i > 0; i--) {
+            transactionTable.deleteRow(i);
         }
+        party.transactions.forEach((transaction) => {
+            const row = transactionTable.insertRow();
+            row.insertCell(0).textContent = transaction.transaction_type;
+            row.insertCell(1).textContent = new Date(
+                transaction.date
+            ).toLocaleDateString();
+            row.insertCell(2).textContent = transaction.amount;
+            row.insertCell(3).textContent = transaction.balance_due;
+        });
+    }
+}
 
-        // Initialize with the first party
-        updatePartyData();
+
+// if (parties.length > 0) {
+//     selectParty(parties[0].id);
+// }
+
     </script>
     <script>
         const hamburger = document.querySelector('.hamburger');
@@ -525,29 +530,66 @@
             try {
             const response = await fetch(`/admin/updatePartyStatus?id=${partyId}&&status=${partyStatus}`);
             if (response.ok) {
-                const result = await response.json(); // Assuming your backend returns JSON with the updated status
-                
-
-                console.log(result);
-
+                const result = await response.json();
                 document.getElementById('partyStatus').value = result.currentStatus;
                 Swal.fire({
-  title: "Successfully Updated the Party Status",
-  icon: "success",
-  draggable: true
-});
+                title: "Successfully Updated the Party Status",
+                icon: "success",
+                draggable: true
+                });
             } else {
                 console.error('Failed to update party status');
                 Swal.fire({
-  icon: "error",
-  title: "Oops...",
-  text: "Something went wrong!",
-});
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong!",
+                });
             }
         } catch (error) {
             console.error('Error:', error);
             alert('Something went wrong. Please try again later.');
         }
+        }
+    </script>
+
+    <script>
+        async function deleteParty(){
+            const partyId = document.getElementById('partyId').value;
+            const response = await fetch(`/admin/deleteParty?partyId=${partyId}`)
+            if(response.ok){
+                const result = await response.json(); 
+                if(result.success){
+                    Swal.fire({
+                title: "Successfully Deleted the Party.",
+                icon: "success",
+                });
+                setTimeout(()=>{
+                    window.location.reload()
+                },300)
+                }else{
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "This Party can't be deleted!",
+                        footer: "Transaction are available with this Party"
+                        });
+                }
+            }else{
+                Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong!",
+                });
+            }
+            
+        }
+
+
+
+
+        async function editParty(){
+            const partyId = document.getElementById('partyId').value;
+            window.location.href = `/admin/editParty?partyId=${partyId}`;
         }
     </script>
 

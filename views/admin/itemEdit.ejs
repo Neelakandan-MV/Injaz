@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Item</title>
+    <title>Add Item</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -31,6 +31,50 @@
         background-color: #f4f7fc;
         margin: 0;
         padding: 0;
+    }
+    
+    header {
+        background-color: #3498db;
+        color: #fff;
+        padding: 20px 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .navbar {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+    }
+    
+    .navbar h1 {
+        font-size: 24px;
+        margin: 0;
+    }
+    
+    nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+    }
+    
+    nav ul li {
+        margin-left: 20px;
+    }
+    
+    nav ul li a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 16px;
+        padding: 10px 15px;
+        border-radius: 5px;
+    }
+    
+    nav ul li a:hover {
+        background-color: #2980b9;
     }
     
     main {
@@ -139,10 +183,12 @@
         background: none;
         border: none;
     }
+    .img-sm{
+        width: 120px;
+    }
 
     /* Responsive Styles */
     @media (max-width: 768px) {
-       
         .hamburger {
             display: block;
         }
@@ -173,159 +219,218 @@
 <body>
     <%- include('./navbar')  %>
     <div class="main-content">
-        <section class="form-section mt-4">
-            <div class="form-container">
-                <form id="itemForm" action="/admin/editItems" method="post" enctype="multipart/form-data">
-                    <!-- Row 1: Item Name and HSN -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="itemName" class="form-label">Item Name *</label>
-                            <input type="text" class="form-control" id="itemName" name="itemName"
-                                placeholder="Enter item name" value="<%= item.item_name %>" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="itemHsn" class="form-label">Item HSN</label>
-                            <input type="text" class="form-control" id="itemHsn" name="itemHSN"
-                                placeholder="Enter HSN code" value="<%= item.item_hsn %>">
-                        </div>
-                    </div>
-
-                    <!-- Row 2: Category and Item Code -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="category" class="form-label">Category *</label>
-                            <select class="form-select" id="category" name="category" required>
-                                <% if(categories.length){ categories.map((category)=>{ %>
-                                    <option value="<%= category.id %>"<%= item.category_id==category.id?'selected':'' %>><%= category.category %></option>
-                                    <% })} %>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="itemCode" class="form-label">Item Code</label>
-                            <div class="d-flex align-items-center">
-                                <input type="text" class="form-control me-2" id="itemCode" name="itemCode"
-                                    placeholder="Enter item code" value="<%= item.item_code %>" readonly>
+            <section class="form-section mt-4">
+                <div class="form-container">
+                    <form id="itemForm" action="/admin/editItems" method="post" enctype="multipart/form-data">
+                        <!-- Row 1: Item Name and HSN -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="itemName" class="form-label">Item Name *</label>
+                                <input type="text" class="form-control" id="itemName" name="itemName" value="<%= item.item_name %>"
+                                    placeholder="Enter item name" required>
+                                    <input type="hidden" name="item_id" value="<%= item.id %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemHsn" class="form-label">Item HSN</label>
+                                <input type="text" class="form-control" id="itemHsn" name="itemHSN"
+                                    placeholder="Enter HSN code" value="<%= item.item_hsn %>">
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Row 3: Select Unit -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="unit" class="form-label">Unit</label>
-                            <select class="form-select" id="unit" name="unit" >
-                                <option value="">Select Unit</option>
-                                <option value="kg" <%= item.unit == 'kg'? 'selected':'' %>>Kilogram</option>
-                                <option value="pcs" <%= item.unit == 'pcs'? 'selected':'' %>>Pieces</option>
-                                <option value="packs" <%= item.unit == 'packs'? 'selected':'' %>>Packs</option>
-                                <option value="ltr" <%= item.unit == 'ltr'? 'selected':'' %>>Liters</option>
-                            </select>
+                        <!-- Row 2: Category and Item Code -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category *</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    <% if(categories.length){ categories.map((category)=>{ %>
+                                        <option value="<%= category.id %>" <%= item.category_id == category.id? 'selected':'' %>>
+                                            <%= category.category %>
+                                        </option>
+                                        <% })} %>
+                                </select>
+                                <button  class="btn btn-primary mt-3" id="addCategoryButton">+ Add New Category</button>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="itemCode" class="form-label">Item Code</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="text" class="form-control me-2" id="itemCode" name="itemCode"
+                                        placeholder="Enter item code" value="<%= item.item_code %>" readonly>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="itemImage" class="form-label">Add Item Image</label>
-                            <input type="file" class="form-control" id="itemImage" name="image">
+
+                        <!-- Row 3: Select Unit -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="unit" class="form-label">Unit</label>
+                                <select class="form-select" id="unit" name="unit" required>
+                                    <option value="">Select Unit</option>
+                                    <option <%= item.unit == 'kg'? 'selected' : '' %> value="kg">Kilogram</option>
+                                    <option <%= item.unit == 'pcs'? 'selected' : '' %> value="pcs">Pieces</option>
+                                    <option <%= item.unit == 'packs'? 'selected' : '' %> value="packs">Packs</option>
+                                    <option <%= item.unit == 'ltr'? 'selected' : '' %> value="ltr">Liters</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="itemImage" class="form-label">Add Item Image</label>
+                                <input type="file" class="form-control" id="itemImage" name="image">
+                                <img src="/uploads/<%= item.image %>" alt="" class="img img-thumbnail img-sm mt-3">
+                            </div>
+                        </div>
+
+                        <!-- Sale Price Section -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="salePrice" class="form-label">Sale Price</label>
+                                <input type="text" class="form-control" id="salePrice" name="salePrice" value="<%= item.sale_price %>" placeholder="Enter sale price" >
+                            </div>
+
+                              <!-- Purchase Price Section -->
+
+                            <div class="col-md-6">
+                                <label for="purchasePrice" class="form-label">Purchase Price </label>
+                                <input type="text" class="form-control" id="purchasePrice" name="purchasePrice" value="<%= item.purchase_price %>" placeholder="Enter purchase price" >
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary mt-2" onclick="wholeSaleDisplay()">Add Wholesale Price</button>
+                        <button type="button" class="btn btn-primary mt-2" onclick="serviceChargeDisplay()">Add Service Charge</button>
+
+                        <div id="wholesale" style="display: none;">
+                        <h5 class="mt-4">Wholesale Price (Less quantity)</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="wholesalePrice" name="wholesaleQuantity1"
+                                    placeholder="Enter wholesale Quantity" value="<%= item.wholesale_quantity_1 %>">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice1"
+                                    placeholder="Enter wholesale price" value="<%= item.wholesale_price_1 %>">
+                                </div>
+                        </div>
+                        <h5 class="mt-4">Wholesale Price (Average quantity)</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="wholesalePrice" name="wholesaleQuantity2" value="<%= item.wholesale_quantity_2 %>"
+                                    placeholder="Enter wholesale Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice2" value="<%= item.wholesale_price_2 %>"
+                                    placeholder="Enter wholesale price">
+                                </div>
+                        </div>
+                        <h5 class="mt-4">Wholesale Price (Large quantity)</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="wholesalePrice" name="wholesaleQuantity3" value="<%= item.wholesale_quantity_3 %>"
+                                    placeholder="Enter wholesale Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice3" value="<%= item.wholesale_price_3 %>"
+                                    placeholder="Enter wholesale price">
+                                </div>
+                        </div>
+                        </div>
+                        <div id="serviceCharge" style="display: none;">
+                        <h5 class="mt-4">Service Charge (Less Quantity)</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="serviceCharge" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="serviceCharge" name="serviceChargeQuantity1" value="<%= item.service_charge_quantity_1 %>"
+                                    placeholder="Enter Service Charge Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="serviceCharge1" value="<%= item.service_charge_1 %>"
+                                    placeholder="Enter Service Charge">
+                                </div>
+                        </div>
+                        <h5 class="mt-4">Service Charge (Average Quantity)</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="serviceCharge" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="serviceCharge" name="serviceChargeQuantity2" value="<%= item.service_charge_quantity_2 %>"
+                                    placeholder="Enter Service Charge Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="serviceCharge2" value="<%= item.service_charge_2 %>"
+                                    placeholder="Enter Service Charge">
+                                </div>
+                        </div>
+                        <h5 class="mt-4">Service Charge (Large Quantity)</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="serviceCharge" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="serviceCharge" name="serviceChargeQuantity3" value="<%= item.service_charge_quantity_3 %>"
+                                    placeholder="Enter Service Charge Quantity">
+                                </div>
+                                <div class="col-md-4">
+                                <label for="wholesalePrice" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="wholesalePrice" name="serviceCharge3" value="<%= item.service_charge_3 %>"
+                                    placeholder="Enter Service Charge">
+                                </div>
                         </div>
                     </div>
+                    
+                        <!-- Tax Rate Section -->
+                        <h5 class="mt-4"> Rate</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="taxRate" class="form-label">Tax Rate(%)</label>
+                                <input type="text" class="form-control" id="taxRate" name="taxRate" placeholder="Enter tax rate" value="<%= item.tax_rate %>">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="discount" class="form-label">Discount (%)</label>
+                                <input type="text" class="form-control" id="discount" name="discountValue" placeholder="Enter discount" value="<%= item.discount_value %>">
+                            </div>
+                        </div>
 
-                    <!-- Sale Price Section -->
-                    <h5 class="mt-4">Sale Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="salePrice" class="form-label">Sale Price </label>
-                            <input type="text" class="form-control" id="salePrice" name="salePrice"
-                                placeholder="Enter sale price" value="<%= item.sale_price %>">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="salePriceTax" class="form-label">Tax</label>
-                            <select class="form-select" id="salePriceTax" name="salePriceTaxIncluded">
-                                <option value="false">Without Tax</option>
-                                <option value="true">With Tax</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="discount" class="form-label">Discount (%)</label>
-                            <input type="text" class="form-control" id="discount" name="discountValue"
-                                placeholder="Enter discount" value="<%= item.discount_value %>">
-                        </div>
-                    </div>
-
-                    <!-- Wholesale Price Section -->
-                    <h5 class="mt-4">Wholesale Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="wholesalePrice" class="form-label">Wholesale Price</label>
-                            <input type="text" class="form-control" id="wholesalePrice" name="wholesalePrice"
-                                placeholder="Enter wholesale price" value="<%= item.wholesale_price %>">
-                        </div>
-                    </div>
-
-                    <!-- Purchase Price Section -->
-                    <h5 class="mt-4">Purchase Price</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="purchasePrice" class="form-label">Purchase Price </label>
-                            <input type="text" class="form-control" id="purchasePrice" name="purchasePrice"
-                                placeholder="Enter purchase price" value="<%= item.purchase_price %>">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="purchaseTax" class="form-label">Tax</label>
-                            <select class="form-select" id="purchaseTax" name="purchasePriceTaxIncluded">
-                                <option value="false">Without Tax</option>
-                                <option value="true">With Tax</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Tax Rate Section -->
-                    <h5 class="mt-4">Tax Rate</h5>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="taxRate" class="form-label">Tax Rate </label>
-                            <input type="text" class="form-control" id="taxRate" name="taxRate"
-                                placeholder="Enter tax rate" value="<%= item.tax_rate %>">
-                        </div>
-                    </div>
-                    <input type="hidden" value="<%= item.id %>" name="item_id">
-
-                    <!-- Save Button -->
-                    <button type="submit" class="btn btn-primary w-100">Save</button>
-                </form>
-            </div>
-        </section>
-    </div>
-
-        <!-- Add New Category Modal -->
-        <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form action="/admin/addCategory" method="post">
-                        <div class="modal-body">
-                            <input type="text" class="form-control" id="newCategory" name="category"
-                                placeholder="Enter new category name">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary" id="saveCategory">Save Category</button>
-                        </div>
+                        <!-- Save Button -->
+                        <button type="submit" class="btn btn-primary w-100">Save</button>
                     </form>
                 </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Add New Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/admin/addCategory" method="post">
+                    <div class="modal-body">
+                        <input type="text" class="form-control" id="newCategory" name="category"
+                            placeholder="Enter new category name" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="saveCategory">Save Category</button>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- JavaScript to trigger the modal -->
         <script>
-            document.querySelector('#category').addEventListener('change', function () {
-                if (this.value === '+ Add New Category') {
+            document.querySelector('#addCategoryButton').addEventListener('click', function () {
                     var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
                     myModal.show();
-                }
             });
 
             document.querySelector('#saveCategory').addEventListener('click', function () {
@@ -360,6 +465,26 @@
                 const generatedCode = `${prefix}-${randomNumber}-${timestamp}`;
                 document.getElementById("itemCode").value = generatedCode;
             });
+        </script>
+
+        <script>
+            function wholeSaleDisplay(){
+                const wholesale = document.getElementById('wholesale');
+                if(wholesale.style.display == 'none'){
+                    wholesale.style.display = 'block'
+                }else{
+                    wholesale.style.display = 'none'
+                }
+            }
+            function serviceChargeDisplay(){
+                const serviceCharge = document.getElementById('serviceCharge');
+                if(serviceCharge.style.display == 'none'){
+                    serviceCharge.style.display = 'block'
+                }else{
+                     serviceCharge.style.display = 'none'
+                }
+                
+            }
         </script>
 </body>
 
