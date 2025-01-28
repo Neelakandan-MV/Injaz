@@ -32,7 +32,7 @@
                 </div>
                 <div class="stat-card">
                     <h3>Total Profit</h3>
-                    <p>SAR <%= total_profit[0].total_profit %></p>
+                    <p style="color: <%= total_profit[0].total_profit > 0 ? 'green':'red' %>;">SAR <%= total_profit[0].total_profit %></p>
                 </div>
             </div>
         </section>

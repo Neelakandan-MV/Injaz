@@ -9,6 +9,12 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+         #receivable{
+        display: none;
+    }
+        #payable{
+        display: none;
+    }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -25,6 +31,7 @@
         padding: 15px 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+   
 
     .navbar {
         max-width: 1200px;
@@ -361,10 +368,15 @@
                     <th>Party Name</th>
                     <td id="partyName">Select a party</td>
                 </tr>
-                <tr>
-                    <th>Total Amount</th>
-                    <td id="totalAmount">$0</td>
+                <tr id="payable">
+                    <th>Total Payable</th>
+                    <td id="totalPayable">0</td>
                 </tr>
+                <tr id="receivable">
+                    <th>Total Receivable</th>
+                    <td id="totalReceivable">0</td>
+                </tr>
+                
             </table>
             <!-- <label for="partyStatus" class="mt-3">Party Status</label> -->
             <!-- <select class="select " id="partyStatus" onchange="updatePartyStatus(this.value)">
@@ -477,8 +489,13 @@ function selectParty(partyName) {
         document.getElementById("partyId").value = party.id;
         // document.getElementById("partyStatus").value = party.partyStatus;
         document.getElementById("partyName").textContent = party.name;
-        document.getElementById("totalAmount").textContent = party.amount;
-
+        if(party.receivable > party.payable){
+            document.getElementById("totalReceivable").textContent = party.receivable - party.payable;
+            document.getElementById('receivable').style.display = 'block'
+        }else{
+            document.getElementById("totalPayable").textContent = party.payable -party.receivable;
+            document.getElementById('payable').style.display = 'block'
+        }
         // Update the party info card
         document.getElementById("partyInfoName").textContent = party.name;
         document.getElementById("partyPhone").textContent = party.phone;
@@ -499,21 +516,24 @@ function selectParty(partyName) {
         party.transactions.forEach((transaction) => {
             const row = transactionTable.insertRow();
             row.insertCell(0).textContent = transaction.transaction_type;
-            row.insertCell(1).textContent = new Date(
-                transaction.date
-            ).toLocaleDateString();
+            row.insertCell(1).textContent = formatDateToDDMMYYYY(transaction.date)
             row.insertCell(2).textContent = transaction.amount;
             row.insertCell(3).textContent = transaction.balance_due;
         });
     }
 }
-
-
-// if (parties.length > 0) {
-//     selectParty(parties[0].id);
-// }
-
     </script>
+
+
+<script>
+    function formatDateToDDMMYYYY(mysqlDate) {
+    const date = new Date(mysqlDate); // Parse the MySQL date
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+</script>
     <script>
         const hamburger = document.querySelector('.hamburger');
         const navMenu = document.querySelector('nav ul');

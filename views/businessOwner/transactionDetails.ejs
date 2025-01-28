@@ -112,6 +112,16 @@
     </style>
 </head>
 <body>
+
+    <% 
+    function formatDateToDDMMYYYY(mysqlDate) {
+    const date = new Date(mysqlDate); // Parse the MySQL date
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+%>
    
     <%- include('./aside.ejs') %>
     <!-- Main Content -->
@@ -152,7 +162,7 @@
                         </div>
                         <div class="col-md-3">
                             <label for="date" class="form-label">Date *</label>
-                            <input type="text" value="<%= new Date(transactionDetails.date).toLocaleDateString() %>" class="form-control" readonly>
+                            <input type="text" value="<%= formatDateToDDMMYYYY(transactionDetails.date) %>" class="form-control" readonly>
                         </div>
                     </div>
 

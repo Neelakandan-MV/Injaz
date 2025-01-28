@@ -340,6 +340,7 @@
     </style>
 </head>
 
+
 <body>
 
     <datalist id="partiesList">
@@ -361,9 +362,13 @@
                     <th>Party Name</th>
                     <td id="partyName">Select a party</td>
                 </tr>
-                <tr>
-                    <th>Total Amount</th>
-                    <td id="totalAmount">$0</td>
+                <tr id="payable">
+                    <th>Total Payable</th>
+                    <td id="totalPayable">0</td>
+                </tr>
+                <tr id="receivable">
+                    <th>Total Receivable</th>
+                    <td id="totalReceivable">0</td>
                 </tr>
             </table>
             <label for="partyStatus" class="mt-3">Party Status</label>
@@ -371,8 +376,14 @@
                 <option value="1">Active</option>
                 <option value="0">Hidden</option>
             </select>
-            <button type="button" class="btn btn-danger" onclick="deleteParty()">Delete Party</button>
             <input type="hidden" id="partyId">
+            <button type="button" class="btn btn-primary w-100" onclick="importContacts()">Import Contacts</button>
+            <br>
+            <div class="d-flex">
+            <button type="button" class="btn btn-secondary  mt-2 w-50" onclick="editParty()">Edit Party</button>
+            <button type="button" class="btn btn-success  mt-2 w-50 ms-2" data-bs-toggle="modal" data-bs-target="#addCompanyModal">Add New Party</button>
+            </div>
+            <button type="button" id="partyDelete" style="display: none;" class="btn btn-danger w-100 mt-2" onclick="deleteParty()">Delete Party</button>
 
         </div>
 
@@ -387,7 +398,8 @@
                 <p><strong>Phone:</strong> <span id="partyPhone">---</span></p>
                 <p><strong>Email:</strong> <span id="partyEmail">---</span></p>
                 <p><strong>Address:</strong> <span id="partyAddress">---</span></p>
-                
+                <button type="button" id="paymentIn" style="display: none;" onclick="paymentIn()" class="btn btn-success w-100 mt-2">Payment In</button></a>
+                <button type="button" id="paymentOut" style="display: none;" onclick="paymentOut()" class="btn btn-danger w-100 mt-2">Payment Out</button></a>
             </div>
             <style>
                 .profile-pic-container {
@@ -419,11 +431,6 @@
                     </tr>
                 </table>
             </div>
-            <button type="button" class="btn btn-success mt-4" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
-                Add New Party
-            </button>
-            <button type="button" class="btn btn-primary mt-2" onclick="importContacts()">Import Contacts</button>
-            <button type="button" class="btn btn-secondary mt-2" onclick="editParty()">Edit Party</button>
         </div>
     </div>
     </div>
@@ -469,15 +476,22 @@
     <script>
        const parties = <%- JSON.stringify(parties) %>;
 
-
 function selectParty(partyName) {
     const party = parties.find((p) => p.name == partyName);
     if (party) {
+        document.getElementById('partyDelete').style.display= 'block'
+        document.getElementById('paymentIn').style.display= 'block'
+        document.getElementById('paymentOut').style.display= 'block'
         // Update the party overview
         document.getElementById("partyId").value = party.id;
         document.getElementById("partyStatus").value = party.partyStatus;
         document.getElementById("partyName").textContent = party.name;
-        document.getElementById("totalAmount").textContent = party.amount;
+        
+        if(party.receivable > party.payable){
+            document.getElementById("totalReceivable").textContent = party.receivable - party.payable;
+        }else{
+            document.getElementById("totalPayable").textContent = party.payable -party.receivable;
+        }
 
         // Update the party info card
         document.getElementById("partyInfoName").textContent = party.name;
@@ -499,19 +513,22 @@ function selectParty(partyName) {
         party.transactions.forEach((transaction) => {
             const row = transactionTable.insertRow();
             row.insertCell(0).textContent = transaction.transaction_type;
-            row.insertCell(1).textContent = new Date(
-                transaction.date
-            ).toLocaleDateString();
+            row.insertCell(1).textContent = formatDateToDDMMYYYY(transaction.date);
             row.insertCell(2).textContent = transaction.amount;
             row.insertCell(3).textContent = transaction.balance_due;
         });
     }
 }
+    </script>
 
-
-// if (parties.length > 0) {
-//     selectParty(parties[0].id);
-// }
+    <script>
+    function formatDateToDDMMYYYY(mysqlDate) {
+    const date = new Date(mysqlDate); // Parse the MySQL date
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
 
     </script>
     <script>
@@ -590,6 +607,14 @@ function selectParty(partyName) {
         async function editParty(){
             const partyId = document.getElementById('partyId').value;
             window.location.href = `/admin/editParty?partyId=${partyId}`;
+        }
+        function paymentOut(){
+            const partyId = document.getElementById('partyId').value
+            window.location.href =`/admin/addPaymentOut?partyId=${partyId}`
+        }
+        function paymentIn(){
+            const partyId = document.getElementById('partyId').value
+            window.location.href = `/admin/addPaymentIn?partyId=${partyId}`
         }
     </script>
 

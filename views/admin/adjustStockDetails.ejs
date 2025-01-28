@@ -182,7 +182,7 @@
                             <tr>
                                 <td><%= item.adjustment_type %></td>
                                 <td><%= item.adjustment_quantity %></td>
-                                <td><%= item.total_amount %></td>
+                                <td style="color:<%= item.adjustment_type =='add' ? 'red' : 'green' %>"><%= item.total_amount %></td>
                             </tr>
                         <% }) %>
                     </tbody>

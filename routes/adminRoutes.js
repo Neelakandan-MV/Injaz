@@ -41,9 +41,13 @@ router.post('/admin/transactionEdit',isLoggedAdmin,adminController.transactionEd
 router.get('/admin/transactionDelete',isLoggedAdmin,adminController.transactionDelete);
 router.get('/admin/reports',isLoggedAdmin,adminController.viewReports);
 router.get('/admin/expense',isLoggedAdmin,adminController.viewExpense);
+router.get('/admin/otherIncome',isLoggedAdmin,adminController.viewIncome);
 router.get('/admin/addExpense',isLoggedAdmin,adminController.viewAddExpense);
+router.get('/admin/addIncome',isLoggedAdmin,adminController.viewAddIncome);
+router.post('/admin/addIncome',isLoggedAdmin,adminController.addIncome);
 router.post('/admin/addExpense',isLoggedAdmin,adminController.addExpense);
 router.post('/admin/addExpenseCategory',isLoggedAdmin,adminController.addExpenseCategory);
+router.post('/admin/addIncomeCategory',isLoggedAdmin,adminController.addIncomeCategory);
 router.get('/admin/itemWiseProfitAndLoss',isLoggedAdmin,adminController.viewItemProfitAndLoss);
 router.get('/admin/cashFlow',isLoggedAdmin,adminController.viewCashFlow);
 router.get('/admin/dayBook',isLoggedAdmin,adminController.viewDayBook);
@@ -64,6 +68,13 @@ router.get('/admin/totalReceivable',isLoggedAdmin,adminController.totalReceivabl
 router.get('/admin/totalPayable',isLoggedAdmin,adminController.totalPayable);
 router.post('/admin/return',isLoggedAdmin,adminController.itemReturn);
 router.post('/admin/add-contacts',isLoggedAdmin,adminController.addContacts);
+router.get('/admin/adjustCash',isLoggedAdmin,adminController.viewAdjustCash);
+router.post('/admin/adjustCash',isLoggedAdmin,adminController.adjustCash);
+router.get('/admin/addPaymentIn',isLoggedAdmin,adminController.viewAddPaymentIn);
+router.post('/admin/addPaymentIn',isLoggedAdmin,adminController.addPaymentIn);
+router.get('/admin/addPaymentOut',isLoggedAdmin,adminController.viewAddPaymentOut);
+router.post('/admin/addPaymentOut',isLoggedAdmin,adminController.addPaymentOut);
+
   
 
 module.exports = router;

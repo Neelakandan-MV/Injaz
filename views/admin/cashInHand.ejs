@@ -97,12 +97,22 @@
     </style>
 </head>
 
+<% 
+    function formatDateToDDMMYYYY(mysqlDate) {
+    const date = new Date(mysqlDate); // Parse the MySQL date
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+%>
+
 <body>
     <%- include('./navbar')  %>
         <div class="main-content">
             <div class="mb-4 d-flex justify-content-between align-items-center">
                 <h1 class="fw-bold">Cash In Hand</h1>
-                <i class="fas fa-bars hamburger" id="hamburger"></i>
+                <a href="/admin/adjustCash"><button class="btn btn-primary">Adjust Cash</button></a>
             </div>
 
             <div class="transaction-table">
@@ -116,12 +126,13 @@
                     </thead>
                     <tbody>
                         <% transactionDetails.forEach(element=> { %>
+                            <% if(element.received_amount > 0){ %>
                             <tr>
                                 <td><h5> <%= element.transaction_type %></h5><% if(element.PartyName){ %><span><%= element.PartyName %></span><% } %></td>
-                                <td><%= element.date.toLocaleDateString() %></td>
-                                <td style="color:<%=element.transaction_type == 'purchase'? 'green':'red'%>"><%= element.received_amount %></td>
+                                <td><%= formatDateToDDMMYYYY(element.date) %></td>
+                                <td <% if(element.transaction_type == 'sale' || element?.money_type === 'money_in'){ %>style="color: green;" <% }else{ %>style="color: red;"<% } %>><%= element.received_amount %></td>
                             </tr>
-                            <% }); %>
+                            <% }}); %>
                     </tbody>
                 </table>
             </div>

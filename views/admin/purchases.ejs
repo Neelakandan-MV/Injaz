@@ -84,12 +84,24 @@
             padding: 8px 15px;
             font-size: 14px;
         }
+        table th, table td {
+            font-size: 20px;
+        }
         .table-responsive{
             overflow: scroll;
         }
         }
     </style>
 </head>
+<% 
+    function formatDateToDDMMYYYY(mysqlDate) {
+    const date = new Date(mysqlDate); // Parse the MySQL date
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+%>
 <body>
     <%- include('./navbar')  %>
 
@@ -121,7 +133,7 @@
 
                         <tr>
                             <td class="purchase-date">
-                                <%= new Date(item.date).toLocaleDateString() %>
+                                <%= formatDateToDDMMYYYY(item.date) %>
                             </td>
 
                             <td>
