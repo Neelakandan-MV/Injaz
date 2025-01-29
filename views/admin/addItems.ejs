@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Item</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Injaz Dashboard</title>
+    <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
         .form-container {
             max-width: 900px;
             margin: 2rem auto;
@@ -18,204 +22,54 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        .form-title {
-            text-align: center;
-            margin-bottom: 1.5rem;
-            font-weight: bold;
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .card p {
+            margin: 0;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .most-used-cards a {
+            text-decoration: none;
             color: #333;
         }
-
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f4f7fc;
-        margin: 0;
-        padding: 0;
-    }
-    
-    header {
-        background-color: #3498db;
-        color: #fff;
-        padding: 20px 0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .navbar {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 20px;
-    }
-    
-    .navbar h1 {
-        font-size: 24px;
-        margin: 0;
-    }
-    
-    nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-    }
-    
-    nav ul li {
-        margin-left: 20px;
-    }
-    
-    nav ul li a {
-        color: #fff;
-        text-decoration: none;
-        font-size: 16px;
-        padding: 10px 15px;
-        border-radius: 5px;
-    }
-    
-    nav ul li a:hover {
-        background-color: #2980b9;
-    }
-    
-    main {
-        padding: 40px 20px;
-    }
-    
-    h2 {
-        font-size: 24px;
-        color: #333;
-    }
-    
-    section {
-        margin-bottom: 30px;
-    }
-    
-    .stat-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-    
-    .stat-card {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-    
-    .stat-card h3 {
-        margin: 0;
-        color: #3498db;
-    }
-    
-    .stat-card p {
-        font-size: 20px;
-        color: #333;
-    }
-    
-    .quick-links ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .quick-links ul li {
-        margin: 10px 0;
-    }
-    
-    .quick-links ul li a {
-        color: #3498db;
-        text-decoration: none;
-        font-size: 18px;
-    }
-    
-    .quick-links ul li a:hover {
-        text-decoration: underline;
-    }
-    
-    .report-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-    
-    .report-card {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-    
-    .report-card a {
-        display: block;
-        margin-top: 10px;
-        color: #3498db;
-        text-decoration: none;
-        font-size: 16px;
-    }
-    
-    .report-card a:hover {
-        text-decoration: underline;
-    }
-    
-    .user-management p {
-        font-size: 18px;
-        margin-top: 10px;
-    }
-    
-    footer {
-        background-color: #2c3e50;
-        color: #fff;
-        text-align: center;
-        padding: 20px;
-        position: fixed;
-        width: 100%;
-        bottom: 0;
-    }
-
-    .hamburger {
-        display: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: white;
-        background: none;
-        border: none;
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 768px) {
+        .most-used-cards .card {
+            transition: all 0.3s ease-in-out;
+        }
+        .most-used-cards .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
         .hamburger {
-            display: block;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
         }
-
-        table {
-            font-size: 12px;
+        a{
+            text-decoration: none;
         }
-
-        h1 {
-            font-size: 20px;
-        }
-
-        button {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
-
-        .table-responsive {
-            margin-top: 10px;
-        }
-        .main-content{
-            padding: 20px;
-        }
-    }
     </style>
+    
 </head>
-
 <body>
-    <%- include('./navbar')  %>
+   
+    <%- include('./navbar.ejs') %>
+    <!-- Main Content -->
     <div class="main-content">
+        <!-- Header Section -->
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Injaz Dashboard</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
             <section class="form-section mt-4">
                 <div class="form-container">
                     <form id="itemForm" action="/admin/addItems" method="post" enctype="multipart/form-data">
@@ -447,14 +301,6 @@
                 }
             });
         </script>
-        <script>
-            const hamburger = document.querySelector('.hamburger');
-            const navMenu = document.querySelector('nav ul');
-        
-            hamburger.addEventListener('click', () => {
-                navMenu.classList.toggle('show');
-            });
-        </script>
 
         <!-- Generate Item Code Button -->
         <script>
@@ -489,3 +335,18 @@
 </body>
 
 </html>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>

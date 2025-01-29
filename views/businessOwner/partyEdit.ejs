@@ -54,7 +54,7 @@
 </head>
 <body>
    
-    <%- include('./navbar.ejs') %>
+    <%- include('./aside.ejs') %>
     <!-- Main Content -->
     <div class="main-content">
         <!-- Header Section -->
@@ -63,7 +63,7 @@
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
     <div class="container col-md-6">
-        <form action="/admin/editParty" method="POST" enctype="multipart/form-data">
+        <form action="/business-owner/editParty" method="POST" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="companyName" class="form-label">Party Name</label>
                 <input type="text" class="form-control" value="<%= party.PartyName %>" id="companyName" name="name" required>

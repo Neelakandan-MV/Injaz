@@ -3,116 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Out</title>
+    <title>PaymentOut</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f6f9;
             padding: 20px;
         }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .card p {
+            margin: 0;
+        }
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
+        }
+        .most-used-cards a {
+            text-decoration: none;
+            color: #333;
+        }
+        .most-used-cards .card {
+            transition: all 0.3s ease-in-out;
+        }
+        .most-used-cards .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
         .hamburger {
             cursor: pointer;
             font-size: 1.5rem;
             color: #333;
         }
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        @media (max-width: 768px) {
-            
-            .table-responsive {
-                overflow-x: auto; 
-            }
-            .main-content{
-                padding: 20px;
-            }
-        }
-
-        .btn-primary,
-        .btn-secondary {
-            margin-right: 10px; 
-        }
-
-        .main-content header {
-            margin-bottom: 20px;
-        }
-        
-        .form-section {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .form-section h3 {
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        
-        
-        @media (max-width: 768px) {          
-                    .table-responsive {
-                        overflow-x: auto; /* Allow horizontal scrolling for tables */
-                    }
-        
-            .form-section {
-                padding: 15px;
-            }
-        
-            .table th, .table td {
-                padding: 8px;
-            }
-        
-            .form-section h3 {
-                font-size: 20px;
-            }
-        
-            .table th {
-                font-size: 12px;
-            }
-        
-            .table input {
-                padding: 8px;
-                font-size: 14px;
-                width: 70px;
-            }
-        
-            .row label {
-                font-size: 14px;
-            }
-        
-            .form-select {
-                font-size: 14px;
-            }
-        
-            .btn {
-                font-size: 14px;
-            }
+        a{
+            text-decoration: none;
         }
     </style>
+    
 </head>
 <body>
    
-    <%- include('./navbar')  %>
+    <%- include('./navbar.ejs') %>
     <!-- Main Content -->
     <div class="main-content">
         <!-- Header Section -->
-        <div class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Payment Out</h1>
-        </div>
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Injaz Dashboard</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
 
 <section class="form-section mt-4">
     <form action="/admin/addPaymentOut" method="POST">
@@ -120,31 +69,39 @@
         <div class="row mb-3">
             <input type="hidden" value="sale" name="transactionType">
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="partyName" class="form-label">Party Name *</label>
                 <input type="text" id="partyName" name="partyName" class="form-control" placeholder="Enter Party Name" value="<%= party.PartyName %>"  list="partySuggestions" oninput="partyChange(this)" required>    
                 <input type="hidden" id="partyId" name="partyId" value="<%= party.id %>" required>
             </div>
             <div class="col-md-3">
-                <label for="date" class="form-label">Date *</label>
+                <label for="date" class="form-label">Date</label>
                 <input type="date" id="date" name="date" class="form-control" required >
             </div>
         </div>
         <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="number" class="form-label">Phone Number *</label>
+            <div class="col-md-4">
+                <label for="number" class="form-label">Phone Number</label>
                 <input type="number" id="phone" name="phone" class="form-control"
                     placeholder="Enter Phone Number" value="<%= party.Phone %>" required>
             </div>
         </div>
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label for="number" class="form-label">Amount *</label>
-                <input type="number" id="phone" name="amount" class="form-control"  
+                <input type="text" id="phone" name="amount" class="form-control"  
                     placeholder="Enter Amount" required>
             </div>
         </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="number" class="form-label">Description</label>
+                <input type="text" id="desc" name="desc" class="form-control"  
+                    placeholder="Enter Description (optional)" >
+            </div>
         </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
         </form>
         </section>
 
@@ -162,4 +119,19 @@ dateInput.value = formattedDate;
 window.onload = setDefaultDate;
 
 </script>
-</html>
+</html>   
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>

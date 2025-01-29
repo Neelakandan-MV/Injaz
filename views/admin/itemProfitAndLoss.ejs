@@ -3,16 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Item Profit & Loss</title>
+    <title>Item Profit</title>
+    <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-         body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f4f7fc;
-        margin: 0;
-        padding: 0;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            
+            .table-responsive {
+                overflow-x: auto; 
+            }
+        }
 
+        .btn-primary,
+        .btn-secondary {
+            margin-right: 10px; 
+        }
+        
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1rem;
+        }
+
+        .form-title {
+            font-size: 1.25rem;
+        }
+
+        .form-section {
+            margin-top: 1rem;
+        }
+    }
+    
     table {
             width: 100%;
             border-collapse: collapse;
@@ -72,258 +114,18 @@
                 margin-bottom: 10px;
             }
         }
-    header {
-        background-color: #3498db;
-        color: #fff;
-        padding: 20px 0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .navbar {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 20px;
-    }
-
-    .navbar h1 {
-        font-size: 24px;
-        margin: 0;
-    }
-
-    nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-    }
-
-    nav ul li {
-        margin-left: 20px;
-    }
-
-    nav ul li a {
-        color: #fff;
-        text-decoration: none;
-        font-size: 16px;
-        padding: 10px 15px;
-        border-radius: 5px;
-    }
-
-    nav ul li a:hover {
-        background-color: #2980b9;
-    }
-
-    main {
-        padding: 40px 20px;
-    }
-
-    h2 {
-        font-size: 24px;
-        color: #333;
-    }
-
-    section {
-        margin-bottom: 30px;
-    }
-
-    .stat-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
-    .stat-card {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    .stat-card h3 {
-        margin: 0;
-        color: #3498db;
-    }
-
-    .stat-card p {
-        font-size: 20px;
-        color: #333;
-    }
-
-    .quick-links ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .quick-links ul li {
-        margin: 10px 0;
-    }
-
-    .quick-links ul li a {
-        color: #3498db;
-        text-decoration: none;
-        font-size: 18px;
-    }
-
-    .quick-links ul li a:hover {
-        text-decoration: underline;
-    }
-
-    .report-cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
-    .report-card {
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        text-align: center;
-    }
-
-    .report-card a {
-        display: block;
-        margin-top: 10px;
-        color: #3498db;
-        text-decoration: none;
-        font-size: 16px;
-    }
-
-    .report-card a:hover {
-        text-decoration: underline;
-    }
-
-    .user-management p {
-        font-size: 18px;
-        margin-top: 10px;
-    }
-
-    footer {
-        background-color: #2c3e50;
-        color: #fff;
-        text-align: center;
-        padding: 20px;
-        position: fixed;
-        width: 100%;
-        bottom: 0;
-    }
-
-    /* Responsive Styles */
-    header {
-        background-color: #3498db;
-        color: #fff;
-        padding: 15px 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .navbar {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 10px;
-    }
-
-    .navbar h1 {
-        font-size: 20px;
-        margin: 0;
-        color: white;
-    }
-
-    nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-    }
-
-    nav ul li {
-        margin-left: 10px;
-    }
-
-    nav ul li a {
-        color: #fff;
-        text-decoration: none;
-        font-size: 14px;
-        padding: 8px 12px;
-        border-radius: 5px;
-    }
-
-    nav ul li a:hover {
-        background-color: #2980b9;
-    }
-
-    .hamburger {
-        display: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: white;
-        background: none;
-        border: none;
-    }
-    .row a{
-            text-decoration: none;
-        }
-
-    /* Responsive Styles */
-    @media (max-width: 768px) {
-        .navbar {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        nav ul {
-            flex-direction: column;
-            display: none;
-            width: 100%;
-            background-color: #3498db;
-            padding: 10px 0;
-            margin-top: 10px;
-        }
-
-        nav ul li {
-            margin: 0;
-            text-align: center;
-        }
-
-        nav ul li a {
-            display: block;
-            padding: 10px;
-        }
-
-        nav ul.show {
-            display: flex;
-        }
-
-        .hamburger {
-            display: block;
-        }
-
-        table {
-            font-size: 12px;
-        }
-
-        h1 {
-            font-size: 20px;
-        }
-
-        button {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
-
-        .table-responsive {
-            margin-top: 10px;
-        }
-    }
     </style>
+</head>
+<body>
+   
+    <%- include('./navbar.ejs') %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Items</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
 </head>
 <body>
     <%- include('./navbar')  %>
@@ -414,12 +216,20 @@
     html2pdf().from(wrapper).save();
 }
 </script>
+
 <script>
-    const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('nav ul');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
 
     hamburger.addEventListener('click', () => {
-        navMenu.classList.toggle('show');
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
     });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>

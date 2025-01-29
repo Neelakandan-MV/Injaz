@@ -251,7 +251,10 @@ const adminController = {
     },
 
     viewTransactions: async (req, res) => {
-        const companyId = req.session.user.company_id
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
         const [transactions] = await mysql.query(`
@@ -283,6 +286,7 @@ const adminController = {
             totalPages,
             currentPage: parseInt(page),
             limit: parseInt(limit),
+            currentCompany,companies
         });
     },
 
@@ -418,9 +422,13 @@ const adminController = {
     },
 
     viewUser: async (req, res) => {
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const currentUser = req.session.user;
         const [users] = await mysql.query("SELECT * FROM users WHERE role != 'superAdmin'")
-        res.render('admin/manageUsers.ejs', { users, currentUser })
+        res.render('admin/manageUsers.ejs', { users, currentUser, companies,currentCompany })
     },
 
     addUser: async (req, res) => {
@@ -448,6 +456,8 @@ const adminController = {
 
     viewAddItems: async (req, res) => {
         const user = req.session.user;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         const companyId = user.company_id;
 
@@ -459,7 +469,7 @@ const adminController = {
 
 
 
-        res.render('admin/addItems.ejs', { categories: categories.length > 0 ? categories : [] });
+        res.render('admin/addItems.ejs', { categories: categories.length > 0 ? categories : [] ,currentCompany,companies});
     },
 
     // Add new item, associating it with the company
@@ -599,6 +609,8 @@ const adminController = {
     // Fetch items related to the company
     viewItems: async (req, res) => {
         const user = req.session.user;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         const companyId = user.company_id;
 
@@ -612,7 +624,7 @@ const adminController = {
             LEFT JOIN categories ON items.category_id = categories.id
             WHERE items.company_id = ?
         `, [companyId]);
-        res.render('admin/itemManagement.ejs', { items, user: req.session.user });
+        res.render('admin/itemManagement.ejs', { items, user: req.session.user ,currentCompany,companies});
     },
 
     // Add new category, linking it to the user's company
@@ -694,12 +706,11 @@ const adminController = {
         const sales = await mysql.query("INSERT INTO sales (customer_name, user_id, company_id, date, invoice_number, payment_type, total_amount, received_amount, balance_due, created_at, transaction_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
             partyName, user.id, user.company_id, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, created_at, transactionType
         ]);
+        
 
         //saving to cashFLow table
         const openingCash = await getOpeningCash(created_at, user.company_id);
         const closingCash = await calculateClosingCash(openingCash, created_at, user.company_id);
-        console.log("openingCash", openingCash);
-        console.log("closingCash", closingCash);
 
         const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
         if(recieved > 0){
@@ -717,6 +728,8 @@ const adminController = {
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
                         [product.productId, 'add', product.quantity, product.productTotal, 'due to purchase', created_at, user.company_id])
                 }
+                await mysql.query(`UPDATE parties SET payable = payable + ? WHERE id = ?`,[balanceDue,partyName])
+                await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ?`,[recieved]);
             } else {
                 for (const product of products) {
                     await mysql.query(`UPDATE items SET stock = stock - ? WHERE id = ?`, [product.quantity, product.productId]);
@@ -724,6 +737,8 @@ const adminController = {
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
                         [product.productId, 'reduce', product.quantity, product.productTotal, 'due to sale', created_at, user.company_id])
                 }
+                await mysql.query(`UPDATE parties SET receivable = receivable + ? WHERE id = ?`,[balanceDue,partyName])
+                await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ?`,[recieved]);
             }
         }
         if (transactionType === "purchase") {
@@ -777,19 +792,52 @@ const adminController = {
                 p.profile_picture,
                 p.payable,
                 p.receivable,
+                NULL AS transaction_id,
+                NULL AS transaction_date,
+                NULL AS transaction_amount,
+                NULL AS transaction_balance_due,
+                NULL AS transaction_type,
+                pp.id AS payment_id,
+                pp.date AS payment_date,
+                pp.amount AS payment_amount,
+                pp.payment_type AS payment_type
+            FROM 
+                parties p
+            LEFT JOIN 
+                party_payments pp ON p.id = pp.party_id
+            WHERE 
+                p.company_id = ?
+        
+            UNION ALL
+        
+            SELECT 
+                p.id AS party_id,
+                p.PartyName AS party_name,
+                p.Phone,
+                p.Email,
+                p.Address,
+                p.profile_picture,
+                p.payable,
+                p.receivable,
                 t.id AS transaction_id,
                 t.date AS transaction_date,
                 t.total_amount AS transaction_amount,
                 t.balance_due AS transaction_balance_due,
-                t.transaction_type As transaction_type
+                t.transaction_type AS transaction_type,
+                NULL AS payment_id,
+                NULL AS payment_date,
+                NULL AS payment_amount,
+                NULL AS payment_type
             FROM 
                 parties p
             LEFT JOIN 
                 sales t ON p.id = t.customer_name
             WHERE 
-                p.company_id = ?` , [user.company_id]);
+                p.company_id = ?`, [user.company_id, user.company_id]);
+        
 
-        // Initialize a map to group transactions by party ID
+console.log(results);
+
         const partiesMap = {};
 
         // Process the results into the desired structure
@@ -810,13 +858,13 @@ const adminController = {
             }
 
             // Add the transaction details to the corresponding party
-            if (row.transaction_id) {
+            if (row?.transaction_id || row?.payment_id) {
                 partiesMap[row.party_id].transactions.push({
-                    id: row.transaction_id,
-                    date: row.transaction_date,
-                    amount: row.transaction_amount,
-                    balance_due: row.transaction_balance_due,
-                    transaction_type: row.transaction_type,
+                    id: row.transaction_id || row.payment_id,
+                    date: row.transaction_date || row.payment_date,
+                    amount: row.transaction_amount || row.payment_amount,
+                    balance_due: row.transaction_balance_due || 0,
+                    transaction_type: row.transaction_type || row.payment_type,
                 });
             }
         });
@@ -873,9 +921,13 @@ const adminController = {
     },
 
     viewEditParty:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {partyId} = req.query;
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId]);
-        res.render('admin/partyEdit',{party:party[0]})
+        res.render('admin/partyEdit',{party:party[0],currentCompany,companies})
 
     },
     editParty: async (req, res) => {
@@ -908,8 +960,12 @@ const adminController = {
         res.redirect('/login');
     },
     viewReports: async (req, res) => {
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [total_profit] = await mysql.query("SELECT (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'sale') - (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'purchase') AS total_profit;");
-        res.render('admin/reports.ejs', { total_profit });
+        res.render('admin/reports.ejs', { total_profit,companies,currentCompany });
     },
     viewExpense: async (req, res) => {
         const user = req.session.user;
@@ -934,7 +990,7 @@ const adminController = {
                 expenses: filteredExpenses,
             };
         });
-        res.render('admin/expenseDisplay.ejs', { categories: formattedData })
+        res.render('admin/expenseDisplay.ejs', { categories: formattedData,currentCompany,companies })
     },
     viewIncome: async (req, res) => {
         const user = req.session.user;
@@ -959,12 +1015,14 @@ const adminController = {
                 incomes: filteredExpenses,
             };
         });
-        res.render('admin/otherIncomeDisplay.ejs', { categories: formattedData })
+        res.render('admin/otherIncomeDisplay.ejs', { categories: formattedData,companies,currentCompany })
     },
 
     viewItemProfitAndLoss: async (req, res) => {
         try {
-            const user = req.session.user
+            const user = req.session.user;
+            const [companies] = await mysql.query(`SELECT * FROM companies`);
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
             const company_id = user.company_id;
             const [results] = await mysql.query(`
                 SELECT 
@@ -1002,7 +1060,7 @@ const adminController = {
             
             
 
-            res.render('admin/itemProfitAndLoss.ejs', { results })
+            res.render('admin/itemProfitAndLoss.ejs', { results,companies,currentCompany })
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Internal server error' });
@@ -1100,19 +1158,27 @@ const adminController = {
         res.render('admin/dayBook.ejs', { title: 'Day Book', currentCompany, companies, user, items, total_money_in, total_money_out, day_book_total });
     },
     viewAddExpense: async (req, res) => {
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [categories] = await mysql.query('SELECT * FROM expense_category');
-        res.render('admin/addExpense.ejs', { categories });
+        res.render('admin/addExpense.ejs', { categories,companies,currentCompany });
     },
     viewAddIncome: async (req, res) => {
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [categories] = await mysql.query('SELECT * FROM income_category');
-        res.render('admin/addOtherIncome.ejs', { categories });
+        res.render('admin/addOtherIncome.ejs', { categories,currentCompany,companies });    
     },
     addExpense: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, expense_number, date, amount } = req.body
         await mysql.query(`INSERT INTO expenses (category_id,expense_number,date,amount,company_id) VALUES(?,?,?,?,?)`, [category_id, expense_number, date, amount, company_id])
-        res.redirect('/admin/expenses');
+        res.redirect('/admin/expense');
     },
     addIncome: async (req, res) => {
         const user = req.session.user;
@@ -1135,6 +1201,9 @@ const adminController = {
 
     viewStockReport: async (req, res) => {
         const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [items] = await mysql.query(`
             SELECT 
                 i.id, 
@@ -1152,18 +1221,26 @@ const adminController = {
         `, [user.company_id]);
     
             
-    res.render('admin/stockReport.ejs',{items})
+    res.render('admin/stockReport.ejs',{items,companies,currentCompany})
     },
     viewAdjustStock:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {item_id} = req.query
-        res.render('admin/adjustStock',{item_id})
+        res.render('admin/adjustStock',{item_id,companies,currentCompany})
         
     },
     viewAdjustStockDetails:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {item_id} = req.query
         const [stock_adjustments] = await mysql.query(`SELECT * FROM stock_adjustments WHERE item_id=?`,[item_id])
         const [item] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id])
-        res.render('admin/adjustStockDetails.ejs',{stock_adjustments,item:item[0]})
+        res.render('admin/adjustStockDetails.ejs',{stock_adjustments,item:item[0],companies,currentCompany})
     },
     adjustStock:async(req,res)=>{
         const user = req.session.user
@@ -1514,7 +1591,11 @@ const adminController = {
 
 
     viewAdjustCash:async(req,res)=>{
-        res.render('admin/adjustCash.ejs')
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        res.render('admin/adjustCash.ejs',{currentCompany,companies})
     },
 
     adjustCash:async(req,res)=>{
@@ -1524,34 +1605,45 @@ const adminController = {
         console.log(adjustmentType,date,amount);
         if(adjustmentType == 'add'){
         await mysql.query(`UPDATE companies set cash_in_hand = cash_in_hand + ? WHERE id = ?`,[amount,user.company_id])
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id,company_id) VALUES(?,?,?,?,?,?,?)`,['Cash Added',created_at,'Cash Adjusted',amount,'money_in','20',user.company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,['Cash Added',created_at,'Cash Adjusted',amount,'money_in',user.company_id])
         }else{
             await mysql.query(`UPDATE companies set cash_in_hand = cash_in_hand - ? WHERE id = ?`,[amount,user.company_id])
-            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id,company_id) VALUES(?,?,?,?,?,?,?)`,['Cash Reduced',created_at,'Cash Adjusted',amount,'money_out','20',user.company_id])
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,['Cash Reduced',created_at,'Cash Adjusted',amount,'money_out',user.company_id])
         }
         res.redirect('/admin/cashInHand')
     },
     viewAddPaymentIn:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {partyId} = req.query
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId])
-        res.render('admin/paymentIn.ejs',{party:party[0]})
+        res.render('admin/paymentIn.ejs',{party:party[0],currentCompany,companies})
     },
 
     addPaymentIn:async(req,res)=>{
-        const {partyName,partyId,date,phone,amount} = req.body
+        const {partyName,partyId,date,phone,amount,desc} = req.body
         console.log(partyName,partyId,date,phone,amount);
+        await mysql.query(`INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id) VALUES(?,?,?,?,?,?,?)`,[partyName,phone,date,desc,amount,'payment_in',partyId])
+        res.redirect('/admin/viewParty')  
     },
 
     viewAddPaymentOut:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {partyId} = req.query
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId])
-        res.render('admin/paymentOut.ejs',{party:party[0]})
+        res.render('admin/paymentOut.ejs',{party:party[0],companies,currentCompany})
     },
 
     addPaymentOut:async(req,res)=>{
-        const {partyName,partyId,date,phone,amount} = req.body
+        const {partyName,partyId,date,phone,amount,desc} = req.body
         console.log(partyName,partyId,date,phone,amount);
-        
+        await mysql.query(`INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id) VALUES(?,?,?,?,?,?,?)`,[partyName,phone,date,desc,amount,'payment_out',partyId])
+        res.redirect('/admin/viewParty')  
     },
 
 

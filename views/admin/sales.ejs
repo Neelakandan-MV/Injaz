@@ -3,96 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Details</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Injaz Dashboard</title>
+    <!-- CSS Framework -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 90%;
-            margin: 0 auto;
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
             padding: 20px;
         }
-        h1 {
-            color: #333;
-            text-align: center;
-            font-weight: 200;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        table th, table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        table th {
-            background-color: #007bff;
-            color: white;
-        }
-        table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .search-bar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .search-bar input {
-            width: 60%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-        .search-bar button {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
+        .card {
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .card p {
+            margin: 0;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .most-used-cards a {
+            text-decoration: none;
+            color: #333;
+        }
+        .most-used-cards .card {
+            transition: all 0.3s ease-in-out;
+        }
+        .most-used-cards .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .hamburger {
             cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
         }
-        .search-bar button:hover {
-            background-color: #218838;
-        }
-        .responsive-table {
-            overflow-x: auto;
-            margin-top: 20px;
-        }
-        @media (max-width: 768px) {
-            table {
-                font-size: 12px;
-            }
-            .search-bar {
-                flex-direction: column;
-                align-items: center;
-            }
-            .search-bar input, .search-bar button {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-            button {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
-        table th, table td {
-            font-size: 20px;
-        }
-       .table-responsive{
-            overflow: scroll;
-        }
+        a{
+            text-decoration: none;
         }
     </style>
 </head>
+        
 <% 
     function formatDateToDDMMYYYY(mysqlDate) {
     const date = new Date(mysqlDate); // Parse the MySQL date
@@ -103,15 +62,22 @@
 }
 %>
 <body>
-    <%- include('./navbar')  %>
-
+   
+    <%- include('./navbar.ejs') %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Sales</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
     <div class="container">
-        <h2>Sales Transactions</h2 >
 
         <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search by customer name or invoice number...">
-            <button onclick="searchSales()">Search</button>
-            <a href="/admin/dashboard"><button>Back</button></a>
+            <input type="text" id="searchInput" class="form-control-md" placeholder="Search by Customer Name...">
+            <button onclick="searchSales()" class="btn btn-primary">Search</button>
+            <a href="/admin/dashboard"><button class="btn btn-danger">Back</button></a>
+            <a href="/admin/addSale"><button class="btn btn-success">Add Sale</button></a>
         </div>
 
         <section class="transactions mt-4 table-responsive">
@@ -120,7 +86,7 @@
                 <thead class="table-light">
                     <tr>
                         <!-- Table Headers -->
-                        <th>Date</th><th>Invoice No.</th><th>Party Name</th><th>Transaction Type</th><th>Payment Type</th><th>Amount</th><th>Balance Due</th><th>Actions</th>
+                        <th>Date</th><th>Party Name</th><th>Transaction Type</th><th>Payment Type</th><th>Amount</th><th>Balance Due</th><th>Invoice No.</th><th>Actions</th>
                     </tr>
                 </thead>
 
@@ -129,9 +95,8 @@
                     <% items.forEach(item => { %>
 
                         <tr>
-
                             <!-- Table Data -->
-                            <td class="purchase-date"><%= formatDateToDDMMYYYY(item.date) %></td><td><%= item.invoice_number %></td><td><%= item.customer_name %></td><td><%= item.transaction_type %></td><td><%= item.payment_type %></td><td>SAR<%= item.total_amount %></td><td>SAR<%= item.balance_due %></td>
+                            <td class="purchase-date"><%= formatDateToDDMMYYYY(item.date) %></td><td><%= item.customer_name %></td><td><%= item.transaction_type %></td><td><%= item.payment_type %></td><td>SAR<%= item.total_amount %></td><td>SAR<%= item.balance_due %></td><td><%= item.invoice_number %></td>
 
                             <!-- Action Buttons -->
                             <td class="d-flex">
@@ -205,16 +170,22 @@
                 });
             }
             </script>
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
 
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>
 </body>
 </html>
 
 
-<script>
-    const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('nav ul');
-
-    hamburger.addEventListener('click', () => {
-        navMenu.classList.toggle('show');
-    });
-</script>

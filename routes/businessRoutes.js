@@ -54,6 +54,9 @@ router.post('/business-owner/addIncomeCategory',isLogged,businessController.addI
 router.get('/business-owner/addIncome',isLogged,businessController.viewAddIncome);
 router.post('/business-owner/addIncome',isLogged,businessController.addIncome);
 router.get('/business-owner/otherIncome',isLogged,businessController.viewIncome);
+router.get('/business-owner/editParty',isLogged,businessController.viewEditParty);
+router.post('/business-owner/editParty',isLogged,businessController.editParty);
+router.get('/business-owner/deleteParty',isLogged,businessController.deleteParty);
 
 
 

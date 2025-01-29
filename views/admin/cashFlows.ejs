@@ -17,7 +17,6 @@
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
         .hamburger {
             cursor: pointer;
@@ -71,6 +70,7 @@
         }
     </style>
 </head>
+
 <% 
     function formatDateToDDMMYYYY(mysqlDate) {
     const date = new Date(mysqlDate); // Parse the MySQL date
@@ -85,9 +85,10 @@
     <%- include('./navbar.ejs') %>
 <div class="main-content">
 
-    <div class="mb-4 d-flex justify-content-between align-items-center">
+    <header class="mb-4 d-flex justify-content-between align-items-center">
         <h1 class="fw-bold">Cash Flow</h1>
-    </div>
+        <i class="fas fa-bars hamburger" id="hamburger"></i>
+    </header>
 
         <div>
             <div class="d-flex justify-content-between align-items-center">

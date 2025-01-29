@@ -3,117 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Total Transactions</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Injaz Dashboard</title>
+    <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-     
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 0;
-    }
-
-    .container {
-        width: 95%;
-        margin: 0 auto;
-        padding: 10px;
-    }
-
-    h1 {
-        color: #333;
-        text-align: center;
-        font-weight: 200;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    table th, table td {
-        padding: 10px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-        font-size: 14px;
-    }
-
-    table th {
-        background-color: #007bff;
-        color: white;
-    }
-
-    table tr:hover {
-        background-color: #f5f5f5;
-    }
-
-    /* Add scroll for table */
-    .table-responsive {
-        overflow-x: auto;
-    }
-
-    .pagination {
-        text-align: center;
-        margin-top: 20px;
-    }
-
-    .pagination a {
-        margin: 0 5px;
-        padding: 8px 16px;
-        background-color: #007bff;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 14px;
-    }
-
-    .pagination a:hover {
-        background-color: #0056b3;
-    }
-
-    .pagination .current-page {
-        background-color: #28a745;
-    }
-
-    .hamburger {
-        display: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: white;
-        background: none;
-        border: none;
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 768px) {
-        
-
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .card p {
+            margin: 0;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .most-used-cards a {
+            text-decoration: none;
+            color: #333;
+        }
+        .most-used-cards .card {
+            transition: all 0.3s ease-in-out;
+        }
+        .most-used-cards .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
         .hamburger {
-            display: block;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
         }
-
-        table {
-            font-size: 12px;
+        a{
+            text-decoration: none;
         }
-
-        button {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
-
-        .table-responsive {
-            margin-top: 10px;
-        }
-    }
-
-</style>
-
+    </style>
+</head>
+        
 <% 
     function formatDateToDDMMYYYY(mysqlDate) {
     const date = new Date(mysqlDate); // Parse the MySQL date
@@ -123,39 +61,47 @@
     return `${day}-${month}-${year}`;
 }
 %>
-</head>
 <body>
-    <%- include('./navbar')  %>
-
-    <div class="container">
-        <h2>Total Transactions</h2>
+   
+    <%- include('./navbar.ejs') %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Total Transactions</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
+            
+        <div class="container">
         <a href="/admin/dashboard"><button class="btn btn-success">Back</button></a>
 
         <div class="table-responsive">
-        <table>
+        <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Invoice Number</th>
+                    
                     <th>Customer Name</th>
+                    <th>Transaction Type</th>
                     <th>Total Amount</th>
                     <th>Paid / Received Amount</th>
                     <th>Balance Due</th>
                     <th>Payment Type</th>
-                    <th>Transaction Type</th>
                     <th>Date</th>
+                    <th>Invoice Number</th>
                 </tr>
             </thead>
             <tbody>
                 <% transactions.forEach(function(transaction) { %>
                     <tr>
-                        <td><%= transaction.invoice_number %></td>
+                        
                         <td><%= transaction.customer_name %></td>
+                        <td><%= transaction.transaction_type %></td>
                         <td><%= transaction.total_amount %></td>
                         <td><%= transaction.received_amount %></td>
                         <td><%= transaction.balance_due %></td>
                         <td><%= transaction.payment_type %></td>
-                        <td><%= transaction.transaction_type %></td>
                         <td><%= formatDateToDDMMYYYY(transaction.date) %></td>
+                        <td><%= transaction.invoice_number %></td>
                     </tr>
                 <% }) %>
             </tbody>

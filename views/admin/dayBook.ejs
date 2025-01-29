@@ -5,47 +5,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Day Book</title>
-    <!-- Bootstrap CSS -->
+    <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <!-- Font Awesome Icons -->
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
         }
-        .card {
-            border-radius: 10px;
-        }
+
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        /* Mobile Styles */
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
         @media (max-width: 768px) {
 
-            .main-content {
-                margin-left: 0;
-                left: 0;
-                width: 100%;
-
-            }
             .table-responsive {
-                overflow-x: auto; /* Allow horizontal scrolling for tables */
+                overflow-x: auto;
             }
-        }
-
-        .main-content {
-            
-            padding: 20px;
-        }
-
-        .btn-primary,
-        .btn-secondary {
-            margin-right: 10px;
         }
     </style>
-    <% 
+</head>
+
+<% 
     function formatDateToDDMMYYYY(mysqlDate) {
     const date = new Date(mysqlDate); // Parse the MySQL date
     const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
@@ -54,13 +51,18 @@
     return `${day}-${month}-${year}`;
 }
 %>
-</head>
-
 
 <body>
-    <%- include('./navbar')  %>
-         <div class="main-content">
-            
+
+    <%- include('./navbar.ejs') %>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header Section -->
+            <header class="mb-4 d-flex justify-content-between align-items-center">
+                <h1 class="fw-bold">Day Book</h1>
+                <i class="fas fa-bars hamburger" id="hamburger"></i>
+            </header>
+
             <div>
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="filters d-flex align-items-center">
@@ -228,3 +230,18 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 </html>
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>

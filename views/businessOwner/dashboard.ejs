@@ -65,7 +65,7 @@
         <div class="row">
             
             <div class="col-md-6 mb-3">
-                <a href="/admin/totalReceivable">
+                <a href="/business-owner/totalReceivable">
                 <div class="card p-4 text-center bg-light">
                     <h5>Total Receivable</h5>
                     <p class="text-success display-6">SAR <%= totalReceivable ? totalReceivable : 0 %></p>
@@ -73,7 +73,7 @@
                 </div></a>
             </div>
             <div class="col-md-6 mb-3">
-                <a href="/admin/totalPayable">
+                <a href="/business-owner/totalPayable">
                 <div class="card p-4 text-center bg-light">
                     <h5>Total Payable</h5>
                     <p class="display-6" style="color: red;">SAR <%= totalPayable ? totalPayable : 0 %></p>
@@ -81,7 +81,7 @@
                 </div></a>
             </div>
             <div class="col-md-6 mb-3">
-                <a href="/admin/cashInHand">
+                <a href="/business-owner/cashInHand">
                 <div class="card p-4 text-center bg-light">
                     <h5>Cash In Hand</h5>
                     <p class="display-6" style="color: <%=totalCashInHand>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= totalCashInHand ? totalCashInHand : 0 %></p>

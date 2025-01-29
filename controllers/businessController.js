@@ -729,6 +729,51 @@ const businessOwnerController = {
         res.render('businessOwner/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user, parties });
     },
 
+    viewEditParty:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const {partyId} = req.query;
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId]);
+        res.render('businessOwner/partyEdit',{party:party[0],currentCompany,companies})
+
+    },
+    editParty: async (req, res) => {
+        upload(req, res, async function (err) {
+            if (err instanceof multer.MulterError) {
+                return res.status(500).json(err);
+            } else if (err) {
+                return res.status(500).json(err);
+            }
+
+            try {
+                const user = req.session.user;
+                const { name, email, phone, address,partyId } = req.body;
+
+                const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId]);                
+                const image = req.file ? req.file.filename : party[0].profile_picture;
+                await mysql.query(
+                    "UPDATE parties set PartyName = ?, Email = ?, Phone = ?, Address = ?, profile_picture = ? WHERE id = ?",
+                    [name,email,phone,address,image,partyId]
+                )
+                res.redirect('/business-owner/viewParty');
+            } catch (dbError) {
+                res.status(500).json({ error: "Database operation failed", details: dbError });
+            }
+        });
+    },
+    deleteParty:async(req,res)=>{
+        const {partyId} = req.query
+        const [isTrancations] = await mysql.query(`SELECT * FROM sales WHERE customer_name = ?`,[partyId])
+        if(isTrancations.length){
+            return res.json({success:false})    
+        }
+        await mysql.query(`DELETE FROM parties WHERE id = ?`,[partyId])
+        res.json({success:true})
+    },
+
+
     logout: (req, res) => {
         req.session.destroy();
         res.redirect('/login');
