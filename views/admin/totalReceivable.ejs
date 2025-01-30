@@ -115,11 +115,11 @@
                 </tr>
             </thead>
             <tbody>
-                <% partyWiseReceivable.forEach(receivable => { %>
-                    <% if(receivable.total_receivable > 0){ %>
+                <% partyWiseReceivable.forEach(party => { %>
+                    <% if(party.receivable > 0){ %>
                     <tr>
-                        <td><%= receivable.party_name %></td>
-                        <td>SAR <%= receivable.total_receivable %></td>
+                        <td><%= party.PartyName %></td>
+                        <td>SAR <%= party.receivable %></td>
                     </tr>
                 <% }}); %>
             </tbody>

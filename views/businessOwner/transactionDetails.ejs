@@ -145,10 +145,15 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="partyName" class="form-label">Party ID *</label>
-                            <input type="text" value="<%= transactionDetails.customer_name %>" class="form-control" readonly>
+                            <label for="partyName" class="form-label">Party Name *</label>
+                            <input type="text" value="<%= party.PartyName %>" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="" class="form-label">Phone</label>
+                            <input type="text" value="<%= party.Phone %>" class="form-control" readonly>                
                         </div>
                     </div>
+                    
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="Invoice Number" class="form-label">Invoice Number *</label>

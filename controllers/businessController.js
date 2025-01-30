@@ -128,36 +128,24 @@ const businessOwnerController = {
                 SELECT 
                     p.id AS party_id,
                     p.PartyName AS party_name,
-                    SUM(s.balance_due) AS total_payable
+                    SUM(p.payable) AS total_payable
                 FROM 
                     parties p
-                LEFT JOIN 
-                    sales s ON p.id = s.customer_name
                 WHERE 
                     p.company_id = ?
-                    AND s.transaction_type = 'purchase'
-                GROUP BY 
-                    p.id, p.PartyName
             `, [companyId]);
-           
+
             const [partyWiseReceivable] = await mysql.query(`
                 SELECT 
                     p.id AS party_id,
                     p.PartyName AS party_name,
-                    SUM(s.balance_due) AS total_receivable
+                    SUM(p.receivable) AS total_receivable
                 FROM 
                     parties p
-                LEFT JOIN 
-                    sales s ON p.id = s.customer_name
                 WHERE 
                     p.company_id = ?
-                    AND s.transaction_type = 'sale'
-                GROUP BY 
-                    p.id, p.PartyName
             `, [companyId]);
            
-
-
             const totalPayable = partyWisePayable.reduce((acc, transaction) => {
                     return acc+Number(transaction.total_payable)
             }, 0);
@@ -462,6 +450,38 @@ const businessOwnerController = {
         });
     },
 
+    totalReceivable: async (req, res) => {
+        const user = req.session.user;
+        const [companyData] = await mysql.query(`SELECT * FROM companies`);
+        const companyId = user.company_id;
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+    
+        const [partyWiseReceivable] = await mysql.query(`
+          SELECT * FROM parties p WHERE p.company_id = ?`, [companyId]);
+    
+        res.render('businessOwner/totalReceivable.ejs', {
+            companies: companyData,
+            currentCompany: currentCompany,
+            partyWiseReceivable 
+        });
+    },
+
+    totalPayable: async (req, res) => {
+        const user = req.session.user;
+        const [companyData] = await mysql.query(`SELECT * FROM companies`);
+        const companyId = user.company_id;
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+    
+        const [partyWisePayable] = await mysql.query(`
+            SELECT * FROM parties p WHERE p.company_id = ?`, [companyId]);
+    
+        res.render('businessOwner/totalPayable.ejs', {
+            companies: companyData,
+            currentCompany: currentCompany,
+            partyWisePayable 
+        });
+    },
+
     // Fetch items related to the company
     viewItems: async (req, res) => {
         const user = req.session.user;
@@ -579,6 +599,42 @@ const businessOwnerController = {
         const user = req.session.user
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
+
+        
+        let payable = Number(party[0].payable);
+        let receivable = Number(party[0].receivable);
+        const balance = Number(balanceDue);
+        
+        if (transactionType === "purchase") {
+            if (receivable > 0) {
+                if (receivable >= balance) {
+                    receivable -= balance;
+                } else {
+                    payable += balance - receivable;
+                    receivable = 0;
+                }
+            } else {
+                payable += balance;
+            }
+        } else { // Sale transaction
+            if (payable > 0) {
+                if (payable >= balance) {
+                    payable -= balance;
+                } else {
+                    receivable += balance - payable;
+                    payable = 0;
+                }
+            } else {
+                receivable += balance;
+            }
+        }
+        
+        // Update the party's payable and receivable
+        await mysql.query(
+            `UPDATE parties SET payable = ?, receivable = ? WHERE id = ?`,
+            [payable, receivable, partyName]
+        );
+        
         
         const sales = await mysql.query("INSERT INTO sales (customer_name, user_id, company_id, date, invoice_number, payment_type, total_amount, received_amount, balance_due, created_at, transaction_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
             partyName, user.id, user.company_id, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, created_at, transactionType
@@ -602,20 +658,18 @@ const businessOwnerController = {
             if (transactionType === "purchase") {
                 for (const product of products) {
                     await mysql.query(`UPDATE items SET stock = stock + ? WHERE id = ?`, [product.quantity, product.productId]);
-
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
                         [product.productId, 'add', product.quantity, product.productTotal, 'due to purchase', created_at, user.company_id])
 
                 }
-                await mysql.query(`UPDATE parties SET payable = payable + ? WHERE id = ?`,[balanceDue,partyName])
+                await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[recieved,user.company_id]);
             } else {
                 for (const product of products) {
                     await mysql.query(`UPDATE items SET stock = stock - ? WHERE id = ?`, [product.quantity, product.productId]);
-
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
                         [product.productId, 'reduce', product.quantity, product.productTotal, 'due to sale', created_at, user.company_id])
                 }
-                await mysql.query(`UPDATE parties SET receivable = receivable + ? WHERE id = ?`,[balanceDue,partyName])
+                await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[recieved,user.company_id]);
             }
         }
         if (transactionType === "purchase") {
@@ -937,9 +991,10 @@ const businessOwnerController = {
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[transactionDetails[0].customer_name])
         const [transactionProducts] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`, [transaction_id])
 
-        res.render('businessOwner/transactionDetails', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, previousRoute })
+        res.render('businessOwner/transactionDetails', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, previousRoute, party:party[0] })
     },
     transactionDelete: async (req, res) => {
 
@@ -972,9 +1027,44 @@ const businessOwnerController = {
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
         const [currentProductsInTransactions] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id=?`,[transaction_id])
-        
-
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+        
+        if(Number(transactionDetails[0].balance_due) != Number(balanceDue)){
+            let payable = Number(party[0].payable);
+            let receivable = Number(party[0].receivable) ;
+            const balance = Math.abs(Number(balanceDue) - Number(transactionDetails[0].balance_due));
+
+            if (transactionType === "purchase") {
+                if (receivable > 0) {
+                    if (receivable >= balance) {
+                        receivable -= balance;
+                    } else {
+                        payable += balance - receivable;
+                        receivable = 0;
+                    }
+                } else {
+                    payable += balance;
+                }
+            } else { // Sale transaction
+                if (payable > 0) {
+                    if (payable >= balance) {
+                        payable -= balance;
+                    } else {
+                        receivable += balance - payable;
+                        payable = 0;
+                    }
+                } else {
+                    receivable += balance;
+                }
+            }
+            
+            // Update the party's payable and receivable
+            await mysql.query(
+                `UPDATE parties SET payable = ?, receivable = ? WHERE id = ?`,
+                [payable, receivable, partyName]
+            ); 
+        }
+      
 
         if (transactionDetails[0].balanceDue !== balanceDue && transactionDetails[0].received_amount !== recieved) {
             const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';

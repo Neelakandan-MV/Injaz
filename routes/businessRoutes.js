@@ -57,7 +57,8 @@ router.get('/business-owner/otherIncome',isLogged,businessController.viewIncome)
 router.get('/business-owner/editParty',isLogged,businessController.viewEditParty);
 router.post('/business-owner/editParty',isLogged,businessController.editParty);
 router.get('/business-owner/deleteParty',isLogged,businessController.deleteParty);
-
+router.get('/business-owner/totalReceivable',isLogged,businessController.totalReceivable);
+router.get('/business-owner/totalPayable',isLogged,businessController.totalPayable);
 
 
 // router.get('/business-owner/downloadPdf',isLogged,businessController.downloadCashFlow);

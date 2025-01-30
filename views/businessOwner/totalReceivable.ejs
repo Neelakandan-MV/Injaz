@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Total Payable</title>
+    <title>Total Receivable</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
@@ -64,6 +64,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-top: 10px;
             overflow-y: scroll;
+            
         }
 
         .transaction-table h4 {
@@ -97,28 +98,28 @@
 </head>
 
 <body>
-    <%- include('./navbar')  %>
+    <%- include('./aside')  %>
     <div class="main-content">
         <div class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Party Wise Payable</h1>
+            <h1 class="fw-bold">Party Wise Receivable</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </div>
 
         <div class="transaction-table">
             <h4></h4>
-            <table id="Payable">
+            <table id="Receivable">
                 <thead>
                 <tr>
                     <th>Parties</th>
-                    <th>Payable</th>
+                    <th>Receivable</th>
                 </tr>
             </thead>
             <tbody>
-                <% partyWisePayable.forEach(party => { %>
-                    <% if(party.payable >0){ %>
+                <% partyWiseReceivable.forEach(party => { %>
+                    <% if(party.receivable > 0){ %>
                     <tr>
                         <td><%= party.PartyName %></td>
-                        <td>SAR <%= party.payable %></td>
+                        <td>SAR <%= party.receivable %></td>
                     </tr>
                 <% }}); %>
             </tbody>

@@ -228,7 +228,7 @@
             <br>
             <div class="d-flex">
             <button type="button" class="btn btn-secondary  mt-2 w-50" onclick="editParty()">Edit Party</button>
-            <button type="button" class="btn btn-success  mt-2 w-50 ms-2" data-bs-toggle="modal" data-bs-target="#addCompanyModal">Add New Party</button>
+            <button type="button" class="btn btn-success  mt-2 w-50 ms-2" data-bs-toggle="modal" data-bs-target="#addPartyAdminModalLabel">Add New Party</button>
             </div>
             <button type="button" id="partyDelete" style="display: none;" class="btn btn-danger w-100 mt-2" onclick="deleteParty()">Delete Party</button>
 
@@ -285,12 +285,12 @@
     </div>
     </div>
     <!-- Modal for Add New Company -->
-    <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel"
+    <div class="modal fade" id="addPartyAdminModalLabel" tabindex="-1" aria-labelledby="addCompanyModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addCompanyModalLabel">Add New Party</h5>
+                    <h5 class="modal-title" id="addPartyAdminModalLabel">Add New Party</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -333,6 +333,8 @@
 function selectParty(partyName) {
     const party = parties.find((p) => p.name == partyName);
     if (party) {
+        
+        
         document.getElementById('partyDelete').style.display= 'block'
         document.getElementById('paymentIn').style.display= 'block'
         document.getElementById('paymentOut').style.display= 'block'
@@ -342,10 +344,16 @@ function selectParty(partyName) {
         document.getElementById("partyStatus").value = party.partyStatus;
         document.getElementById("partyName").textContent = party.name;
         
-        if(party.receivable > party.payable){
-            document.getElementById("totalReceivable").textContent = party.receivable - party.payable;
+        if(party.receivable > 0){
+            document.getElementById("totalReceivable").textContent = party.receivable 
         }else{
-            document.getElementById("totalPayable").textContent = party.payable -party.receivable;
+            document.getElementById("totalPayable").textContent = party.payable 
+        }
+        if(party.receivable == 0){
+            document.getElementById("totalReceivable").textContent = 0 
+        }
+        if(party.payable == 0){
+            document.getElementById("totalPayable").textContent = 0
         }
 
         // Update the party info card
