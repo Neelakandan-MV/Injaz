@@ -38,9 +38,6 @@ WHERE JSON_CONTAINS(
 `,
         [rows[0].id]
     );
-    console.log(rows[0]);
-    
-    console.log(companyRows);
     
       if (companyRows.length > 0) {
         if (companyRows.length > 1) {

@@ -344,7 +344,6 @@ const adminController = {
         //cashflow updating
             await mysql.query(`UPDATE cash_flows SET name =?, date=?,amount=? WHERE tnx_id = ?`,
                 [party[0].PartyName,date,recieved,transactionDetails[0].id])
-                console.log(date);
         
         await mysql.query(`
             UPDATE sales 
@@ -434,7 +433,6 @@ const adminController = {
     },
     removeProductFromTrasaction:async(req,res)=>{
         const {id,quantity} = req.query
-        console.log(id,quantity);
         const [sale_item] = await mysql.query(`SELECT * FROM sale_products WHERE id=?`,[id])
         const item_id = sale_item[0]?.item_id
         await mysql.query(`UPDATE items set stock = stock - ? WHERE id=?`,[quantity,item_id])
@@ -458,14 +456,21 @@ const adminController = {
     addUser: async (req, res) => {
         const {data,companies} = req.body        
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        console.log(companies);
-        
         const companyJSON = JSON.stringify(companies)
-        await mysql.query("INSERT INTO users (name,email,password,role,available_companies) VALUES (?,?,?,?,?)", [data.userName, data.userEmail, hashedPassword, data.role,companyJSON])
-        // const [addedUser] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
+
+        const [userExists] = await mysql.query("SELECT * FROM users WHERE email = ?", [data.userEmail])
+        if(!userExists.length){
+            await mysql.query("INSERT INTO users (name,email,password,role,available_companies) VALUES (?,?,?,?,?)", [data.userName, data.userEmail, hashedPassword, data.role,companyJSON])
+            res.json({success:true})
+        }else{
+            console.log('else is working')
+            return res.status(404).json({error:'User already exists'});
+        }
+        
+        
         // await mysql.query("INSERT INTO companies (user_id,name,created_at) VALUES (?,?,?)", [addedUser[0].id, 'Main', new Date()])
         // res.redirect('/admin/userManagement')
-        res.json({success:true})
+        
     },
     userBlock: async (req, res) => {
         const id = req.params.id
@@ -960,7 +965,6 @@ const adminController = {
     },
     togglePartyStatus:async (req,res)=>{
         const {id,status} = req.query
-        console.log(id,status);
         
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[id])
         if(party[0]){
@@ -1704,7 +1708,6 @@ const adminController = {
 
     getExchangeRate: async (req, res) => {
         const [rates] = await mysql.query('SELECT * FROM exchange_rates');
-        console.log(rates);
         
         res.json(rates);
     },
@@ -1721,7 +1724,6 @@ const adminController = {
             COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS gross_profit
         FROM sales
         `)
-        console.log(grossProfit[0]);
         
         res.render('admin/profitAndLoss.ejs',{currentCompany,companies,grossProfit:grossProfit[0]?.gross_profit})
     }

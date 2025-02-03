@@ -111,7 +111,7 @@
                 </div>
                 <div class="mt-2">
                     <label for="password">Role:</label>
-                    <select name="role" id="role" class="form-control">
+                    <select name="role" id="role" class="form-control" onchange="roleSelection()">
                         <option value="businessOwner">Sales' Man</option>
                         <option value="admin">Admin</option>
                         <!-- <option value="superAdmin">Super Admin</option> -->
@@ -135,6 +135,15 @@
     </div>
 
     <script>
+
+        function roleSelection(){
+            Array.from(document.querySelectorAll('input[name="companies"]'))
+            .map(checkbox => checkbox.style.display = 'none');
+            Array.from(document.querySelectorAll('label[for="company1"]'))
+            .map(checkbox => checkbox.style.display = 'none');
+        }
+
+        
         document.getElementById("addUserForm").addEventListener("submit", function(event) {
         event.preventDefault(); 
 
@@ -142,8 +151,15 @@
         const userEmail = document.getElementById('userEmail').value
         const password = document.getElementById('password').value
         const role = document.getElementById('role').value
-        const selectedCompanies = Array.from(document.querySelectorAll('input[name="companies"]:checked'))
+        let selectedCompanies = []
+        if(role !== 'businessOwner'){
+            
+            selectedCompanies = Array.from(document.querySelectorAll('input[name="companies"]'))
+            .map(checkbox => checkbox.value);
+        }else{
+        selectedCompanies = Array.from(document.querySelectorAll('input[name="companies"]:checked'))
         .map(checkbox => checkbox.value);
+        }
         const data= {userName,userEmail,password,role}
 
         fetch("/admin/addUser", {
@@ -157,12 +173,26 @@
     .then(data => {
         if(data.success){
             window.location.href = '/admin/userManagement'
+        }else{
+            Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `${data.error}!`
+        });
+
         }
         })
-    .catch(error => console.error("Error:", error));
+    .catch(error => {
+        Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: `Something Went Wrong!`
+        });
+    });
 });
 
     </script>
+    
 
     <script>
          const userList = <%- JSON.stringify(users) %>
@@ -217,24 +247,24 @@ function closeAddUserModal() {
     document.getElementById("addUserModal").style.display = "none";
 }
 
-document.getElementById("addUserForm").addEventListener("submit", (e) => {
-    e.preventDefault();
+// document.getElementById("addUserForm").addEventListener("submit", (e) => {
+//     e.preventDefault();
 
-    const name = document.getElementById("userName").value;
-    const email = document.getElementById("userEmail").value;
+//     const name = document.getElementById("userName").value;
+//     const email = document.getElementById("userEmail").value;
 
-    if (name && email) {
-        const newUser = {
-            id: userList.length + 1,
-            name,
-            email
-        };
-        userList.push(newUser);
-        renderUserList();
-        closeAddUserModal();
-    }
-    e.target.submit();
-});
+//     if (name && email) {
+//         const newUser = {
+//             id: userList.length + 1,
+//             name,
+//             email
+//         };
+//         userList.push(newUser);
+//         renderUserList();
+//         closeAddUserModal();
+//     }
+//     e.target.submit();
+// });
 
 renderUserList();
 
@@ -368,5 +398,6 @@ body {
     });
 </script>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </html>
