@@ -154,6 +154,7 @@
         <a href="/admin/cashFlow" class="nav-link">Cash-Flow</a>
         <a href="/admin/reports" class="nav-link">Reports</a>
         <a href="/admin/logout"><button class="btn btn-danger mt-2">Logout</button></a>
+        <button type="button" class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#addCompanyModal">Add New Company</button>          
 
     </nav>
 </div>
@@ -199,24 +200,25 @@
         }
         
 </style>
- <!-- Modal for Add New Company -->
- <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addCompanyModalLabel">Add New Company</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form action="/business-owner/addCompany" method="POST">
-                    <div class="mb-3">
-                        <label for="companyName" class="form-label">Company Name</label>
-                        <input type="text" class="form-control" id="companyName" name="name" required>
-                    </div>
-                    <button type="submit" class="btn btn-success">Save Company</button>
-                </form>
-            </div>
+ 
+
+<div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel"
+aria-hidden="true">
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="addCompanyModalLabel">Add New Company</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form action="/admin/addCompany" method="POST">
+                <div class="mb-3">
+                    <label for="companyName" class="form-label">Company Name</label>
+                    <input type="text" class="form-control" id="companyName" name="name" required>
+                </div>
+                <button type="submit" class="btn btn-success">Save Company</button>
+            </form>
         </div>
     </div>
 </div>
-
+</div>

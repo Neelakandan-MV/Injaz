@@ -341,13 +341,11 @@ const adminController = {
                 [payable, receivable, partyName]
             ); 
         }
-
-        if (transactionDetails[0].balanceDue !== balanceDue && transactionDetails[0].received_amount !== recieved) {
-            const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
-            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id) VALUES (?,?,?,?,?,?,?)`,
-                [party[0].PartyName, created_at, transactionType, money_type, recieved, transaction_id, user.company_id]
-            )
-        }
+        //cashflow updating
+            await mysql.query(`UPDATE cash_flows SET name =?, date=?,amount=? WHERE tnx_id = ?`,
+                [party[0].PartyName,date,recieved,transactionDetails[0].id])
+                console.log(date);
+        
         await mysql.query(`
             UPDATE sales 
             SET 
@@ -458,12 +456,16 @@ const adminController = {
     },
 
     addUser: async (req, res) => {
-        const { name, email, password, role } = req.body
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await mysql.query("INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)", [name, email, hashedPassword, role])
+        const {data,companies} = req.body        
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        console.log(companies);
+        
+        const companyJSON = JSON.stringify(companies)
+        await mysql.query("INSERT INTO users (name,email,password,role,available_companies) VALUES (?,?,?,?,?)", [data.userName, data.userEmail, hashedPassword, data.role,companyJSON])
         // const [addedUser] = await mysql.query("SELECT * FROM users WHERE email = ?", [email])
         // await mysql.query("INSERT INTO companies (user_id,name,created_at) VALUES (?,?,?)", [addedUser[0].id, 'Main', new Date()])
-        res.redirect('/admin/userManagement')
+        // res.redirect('/admin/userManagement')
+        res.json({success:true})
     },
     userBlock: async (req, res) => {
         const id = req.params.id
@@ -785,7 +787,7 @@ const adminController = {
             //controlling stock
             if (transactionType === "purchase") {
                 for (const product of products) {
-                    await mysql.query(`UPDATE items SET stock = stock + ? WHERE id = ?`, [product.quantity, product.productId]);
+                    await mysql.query(`UPDATE items SET stock = stock + ? WHERE id = ?`, [Number(product.quantity), product.productId]);
 
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
                         [product.productId, 'add', product.quantity, product.productTotal, 'due to purchase', created_at, user.company_id])
@@ -793,7 +795,7 @@ const adminController = {
                 await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[recieved,user.company_id]);
             } else {
                 for (const product of products) {
-                    await mysql.query(`UPDATE items SET stock = stock - ? WHERE id = ?`, [product.quantity, product.productId]);
+                    await mysql.query(`UPDATE items SET stock = stock - ? WHERE id = ?`, [Number(product.quantity)+Number(product.freeQuantity || 0), product.productId]);
 
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
                         [product.productId, 'reduce', product.quantity, product.productTotal, 'due to sale', created_at, user.company_id])
@@ -1505,9 +1507,6 @@ const adminController = {
             const [expenses] = await mysql.query(`SELECT e.amount AS received_amount, c.category_name AS transaction_type, date FROM expenses e LEFT JOIN expense_category c ON e.category_id = c.id WHERE e.company_id = ?`, [companyId]);
             const [cashFlows] = await mysql.query(`SELECT c.amount AS received_amount, c.money_type,c.tnx_type AS transaction_type, date, c.name AS PartyName FROM cash_flows c WHERE tnx_type = 'Cash Adjusted' AND company_id = ?`,[user.company_id])
         
-            console.log(cashFlows);
-            
-            
             res.render('admin/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses,...cashFlows],totalCashInHand})
         } catch (error) {
             console.error(error);
@@ -1681,6 +1680,52 @@ const adminController = {
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,[partyName,created_at,'Payment_Out',amount,'money_out',user.company_id])
         res.redirect('/admin/viewParty')  
     },
+    viewexchangeRates:async(req,res)=>{
+        const user = req.session.user
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [rates] = await mysql.query('SELECT * FROM exchange_rates');
+        res.render('admin/exchangeRates.ejs', { rates,currentCompany,companies });
+    },
+
+    updateExchangeRates:async(req,res)=>{
+        const { inrToSar, sarToInr } = req.body;
+
+    await mysql.query(`
+        INSERT INTO exchange_rates (currency_from, currency_to, exchange_rate) 
+        VALUES ('INR', 'SAR', ?), ('SAR', 'INR', ?)
+        ON DUPLICATE KEY UPDATE exchange_rate = VALUES(exchange_rate)`, 
+        [inrToSar, sarToInr]
+    );
+
+    res.redirect('/admin/exchange-rates');
+    },
+
+    getExchangeRate: async (req, res) => {
+        const [rates] = await mysql.query('SELECT * FROM exchange_rates');
+        console.log(rates);
+        
+        res.json(rates);
+    },
+
+    viewProfitAndLoss:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [grossProfit] = await mysql.query(`SELECT 
+            COALESCE(SUM(CASE WHEN transaction_type = 'sale' THEN total_amount ELSE 0 END), 0) AS total_sales,
+            COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS total_purchases,
+            COALESCE(SUM(CASE WHEN transaction_type = 'sale' THEN total_amount ELSE 0 END), 0) - 
+            COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS gross_profit
+        FROM sales
+        `)
+        console.log(grossProfit[0]);
+        
+        res.render('admin/profitAndLoss.ejs',{currentCompany,companies,grossProfit:grossProfit[0]?.gross_profit})
+    }
+    
 
 
 };

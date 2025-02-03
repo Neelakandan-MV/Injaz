@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Injaz Dashboard</title>
+    <!-- CSS Framework -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card h5 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .card p {
+            margin: 0;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .most-used-cards a {
+            text-decoration: none;
+            color: #333;
+        }
+        .most-used-cards .card {
+            transition: all 0.3s ease-in-out;
+        }
+        .most-used-cards .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        a{
+            text-decoration: none;
+        }
+    </style>
+    
+</head>
+<body>
+   
+    <%- include('./navbar.ejs') %>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Exchange Rates</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </header>
+        <div class="col-md-12 card">
+            <h5 class="text-center">Adjust Exchange Rate</h5>
+        <form action="/admin/exchange-rates" class="m-3" method="POST">
+            <label>SAR:</label>
+            <input type="number" step="0.0001" name="inrToSar" required class="form-control mb-3"
+                value="<%= (rates.find(r => r.currency_from === 'INR') || { exchange_rate: '' }).exchange_rate %>">
+        
+            <label>INR:</label>
+            <input type="number" step="0.0001" name="sarToInr" required class="form-control"
+                value="<%= (rates.find(r => r.currency_from === 'SAR') || { exchange_rate: '' }).exchange_rate %>">
+        
+            <button class="btn btn-primary" type="submit">Update Rates</button>
+        </form>
+    </div>
+
+        <div class="card mt-3 align-items-center p-3">
+            <h5>Calculator</h5>
+            <!-- Calculator Div -->
+            <section class="calculator-section mt-3">
+                <div class="card">
+                    <div class="calculator">
+                        <input type="text" id="calculator-display" disabled placeholder="0">
+                        <div class="calculator-buttons">
+                            <button onclick="appendValue('7')">7</button>
+                            <button onclick="appendValue('8')">8</button>
+                            <button onclick="appendValue('9')">9</button>
+                            <button onclick="performOperation('/')">/</button>
+                    
+                            <button onclick="appendValue('4')">4</button>
+                            <button onclick="appendValue('5')">5</button>
+                            <button onclick="appendValue('6')">6</button>
+                            <button onclick="performOperation('*')">*</button>
+                    
+                            <button onclick="appendValue('1')">1</button>
+                            <button onclick="appendValue('2')">2</button>
+                            <button onclick="appendValue('3')">3</button>
+                            <button onclick="performOperation('-')">-</button>
+                    
+                            <button onclick="appendValue('0')">0</button>
+                            <button onclick="appendValue('.')">.</button>
+                            <button style="background-color:#e74c3c;" onclick="clearDisplay()">Clear</button>
+                            <button onclick="performOperation('+')">+</button>
+                        </div>
+                    
+                        <button class="clear-btn" onclick="calculate()">=</button>
+                    
+                        <!-- Currency Exchange Section -->
+                         
+                        <div class="currency-section">
+                            <select id="base-currency" class="form-control">
+                                <option value="SAR">SAR to INR</option>
+                                <option value="INR">INR to SAR</option>
+                                <!-- Add more currencies as needed -->
+                            </select>
+                            <button onclick="fetchExchangeRate()">Convert</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Styles -->
+                    <style>
+                        .currency-section {
+                            margin-top: 20px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            gap: 10px;
+                        }
+                    
+                        select {
+                            width: 40%;
+                            padding: 5px;
+                            font-size: 14px;
+                        }
+                    
+                        .currency-section button {
+                            
+                            background-color: #3be244;
+                        }
+                    
+                        .currency-section button:hover {
+                            background-color: #32c039;
+                        }
+                    </style>
+                    
+                    <!-- Script -->
+                    <script>
+                        async function fetchExchangeRate() {
+                            const baseCurrency = document.getElementById('base-currency').value;
+                            // const targetCurrency = document.getElementById('target-currency').value;
+                            try {
+                                const response = await fetch('/admin/getExchange-rates');
+
+                                const rates = await response.json();
+                                console.log("Fetched Rates:", rates);
+                                const inr = rates.find(r => r.currency_to === 'INR').exchange_rate;
+                                const sar = rates.find(r => r.currency_to === 'SAR').exchange_rate;
+                                const calculatorDisplay = document.getElementById('calculator-display').value
+
+                                if(!calculatorDisplay || calculatorDisplay == 0 || /[a-zA-Z]/.test(calculatorDisplay)){
+
+                                if(baseCurrency === 'INR'){
+                                    document.getElementById('calculator-display').value = `1 ${baseCurrency} = ${sar/Number(inr)} SAR`;
+                                }else if(baseCurrency === 'SAR'){
+                                    document.getElementById('calculator-display').value = `1 ${baseCurrency} = ${inr} INR`;
+                                }
+                                }
+                                else{
+                                    
+                                    if(baseCurrency === "INR"){
+                                        let amount = Number(calculatorDisplay)/inr
+                                        document.getElementById('calculator-display').value = amount.toFixed(4)
+                                    }else if(baseCurrency === "SAR"){
+                                        let amount = Number(calculatorDisplay)*inr
+                                        document.getElementById('calculator-display').value = amount.toFixed(4)
+                                    }
+                                }
+                                
+                            } catch (error) {
+                                console.error('Error:', error);
+                                alert("Failed to fetch exchange rate. Check your network or API key.");
+                            }
+                        }
+                    </script>
+                    
+
+                    <!-- Calculator Styles -->
+                    <style>
+                        .calculator {
+                            width: 300px;
+                            background-color: #f9f9f9;
+                            padding: 20px;
+                            border-radius: 10px;
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                            font-family: Arial, sans-serif;
+                        }
+
+                        #calculator-display {
+                            width: 100%;
+                            height: 40px;
+                            margin-bottom: 15px;
+                            font-size: 18px;
+                            text-align: right;
+                            padding: 5px;
+                            border: 1px solid #ccc;
+                            border-radius: 5px;
+                            background-color: #fff;
+                        }
+
+                        .calculator-buttons {
+                            display: grid;
+                            grid-template-columns: repeat(4, 1fr);
+                            gap: 10px;
+                        }
+
+                        button {
+                            height: 40px;
+                            border: none;
+                            border-radius: 5px;
+                            background-color: #3498db;
+                            color: #fff;
+                            font-size: 16px;
+                            cursor: pointer;
+                        }
+
+                        button:hover {
+                            background-color: #2980b9;
+                        }
+
+                        .clear-btn {
+                            margin-top: 15px;
+                            width: 100%;
+                            background-color: #3be244;
+                        }
+
+                        .clear-btn:hover {
+                            background-color: #32c039;
+                        }
+                    </style>
+
+                    <!-- Calculator Script -->
+                    <script>
+                        let currentInput = '';
+                        let operator = '';
+                        let previousInput = '';
+
+                        function appendValue(value) {
+                            currentInput += value;
+                            updateDisplay(currentInput);
+                        }
+
+                        function performOperation(op) {
+                            if (currentInput === '') return;
+                            if (previousInput !== '') calculate();
+                            operator = op;
+                            previousInput = currentInput;
+                            currentInput = '';
+                        }
+
+                        function calculate() {
+                            if (currentInput === '' || previousInput === '') return;
+                            let result;
+                            const prev = parseFloat(previousInput);
+                            const curr = parseFloat(currentInput);
+
+                            switch (operator) {
+                                case '+':
+                                    result = prev + curr;
+                                    break;
+                                case '-':
+                                    result = prev - curr;
+                                    break;
+                                case '*':
+                                    result = prev * curr;
+                                    break;
+                                case '/':
+                                    result = prev / curr;
+                                    break;
+                                default:
+                                    return;
+                            }
+
+                            currentInput = result.toString();
+                            operator = '';
+                            previousInput = '';
+                            updateDisplay(currentInput);
+                        }
+
+                        function clearDisplay() {
+                            currentInput = '';
+                            operator = '';
+                            previousInput = '';
+                            updateDisplay('0');
+                        }
+
+                        function updateDisplay(value) {
+                            document.getElementById('calculator-display').value = value;
+                        }
+                    </script>
+                </div>
+
+            </section>
+
+        </div>
+        </div>
+
+        <script>
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const hamburger = document.getElementById('hamburger');
+        
+            hamburger.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+        
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        </script>
+</body>
+</html>

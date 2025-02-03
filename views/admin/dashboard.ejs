@@ -18,6 +18,8 @@
             border: none;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            text-align: center;
         }
         .card h5 {
             font-size: 1.25rem;
@@ -49,6 +51,24 @@
         a{
             text-decoration: none;
         }
+
+        @media (max-width: 768px) {
+            .col-md-6{
+                width: 50%;
+            }
+            .col-md-6 p{
+                font-size: 15px;
+                font-weight:500;
+            }
+            .col-md-6 h5{
+                font-size: 15px;
+            }
+            .card{
+                padding: 15px 10px 15px 10px ;
+                text-align: left;
+            }
+            
+        }
     </style>
     
 </head>
@@ -59,348 +79,91 @@
     <div class="main-content">
         <!-- Header Section -->
         <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Injaz Admin Dashboard</h1>
+            <h1 class="fw-bold"><%= currentCompany[0].name %></h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
           
             <div class="row">
-            
                 <div class="col-md-6 mb-3">
                     <a href="/admin/totalReceivable">
-                    <div class="card p-4 text-center bg-light">
-                        <h5>Total Receivable</h5>
+                    <div class="card text-center bg-light">
+                        <h5>To Receive</h5>
                         <p class="text-success display-6">SAR <%= totalReceivable ? totalReceivable : 0 %></p>
                         <!-- <p class="text-muted">You don’t have any receivables as of now.</p> -->
                     </div></a>
                 </div>
                 <div class="col-md-6 mb-3">
                     <a href="/admin/totalPayable">
-                    <div class="card p-4 text-center bg-light">
-                        <h5>Total Payable</h5>
+                    <div class="card text-center bg-light">
+                        <h5>To Pay</h5>
                         <p class="display-6" style="color: red;">SAR <%= totalPayable ? totalPayable : 0 %></p>
                         <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
                     </div></a>
                 </div>
+            </div>
+
+            <div class="row">
                 <div class="col-md-6 mb-3">
                     <a href="/admin/cashInHand">
-                    <div class="card p-4 text-center bg-light">
+                    <div class="card text-center bg-light">
                         <h5>Cash In Hand</h5>
                         <p class="display-6" style="color: <%=totalCashInHand>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= totalCashInHand ? totalCashInHand : 0 %></p>
                         <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
                     </div></a>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-6 mb-3">
                     <a href="/admin/viewStockReport">
-                    <div class="card p-4 text-center bg-light">
+                    <div class="card text-center bg-light">
                         <h5>Total Stock Value</h5>
                         <p class="display-6" style="color: <%= stockValue>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= Number(stockValue).toFixed(4) %></p>
                     </div></a>
                 </div>
-                <div class="col-md-6">
-                    <div class="card p-4 text-center bg-light">
-                        <h5>Total Delivered</h5>
-                        <p class="display-6" style="color: rgb(46,128,46);"><%= totalDelivered.total_delivered_products  %></p>
-                    </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <a href="/admin/sales">
+                    <div class="card text-center bg-light">
+                        <h5>Sale List</h5>
+                    </div></a>
                 </div>
-                <div class="col-md-6">
-                    <div class="card p-4 text-center bg-light">
-                        <h5>Total Delivery Pending</h5>
-                        <p class="display-6" style="color: red;"><%= totalDelivered.total_pending_products %></p>
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <a href="/admin/purchases">
+                    <div class="card text-center bg-light">
+                        <h5>Purchase List</h5>
+                    </div></a>
                 </div>
             </div>
-        </section>
 
-        <div class="section mt-5">
-            <!-- company switch -->
-            <section class="switch-company-section">
-                <div class="col-md-12">
-                    <div class="card p-3">
-                        <h5>Add New Company?</h5>
-                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCompanyModal">Add New Company</button>          
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <a href="/admin/viewItems">
+                    <div class="card text-center bg-light">
+                        <h5>Stock Items</h5>
+                    </div></a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a href="/admin/viewParty">
+                    <div class="card text-center bg-light">
+                        <h5>Parties</h5>
+                    </div></a>
+                </div>
+            </div>
+                
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center bg-light">
+                        <h5>Delivery</h5>
                     </div>
                 </div>
-            </section>
-            <section class="quick-links-section mt-3">
-                <div class="col-md-12 d-flex" style="gap: 10px;">
-                    <div class="card p-5 quick-link-card">
-                        <h2>Quick Links</h2>
-                        <!-- Row for 2x2 cards -->
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/userManagement">
-                                    <div class="card p-3 smallCard"><span>Manage Users</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/sales">
-                                    <div class="card p-3 smallCard"><span>Manage Sales</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/purchases">
-                                    <div class="card p-3 smallCard"><span>Manage Purchases</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/expense">
-                                    <div class="card p-3 smallCard"><span>Manage Expense</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/otherIncome">
-                                    <div class="card p-3 smallCard"><span>Manage Other Income</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/viewParty">
-                                    <div class="card p-3 smallCard"><span>Manage Parties</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/reports">
-                                    <div class="card p-3 smallCard"><span>View Reports</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/viewItems">
-                                    <div class="card p-3 smallCard"><span>Item Management</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/addSale">
-                                    <div class="card p-3 smallCard"><span>Add Sale</span></div>
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <a href="/admin/addPurchase">
-                                    <div class="card p-3 smallCard"><span>Add Purchase</span></div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <a href="/admin/exchange-rates">
+                    <div class="card text-center bg-light">
+                        <h5>Calculator</h5>
+                    </div></a>
                 </div>
-            </section>
-
-            <!-- Calculator Div -->
-            <section class="calculator-section mt-3">
-                <div class="card">
-                    <div class="calculator">
-                        <input type="text" id="calculator-display" disabled placeholder="0">
-                        <div class="calculator-buttons">
-                            <button onclick="appendValue('7')">7</button>
-                            <button onclick="appendValue('8')">8</button>
-                            <button onclick="appendValue('9')">9</button>
-                            <button onclick="performOperation('/')">/</button>
-                    
-                            <button onclick="appendValue('4')">4</button>
-                            <button onclick="appendValue('5')">5</button>
-                            <button onclick="appendValue('6')">6</button>
-                            <button onclick="performOperation('*')">*</button>
-                    
-                            <button onclick="appendValue('1')">1</button>
-                            <button onclick="appendValue('2')">2</button>
-                            <button onclick="appendValue('3')">3</button>
-                            <button onclick="performOperation('-')">-</button>
-                    
-                            <button onclick="appendValue('0')">0</button>
-                            <button onclick="appendValue('.')">.</button>
-                            <button style="background-color:#e74c3c;" onclick="clearDisplay()">Clear</button>
-                            <button onclick="performOperation('+')">+</button>
-                        </div>
-                    
-                        <button class="clear-btn" onclick="calculate()">=</button>
-                    
-                        <!-- Currency Exchange Section -->
-                        <div class="currency-section">
-                            <select id="base-currency">
-                                <option value="SAR">SAR</option>
-                                <option value="INR">INR</option>
-                                <!-- Add more currencies as needed -->
-                            </select>
-                            <select id="target-currency">
-                                <option value="INR">INR</option>
-                                <option value="SAR">SAR</option>
-                                <!-- Add more currencies as needed -->
-                            </select>
-                            <button onclick="fetchExchangeRate()">Convert</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Styles -->
-                    <style>
-                        .currency-section {
-                            margin-top: 20px;
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            gap: 10px;
-                        }
-                    
-                        select {
-                            width: 40%;
-                            padding: 5px;
-                            font-size: 14px;
-                        }
-                    
-                        .currency-section button {
-                            
-                            background-color: #3be244;
-                        }
-                    
-                        .currency-section button:hover {
-                            background-color: #32c039;
-                        }
-                    </style>
-                    
-                    <!-- Script -->
-                    <script>
-                        async function fetchExchangeRate() {
-                            const baseCurrency = document.getElementById('base-currency').value;
-                            const targetCurrency = document.getElementById('target-currency').value;
-                    
-                            const apiKey = <%-JSON.stringify(apiKey)%>
-                            const url = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${baseCurrency}`;
-                    
-                            try {
-                                const response = await fetch(url);
-                                const data = await response.json();
-                    
-                                if (data.result === "success") {
-                                    const exchangeRate = data.conversion_rates[targetCurrency];
-                                    document.getElementById('calculator-display').value = `1 ${baseCurrency} = ${exchangeRate} ${targetCurrency}`;
-                                } else {
-                                    alert("Error fetching exchange rate. Please try again.");
-                                }
-                            } catch (error) {
-                                console.error('Error:', error);
-                                alert("Failed to fetch exchange rate. Check your network or API key.");
-                            }
-                        }
-                    </script>
-                    
-
-                    <!-- Calculator Styles -->
-                    <style>
-                        .calculator {
-                            width: 300px;
-                            background-color: #f9f9f9;
-                            padding: 20px;
-                            border-radius: 10px;
-                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                            font-family: Arial, sans-serif;
-                        }
-
-                        #calculator-display {
-                            width: 100%;
-                            height: 40px;
-                            margin-bottom: 15px;
-                            font-size: 18px;
-                            text-align: right;
-                            padding: 5px;
-                            border: 1px solid #ccc;
-                            border-radius: 5px;
-                            background-color: #fff;
-                        }
-
-                        .calculator-buttons {
-                            display: grid;
-                            grid-template-columns: repeat(4, 1fr);
-                            gap: 10px;
-                        }
-
-                        button {
-                            height: 40px;
-                            border: none;
-                            border-radius: 5px;
-                            background-color: #3498db;
-                            color: #fff;
-                            font-size: 16px;
-                            cursor: pointer;
-                        }
-
-                        button:hover {
-                            background-color: #2980b9;
-                        }
-
-                        .clear-btn {
-                            margin-top: 15px;
-                            width: 100%;
-                            background-color: #3be244;
-                        }
-
-                        .clear-btn:hover {
-                            background-color: #32c039;
-                        }
-                    </style>
-
-                    <!-- Calculator Script -->
-                    <script>
-                        let currentInput = '';
-                        let operator = '';
-                        let previousInput = '';
-
-                        function appendValue(value) {
-                            currentInput += value;
-                            updateDisplay(currentInput);
-                        }
-
-                        function performOperation(op) {
-                            if (currentInput === '') return;
-                            if (previousInput !== '') calculate();
-                            operator = op;
-                            previousInput = currentInput;
-                            currentInput = '';
-                        }
-
-                        function calculate() {
-                            if (currentInput === '' || previousInput === '') return;
-                            let result;
-                            const prev = parseFloat(previousInput);
-                            const curr = parseFloat(currentInput);
-
-                            switch (operator) {
-                                case '+':
-                                    result = prev + curr;
-                                    break;
-                                case '-':
-                                    result = prev - curr;
-                                    break;
-                                case '*':
-                                    result = prev * curr;
-                                    break;
-                                case '/':
-                                    result = prev / curr;
-                                    break;
-                                default:
-                                    return;
-                            }
-
-                            currentInput = result.toString();
-                            operator = '';
-                            previousInput = '';
-                            updateDisplay(currentInput);
-                        }
-
-                        function clearDisplay() {
-                            currentInput = '';
-                            operator = '';
-                            previousInput = '';
-                            updateDisplay('0');
-                        }
-
-                        function updateDisplay(value) {
-                            document.getElementById('calculator-display').value = value;
-                        }
-                    </script>
-                </div>
-
-            </section>
-
+            </div>
         </div>
-        </div>
-
-    </main>
 
 
     <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel"

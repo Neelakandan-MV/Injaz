@@ -59,6 +59,15 @@ router.post('/business-owner/editParty',isLogged,businessController.editParty);
 router.get('/business-owner/deleteParty',isLogged,businessController.deleteParty);
 router.get('/business-owner/totalReceivable',isLogged,businessController.totalReceivable);
 router.get('/business-owner/totalPayable',isLogged,businessController.totalPayable);
+router.get('/business-owner/cashInHand',isLogged,businessController.viewCashInHand);
+router.get('/business-owner/adjustCash',isLogged,businessController.viewAdjustCash);
+router.post('/business-owner/adjustCash',isLogged,businessController.adjustCash);
+router.get('/business-owner/addPaymentIn',isLogged,businessController.viewAddPaymentIn);
+router.post('/business-owner/addPaymentIn',isLogged,businessController.addPaymentIn);
+router.get('/business-owner/addPaymentOut',isLogged,businessController.viewAddPaymentOut);
+router.post('/business-owner/addPaymentOut',isLogged,businessController.addPaymentOut);
+router.get('/business-owner/calculator',isLogged,businessController.viewCalculator);
+
 
 
 // router.get('/business-owner/downloadPdf',isLogged,businessController.downloadCashFlow);

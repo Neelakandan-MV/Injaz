@@ -74,6 +74,10 @@ router.get('/admin/addPaymentIn',isLoggedAdmin,adminController.viewAddPaymentIn)
 router.post('/admin/addPaymentIn',isLoggedAdmin,adminController.addPaymentIn);
 router.get('/admin/addPaymentOut',isLoggedAdmin,adminController.viewAddPaymentOut);
 router.post('/admin/addPaymentOut',isLoggedAdmin,adminController.addPaymentOut);
+router.get('/admin/exchange-rates',isLoggedAdmin,adminController.viewexchangeRates);
+router.post('/admin/exchange-rates',isLoggedAdmin,adminController.updateExchangeRates);
+router.get('/api/getExchange-rates',adminController.getExchangeRate)
+router.get('/admin/profitAndLoss',isLoggedAdmin,adminController.viewProfitAndLoss)
 
   
 

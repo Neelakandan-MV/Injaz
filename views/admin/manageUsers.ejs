@@ -96,20 +96,20 @@
             <div class="modal-content">
                 <span class="close-btn" onclick="closeAddUserModal()">&times;</span>
                 <h2>Add New User</h2>
-                <form id="addUserForm" action="/admin/addUser" method="POST">
-                    <div class="form-control mt-2">
+                <form id="addUserForm" class="form-container">
+                    <div class="mt-2">
                     <label for="userName">Name:</label>
-                    <input type="text" name="name" id="userName" required>
+                    <input type="text" class="form-control" name="name" id="userName" required>
                 </div>
-                <div class="form-control mt-2">
+                <div class="mt-2">
                     <label for="userEmail">Email:</label>
-                    <input type="email" name="email" id="userEmail" required>
+                    <input type="email" name="email" class="form-control" id="userEmail" required>
                 </div>
-                <div class="form-control mt-2">
+                <div class="mt-2">
                     <label for="password">Password:</label>
-                    <input type="password" name="password" id="password" required>
+                    <input type="password" name="password" class="form-control" id="password" required>
                 </div>
-                <div class="form-control mt-2">
+                <div class="mt-2">
                     <label for="password">Role:</label>
                     <select name="role" id="role" class="form-control">
                         <option value="businessOwner">Sales' Man</option>
@@ -117,13 +117,52 @@
                         <!-- <option value="superAdmin">Super Admin</option> -->
                     </select>
                 </div>
-                    <div class="form-control mt-3">
+                <div class="mt-2">
+                    <h6>Select Companies:</h6>
+                    <% companies.forEach((company,index) => { %>
+
+                    <input type="checkbox" id="company1" name="companies" value="<%= company.id %>">
+                    <label for="company1"><%= company.name %></label>
+
+                    <% }) %>
+                </div>
+                    <div class="mt-3">
                     <button class="btn btn-success" type="submit">Add User</button>
                 </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById("addUserForm").addEventListener("submit", function(event) {
+        event.preventDefault(); 
+
+        const userName = document.getElementById('userName').value
+        const userEmail = document.getElementById('userEmail').value
+        const password = document.getElementById('password').value
+        const role = document.getElementById('role').value
+        const selectedCompanies = Array.from(document.querySelectorAll('input[name="companies"]:checked'))
+        .map(checkbox => checkbox.value);
+        const data= {userName,userEmail,password,role}
+
+        fetch("/admin/addUser", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ companies: selectedCompanies,data })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success){
+            window.location.href = '/admin/userManagement'
+        }
+        })
+    .catch(error => console.error("Error:", error));
+});
+
+    </script>
 
     <script>
          const userList = <%- JSON.stringify(users) %>

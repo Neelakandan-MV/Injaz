@@ -165,7 +165,6 @@
                             <select id="paymentType" name="paymentType" class="form-select">
                                 <option value="credit">Credit</option>
                                 <option value="cash">Cash</option>
-                                <option value="online">Online</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -301,8 +300,7 @@
             <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this)" required >
             <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
-            <td><div class="d-flex"><button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,${count})">Free</button>
-            <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
+            <td><button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
             </tr>
         `;
 
