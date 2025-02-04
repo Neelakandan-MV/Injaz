@@ -134,7 +134,7 @@
 
 <div class="sidebar" id="sidebar">
     <nav class="p-4">
-        <select id="companySwitch" class="form-select" onchange="location.href='/business-owner/switchCompany/' + this.value;">
+        <select id="companySwitch" class="form-select" onchange="location.href='/admin/switchCompany/' + this.value;">
             <% companies.forEach(company => { %>
                 <option value="<%= company.id %>" <%= currentCompany[0].id === company.id ? 'selected' : '' %>>
                     <%= company.name %>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
             background-color: #f4f6f9;
             padding: 20px;
         }
+
         .card {
             border: none;
             border-radius: 10px;
@@ -21,94 +23,137 @@
             padding: 10px;
             text-align: center;
         }
+
         .card h5 {
             font-size: 1.25rem;
             font-weight: 600;
         }
+
         .card p {
             margin: 0;
         }
+
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
         }
+
         .most-used-cards a {
             text-decoration: none;
             color: #333;
         }
+
         .most-used-cards .card {
             transition: all 0.3s ease-in-out;
         }
+
         .most-used-cards .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
+
         .hamburger {
             cursor: pointer;
             font-size: 1.5rem;
             color: #333;
         }
-        a{
+
+        a {
             text-decoration: none;
         }
 
         @media (max-width: 768px) {
-            .col-md-6{
+            .col-md-6 {
                 width: 50%;
             }
-            .col-md-6 p{
+
+            .col-md-6 p {
                 font-size: 15px;
-                font-weight:500;
+                font-weight: 500;
             }
-            .col-md-6 h5{
+
+            .col-md-6 h5 {
                 font-size: 15px;
             }
-            .card{
-                padding: 15px 10px 15px 10px ;
+
+            .card {
+                padding: 15px 10px 15px 10px;
                 text-align: left;
             }
-            
+
         }
     </style>
-    
+
 </head>
+
 <body>
-   
+
     <%- include('./navbar.ejs') %>
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Header Section -->
-        <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Profit and Loss</h1>
-            <i class="fas fa-bars hamburger" id="hamburger"></i>
-        </header>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header Section -->
+            <header class="mb-4 d-flex justify-content-between align-items-center">
+                <h1 class="fw-bold">Profit and Loss</h1>
+                <i class="fas fa-bars hamburger" id="hamburger"></i>
+            </header>
 
-        <input type="date">
-        <input type="date">
+            <div class="d-flex">
+                <input type="date" class="form-control w-50 mt-2 mb-5" id="startDate">
+                <input type="date" class="form-control w-50 mt-2  mb-5" id="endDate">
+                <button class="btn btn-primary mb-5 ms-2" onclick="dateSelector()">Submit</button>
+            </div>
 
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center bg-light">
+                        <h5>Gross Profit</h5>
+                        <p style="color: green;" id="grossProfit">SAR <%= grossProfit %>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center bg-light">
+                        <h5>Net Profit</h5>
+                        <p style="color: green;" id="netProfit">
+                           SAR <%= netProfit %>
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-        <div class="row">
+           <div class="row">
             <div class="col-md-6 mb-3">
                 <div class="card text-center bg-light">
-                    <h5>Gross Profit</h5>
-                    <p style="color: green;">SAR <%= grossProfit %></p>
+                    <h5>Total Opening Stock</h5>
+                    <p id="openingStock"><%= totalOpeningStock %></p>
                 </div>
             </div>
             <div class="col-md-6 mb-3">
                 <div class="card text-center bg-light">
-                    <h5>Net Profit</h5>
-                    <p style="color: green;">SAR 123</p>
+                    <h5>Total Closing Stock</h5>
+                    <p id="closingStock"><%= totalClosingStock %></p>
                 </div>
             </div>
+           </div>
+           <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card text-center bg-light">
+                    <h5>Other Income</h5>
+                    <p id="otherIncome"><%= totalOtherIncome %></p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card text-center bg-light">
+                    <h5>Other Expenses</h5>
+                    <p id="otherExpenses"><%= totalOtherExpenses %></p>
+                </div>
+            </div>
+           </div>
+
+
         </div>
-
-        <div class="card text-center bg-light mt-3">
-
-        </div>
-
-
-    </div>
 </body>
+
 </html>
 <script>
     const sidebar = document.getElementById('sidebar');
@@ -124,4 +169,28 @@
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
     });
+</script>
+<script>
+    async function dateSelector() {
+        const startDate = document.getElementById('startDate').value
+        const endDate = document.getElementById('endDate').value
+        try {
+            const response = await fetch(`/admin/profitAndLoss?start=${startDate}&&end=${endDate}`)
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch profit data");
+            }
+            const data = await response.json(); // Assuming backend sends JSON response
+            console.log(data);
+            document.getElementById('grossProfit').innerText = `SAR ${data.grossProfit || 0}`;
+            document.getElementById('openingStock').innerText = `Opening Stock: ${data.openingStock || 0}`;
+            document.getElementById('closingStock').innerText = `Closing Stock: ${data.closingStock || 0}`;
+            document.getElementById('otherIncome').innerText = `Other Income: ${data.otherIncome || 0}`;
+            document.getElementById('otherExpenses').innerText = `Other Expenses: ${data.otherExpenses || 0}`;
+            document.getElementById('netProfit').innerText = `Net Profit: ${data.netProfit || 0}`;
+        } catch (error) {
+            console.error("Error fetching profit data:", error);
+        }
+
+    }
 </script>

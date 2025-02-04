@@ -119,12 +119,13 @@
                 </div>
                 <div class="mt-2">
                     <h6>Select Companies:</h6>
-                    <% companies.forEach((company,index) => { %>
 
+                    <% companies.forEach((company,index) => { %>
                     <input type="checkbox" id="company1" name="companies" value="<%= company.id %>">
                     <label for="company1"><%= company.name %></label>
-
+                    <br>
                     <% }) %>
+
                 </div>
                     <div class="mt-3">
                     <button class="btn btn-success" type="submit">Add User</button>
@@ -137,13 +138,20 @@
     <script>
 
         function roleSelection(){
+            const role = document.getElementById('role').value
+            if(role != 'businessOwner'){
             Array.from(document.querySelectorAll('input[name="companies"]'))
             .map(checkbox => checkbox.style.display = 'none');
             Array.from(document.querySelectorAll('label[for="company1"]'))
             .map(checkbox => checkbox.style.display = 'none');
+            }else{
+                Array.from(document.querySelectorAll('input[name="companies"]'))
+            .map(checkbox => checkbox.style.display = 'inline');
+            Array.from(document.querySelectorAll('label[for="company1"]'))
+            .map(checkbox => checkbox.style.display = 'inline');
+            }
         }
 
-        
         document.getElementById("addUserForm").addEventListener("submit", function(event) {
         event.preventDefault(); 
 

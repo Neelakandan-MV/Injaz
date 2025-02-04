@@ -839,8 +839,6 @@ const adminController = {
         const user = req.session.user
         const company_id = req.params.id
         req.session.user.company_id = company_id
-
-
         res.redirect('/admin/dashboard');
     },
 
@@ -1712,21 +1710,95 @@ const adminController = {
         res.json(rates);
     },
 
-    viewProfitAndLoss:async(req,res)=>{
-        const user = req.session.user;
-        const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies`);
-        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [grossProfit] = await mysql.query(`SELECT 
-            COALESCE(SUM(CASE WHEN transaction_type = 'sale' THEN total_amount ELSE 0 END), 0) AS total_sales,
-            COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS total_purchases,
-            COALESCE(SUM(CASE WHEN transaction_type = 'sale' THEN total_amount ELSE 0 END), 0) - 
-            COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS gross_profit
-        FROM sales
-        `)
-        
-        res.render('admin/profitAndLoss.ejs',{currentCompany,companies,grossProfit:grossProfit[0]?.gross_profit})
+    viewProfitAndLoss: async (req, res) => {
+        try {
+            const user = req.session.user;
+            const companyId = user.company_id;
+            const { start, end } = req.query;
+    
+            const [companies] = await mysql.query(`SELECT * FROM companies`);
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+    
+            // Calculate Gross Profit (Sales - Purchases)
+            const [grossProfit] = await mysql.query(
+                `SELECT 
+                    COALESCE(SUM(CASE WHEN transaction_type = 'sale' THEN total_amount ELSE 0 END), 0) AS total_sales,
+                    COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS total_purchases
+                FROM sales
+                WHERE date BETWEEN ? AND ?`,
+                [start || '2000-01-01', end || '2099-12-31']
+            );
+    
+            const totalSales = grossProfit[0]?.total_sales || 0;
+            const totalPurchases = grossProfit[0]?.total_purchases || 0;
+            const grossProfitValue = totalSales - totalPurchases;
+    
+            const [otherIncome] = await mysql.query(
+                `SELECT COALESCE(SUM(amount), 0) AS total_income FROM other_income WHERE date BETWEEN ? AND ?`,
+                [start || '2000-01-01', end || '2099-12-31']
+            );
+            const totalOtherIncome = otherIncome[0]?.total_income || 0;
+    
+            const [otherExpenses] = await mysql.query(
+                `SELECT COALESCE(SUM(amount), 0) AS total_expenses FROM expenses WHERE date BETWEEN ? AND ?`,
+                [start || '2000-01-01', end || '2099-12-31']
+            );
+            const totalOtherExpenses = otherExpenses[0]?.total_expenses || 0;
+    
+            const [openingStock] = await mysql.query(
+                `SELECT COALESCE(SUM(stock * purchase_price), 0) AS opening_stock 
+                FROM items 
+                WHERE created_at < ?`,
+                [start || '2000-01-01']
+            );
+            const totalOpeningStock = openingStock[0]?.opening_stock || 0;
+
+            const [closingStock] = await mysql.query(
+                `SELECT COALESCE(SUM(stock * purchase_price), 0) AS closing_stock 
+                FROM items 
+                WHERE created_at <= ?`,
+                [end || '2099-12-31']
+            );
+            const totalClosingStock = closingStock[0]?.closing_stock || 0;
+
+    
+            const netProfit = (grossProfitValue + totalOtherIncome - totalOtherExpenses) + (totalClosingStock - totalOpeningStock);
+    
+            if (start && end) {
+                return res.json({
+                    grossProfit: grossProfitValue,
+                    netProfit,
+                    totalSales,
+                    totalPurchases,
+                    totalOtherIncome,
+                    totalOtherExpenses,
+                    totalOpeningStock,
+                    totalClosingStock
+                });
+            }
+    
+
+            res.render('admin/profitAndLoss.ejs', {
+                currentCompany,
+                companies,
+                grossProfit: grossProfitValue,
+                netProfit,
+                totalSales,
+                totalPurchases,
+                totalOtherIncome,
+                totalOtherExpenses,
+                totalOpeningStock,
+                totalClosingStock,
+                start,
+                end
+            });
+    
+        } catch (error) {
+            console.error("Error calculating profit and loss:", error);
+            res.status(500).send("Internal Server Error");
+        }
     }
+    
     
 
 

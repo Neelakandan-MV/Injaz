@@ -152,7 +152,7 @@
                             const baseCurrency = document.getElementById('base-currency').value;
                             // const targetCurrency = document.getElementById('target-currency').value;
                             try {
-                                const response = await fetch('/admin/getExchange-rates');
+                                const response = await fetch('/api/getExchange-rates');
 
                                 const rates = await response.json();
                                 console.log("Fetched Rates:", rates);
