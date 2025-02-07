@@ -163,7 +163,7 @@
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="Payment Type">Payment Type *</label>
-                            <select id="paymentType" name="paymentType" class="form-select" id="paymentType">
+                            <select id="paymentType" name="paymentType" class="form-select" id="paymentType" onchange="paymentTypeChange(this)">
                                 <option value="credit">Credit</option>
                                 <option value="cash">Cash</option>
                             </select>
@@ -270,6 +270,7 @@
     }
 
 
+
     document.addEventListener("DOMContentLoaded", () => {
             const prefix = "T";
             const randomNumber = Math.floor(1000 + Math.random() * 9000);
@@ -312,7 +313,7 @@
             <td><input type="text" id="freeQuantity" name="products[${count}][freeQuantity]"></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
             <td id="actionTd"><button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
-            </tr>
+        </tr>
         `;
 
         table.appendChild(row);
@@ -339,8 +340,13 @@
     });
     saleTotalInput.value = total
     saleTotalInput.dispatchEvent(new Event('change'));
-    
 }
+
+function paymentTypeChange(element){
+        alert(element.value)
+        const balanceDue = document.getElementById('balanceDue').value
+        const received = document.getElementById('received').value     
+    }
 function updateBalanceDue(){
     const saleTotalInput = document.getElementById('totalAmount')
     const balanceDue = document.getElementById('balanceDue')

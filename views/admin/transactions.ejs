@@ -119,11 +119,18 @@
 </body>
 </html>
 <script>
-    const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('nav ul');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
 
     hamburger.addEventListener('click', () => {
-        navMenu.classList.toggle('show');
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
     });
 </script>
 

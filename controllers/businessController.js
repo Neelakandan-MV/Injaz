@@ -1715,12 +1715,13 @@ const businessOwnerController = {
                 sale_products sp
             JOIN 
                 items i ON sp.item_id = i.id
+            WHERE 
+                sp.company_id = ?
             GROUP BY 
                 sp.item_id, i.item_name
             ORDER BY 
                 i.item_name
-        `);
-        console.log(items);
+        `,[companyId]);
 
         res.render('admin/totalDelivered.ejs',{companies,currentCompany,items})
         

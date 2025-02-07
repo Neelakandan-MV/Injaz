@@ -1914,6 +1914,8 @@ const adminController = {
 
         const [items] = await mysql.query(`
             SELECT 
+                s.customer_name AS party_id,
+                p.PartyName AS party_name,
                 sp.item_id,
                 i.item_name,
                 SUM(sp.delivered_quantity) AS total_delivered,
@@ -1922,15 +1924,54 @@ const adminController = {
             FROM 
                 sale_products sp
             JOIN 
-                items i ON sp.item_id = i.id
+                sales s ON sp.sale_id = s.id  -- Join sales to get party information
+            JOIN 
+                parties p ON s.customer_name = p.id  -- Join parties table to get party names
+            JOIN 
+                items i ON sp.item_id = i.id  -- Join items table to get item names
+            WHERE 
+                s.company_id = ?  -- Filter by company ID
             GROUP BY 
-                sp.item_id, i.item_name
+                s.customer_name, sp.item_id, i.item_name, p.PartyName
             ORDER BY 
-                i.item_name
-        `);
-        console.log(items);
+                p.PartyName, i.item_name
+        `, [companyId]);
+        
+        // console.log(items);
 
-        res.render('admin/totalDelivered.ejs',{companies,currentCompany,items})
+        const formattedData = items.reduce((acc, item) => {
+            // Find existing party in the accumulator
+            let party = acc.find(p => p.party_id === item.party_id);
+        
+            // If the party doesn't exist, create a new entry
+            if (!party) {
+                party = {
+                    party_id: item.party_id,
+                    party_name: item.party_name,
+                    products: []
+                };
+                acc.push(party);
+            }
+        
+            // Push the product details into the party's product array
+            party.products.push({
+                item_id: item.item_id,
+                item_name: item.item_name,
+                total_delivered: item.total_delivered,
+                total_quantity: item.total_quantity,
+                remaining_quantity: item.remaining_quantity
+            });
+        
+            return acc;
+        }, []);
+        
+        // console.log(JSON.stringify(formattedData, null, 2));
+        console.log(formattedData);
+        
+        
+        
+
+        res.render('admin/totalDelivered.ejs',{companies,currentCompany,items:formattedData})
         
     },
     
