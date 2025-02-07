@@ -205,7 +205,7 @@
                               <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[<%= index %>][deliveredQuantity]" value="<%= product.delivered_quantity?product.delivered_quantity:'0' %>"><span style="color: rgb(95, 95, 95);">(<%= product.delivered_quantity? product.quantity - product.delivered_quantity:'N/A'  %>)</span></div></td>
                               <td>
                                 <div class="d-flex">
-                                    <button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,'<%= index %>')">Free</button>
+                                    <!-- <button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,'<%= index %>')">Free</button> -->
                                     <button type="button" class="btn btn-warning btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#returnItemModal"  data-item-id="<%= product.id %>">Return</button>
                                     <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this,'<%= product.id %>','<%=product.quantity%>')">Remove</button>
                                     

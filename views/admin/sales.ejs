@@ -86,7 +86,7 @@
                 <thead class="table-light">
                     <tr>
                         <!-- Table Headers -->
-                        <th>Date</th><th>Party Name</th><th>Transaction Type</th><th>Payment Type</th><th>Amount</th><th>Balance Due</th><th>Invoice No.</th><th>Actions</th>
+                        <th>Date</th><th>Party Name</th><th>Amount</th><th>Total Quantity</th><th>Total Delivered Quantity</th><th>Actions</th>
                     </tr>
                 </thead>
 
@@ -96,7 +96,7 @@
 
                         <tr>
                             <!-- Table Data -->
-                            <td class="purchase-date"><%= formatDateToDDMMYYYY(item.date) %></td><td><%= item.customer_name %></td><td><%= item.transaction_type %></td><td><%= item.payment_type %></td><td>SAR<%= item.total_amount %></td><td>SAR<%= item.balance_due %></td><td><%= item.invoice_number %></td>
+                            <td class="purchase-date"><%= formatDateToDDMMYYYY(item.date) %></td><td><%= item.customer_name %></td><td>SAR<%= item.total_amount %></td><td><%= item.total_quantity %></td><td><%= item.total_delivered_quantity %></td>
 
                             <!-- Action Buttons -->
                             <td class="d-flex">

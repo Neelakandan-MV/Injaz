@@ -78,6 +78,8 @@ router.get('/admin/exchange-rates',isLoggedAdmin,adminController.viewexchangeRat
 router.post('/admin/exchange-rates',isLoggedAdmin,adminController.updateExchangeRates);
 router.get('/api/getExchange-rates',adminController.getExchangeRate)
 router.get('/admin/profitAndLoss',isLoggedAdmin,adminController.viewProfitAndLoss)
+router.get('/admin/partyTransactions',isLoggedAdmin,adminController.viewPartyTransactions)
+router.get('/admin/delivered',isLoggedAdmin,adminController.viewTotalDelivered)
 
   
 

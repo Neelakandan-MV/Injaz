@@ -85,12 +85,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>Date</th>
-                            <th>Invoice No.</th>
                             <th>Party Name</th>
-                            <th>Transaction Type</th>
-                            <th>Payment Type</th>
                             <th>Amount</th>
-                            <th>Balance Due</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -102,22 +98,22 @@
                                     <%= formatDateToDDMMYYYY(item.date)%>
                                 </td>
 
-                                <td>
+                                <!-- <td>
                                     <%= item.invoice_number %>
-                                </td>
+                                </td> -->
                                 <td>
                                     <%= item.customer_name %>
                                 </td>
-                                <td>
+                                <!-- <td>
                                     <%= item.transaction_type %>
-                                </td>
-                                <td>
+                                </td> -->
+                                <!-- <td>
                                     <%= item.payment_type %>
-                                </td>
+                                </td> -->
                                 <td>SAR <%= item.total_amount %>
                                 </td>
-                                <td> SAR <%= item.balance_due %>
-                                </td>
+                                <!-- <td> SAR <%= item.balance_due %>
+                                </td> -->
                                 <td class="d-flex">
                                     <a href="/business-owner/transactionEdit?id=<%=item.id%>" class="btn btn-success btn-sm"><i
                                             class="fas fa-edit"></i></a>

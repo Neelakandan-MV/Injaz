@@ -178,18 +178,25 @@ const adminController = {
         }
 
         const [items] = await mysql.query(`
-    SELECT 
-        sales.*, 
-        parties.PartyName AS customer_name
-    FROM 
-        sales
-    LEFT JOIN 
-        parties ON sales.customer_name = parties.id
-    WHERE 
-        sales.company_id = ? 
-        AND sales.transaction_type = 'sale'
-`, [companyId]);
+            SELECT 
+                sales.*, 
+                parties.PartyName AS customer_name,
+                COALESCE(SUM(sale_products.quantity), 0) AS total_quantity,
+                COALESCE(SUM(sale_products.delivered_quantity), 0) AS total_delivered_quantity
+            FROM 
+                sales
+            LEFT JOIN 
+                parties ON sales.customer_name = parties.id
+            LEFT JOIN 
+                sale_products ON sales.id = sale_products.sale_id
+            WHERE 
+                sales.company_id = ? 
+                AND sales.transaction_type = 'sale'
+            GROUP BY 
+                sales.id, parties.PartyName
+        `, [companyId]);
 
+        console.log(items);
 
         res.render("admin/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
     },
@@ -1272,6 +1279,7 @@ const adminController = {
                 i.stock, 
                 i.unit, 
                 i.sale_price,
+                i.purchase_price,
                 COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity ELSE 0 END), 0) AS quantity_out,  -- Total quantity sold
                 COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity ELSE 0 END), 0) AS quantity_in  -- Total quantity purchased
             FROM items i
@@ -1797,7 +1805,135 @@ const adminController = {
             console.error("Error calculating profit and loss:", error);
             res.status(500).send("Internal Server Error");
         }
-    }
+    },
+
+    viewPartyTransactions:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+        const {partyId} = req.query
+        console.log(partyId);
+        
+
+        const [results] = await mysql.query(`
+            SELECT 
+                p.id AS party_id,
+                p.PartyName AS party_name,
+                p.Phone,
+                p.Email,
+                p.Address,
+                p.profile_picture,
+                p.payable,
+                p.receivable,
+                NULL AS transaction_id,
+                NULL AS transaction_date,
+                NULL AS transaction_amount,
+                NULL AS transaction_balance_due,
+                NULL AS transaction_type,
+                pp.id AS payment_id,
+                pp.date AS payment_date,
+                pp.amount AS payment_amount,
+                pp.payment_type AS payment_type
+            FROM 
+                parties p
+            LEFT JOIN 
+                party_payments pp ON p.id = pp.party_id
+            WHERE 
+                p.id = ?
+        
+            UNION ALL
+        
+            SELECT 
+                p.id AS party_id,
+                p.PartyName AS party_name,
+                p.Phone,
+                p.Email,
+                p.Address,
+                p.profile_picture,
+                p.payable,
+                p.receivable,
+                t.id AS transaction_id,
+                t.date AS transaction_date,
+                t.total_amount AS transaction_amount,
+                t.balance_due AS transaction_balance_due,
+                t.transaction_type AS transaction_type,
+                NULL AS payment_id,
+                NULL AS payment_date,
+                NULL AS payment_amount,
+                NULL AS payment_type
+            FROM 
+                parties p
+            LEFT JOIN 
+                sales t ON p.id = t.customer_name
+            WHERE 
+                p.id = ?`, [partyId,partyId]);
+
+        const partiesMap = {};
+
+        // Process the results into the desired structure
+        results.forEach(row => {
+            // If the party doesn't exist in the map, initialize it
+            if (!partiesMap[row.party_id]) {
+                partiesMap[row.party_id] = {
+                    id: row.party_id,
+                    name: row.party_name,
+                    phone: row.Phone,
+                    email: row.Email,
+                    address: row.Address,
+                    profile_picture: row.profile_picture,
+                    payable : row.payable,
+                    receivable : row.receivable,
+                    transactions: []
+                };
+            }
+
+            // Add the transaction details to the corresponding party
+            if (row?.transaction_id || row?.payment_id) {
+                partiesMap[row.party_id].transactions.push({
+                    id: row.transaction_id || row.payment_id,
+                    date: row.transaction_date || row.payment_date,
+                    amount: row.transaction_amount || row.payment_amount,
+                    balance_due: row.transaction_balance_due || 0,
+                    transaction_type: row.transaction_type || row.payment_type,
+                });
+            }
+        });
+
+        const parties = Object.values(partiesMap);
+
+        res.render('admin/partyTransactions.ejs',{companies,currentCompany,parties})
+    },
+
+    viewTotalDelivered:async(req,res)=>{
+
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+
+        const [items] = await mysql.query(`
+            SELECT 
+                sp.item_id,
+                i.item_name,
+                SUM(sp.delivered_quantity) AS total_delivered,
+                SUM(sp.quantity) AS total_quantity,
+                (SUM(sp.quantity) - SUM(sp.delivered_quantity)) AS remaining_quantity
+            FROM 
+                sale_products sp
+            JOIN 
+                items i ON sp.item_id = i.id
+            GROUP BY 
+                sp.item_id, i.item_name
+            ORDER BY 
+                i.item_name
+        `);
+        console.log(items);
+
+        res.render('admin/totalDelivered.ejs',{companies,currentCompany,items})
+        
+    },
+    
     
     
 

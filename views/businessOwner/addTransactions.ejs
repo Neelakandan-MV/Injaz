@@ -185,8 +185,8 @@
                                 <th>#</th>
                                 <th>Item</th>
                                 <th>Quantity (stock)</th>
-                                <th>Unit<p style="font-size: 12px; color: gray;">(kg,mtr,ltr,pac)</p>
-                                </th>
+                                <!-- <th>Unit<p style="font-size: 12px; color: gray;">(kg,mtr,ltr,pac)</p>
+                                </th> -->
                                 <th>Price/Unit<p style="font-size: 12px; color: gray;">(Price per Unit)</p>
                                 </th>
                                 <!-- <th>Discount (%)</th>
@@ -303,10 +303,10 @@
             <td></td>
             <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
             <td><div class="d-flex"><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this,'${count}')" required><span class="stockDisplay" id="stockDisplay${count}"></span></div></td>
-            <td><input type="text"  id="unit${count}" name="products[${count}][unit]" required ></td>
+            <input type="hidden"  id="unit${count}" name="products[${count}][unit]" required ></td>
             <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this,'${count}')" onchange="updateWholesalePrice()" required ></td>
-            <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this,'${count}')" required >
-            <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this,'${count}')" required>
+            <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this,'${count}')" required ></td>
+            <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this,'${count}')" required></td>
             <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
             <td><input type="text" id="deliveredQuantity" name="products[${count}][deliveredQuantity]"></td>
             <td><input type="text" id="freeQuantity" name="products[${count}][freeQuantity]"></td>
@@ -388,19 +388,26 @@ function updateReceived(){
 // whole sale
     if(selectedProduct.wholesale_quantity_1 > 0){
 
+        let priceInput = document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value;
+        console.log(priceInput);
+        
+        
         if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
+            console.log(selectedProduct.wholesale_price_1);
         }else if(quantity>=selectedProduct.wholesale_quantity_2 && quantity<selectedProduct.wholesale_quantity_3){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_2;
+            console.log(selectedProduct.wholesale_price_2);
         }else if(quantity>=selectedProduct.wholesale_quantity_3){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_3;
+            console.log(selectedProduct.wholesale_price_3);
         }else if(quantity<selectedProduct.wholesale_quantity_1){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
+            console.log(selectedProduct.sale_price);
         }
-
     }
     
-
+    if(selectedProduct.service_charge_quantity_1 > 0){
         if(quantity >= 1 && quantity < selectedProduct.service_charge_quantity_1){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.service_charge_1) + Number(selectedProduct.sale_price)
         }else if(quantity >= selectedProduct.service_charge_quantity_1 && quantity < selectedProduct.service_charge_quantity_2){
@@ -410,7 +417,7 @@ function updateReceived(){
         }else{
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.sale_price)
         }
-    
+    }
             
         const pricePerUnit = parseFloat(row.querySelector(`[name^="products"][name$="[pricePerUnit]"]`)?.value) || 0;
         const discount = parseFloat(row.querySelector(`[name^="products"][name$="[discount]"]`)?.value) || 0;

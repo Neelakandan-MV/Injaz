@@ -40,12 +40,8 @@ WHERE JSON_CONTAINS(
     );
     
       if (companyRows.length > 0) {
-        if (companyRows.length > 1) {
-          company_id = companyRows[1].id;
-        } else {
           company_id = companyRows[0].id;
         }
-      }
     }
     
     

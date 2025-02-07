@@ -84,12 +84,11 @@
                         <table class="table table-bordered ">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Item Code</th>
+                                    <!-- <th>Item Code</th> -->
                                     <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Sale Price</th>
+                                    <!-- <th>Sale Price</th> -->
                                     <th>Purchase Price</th>
-                                    <th>Image</th>
+                                    <!-- <th>Image</th> -->
                                     <th>Stock</th>
                                 </tr>
                             </thead>
@@ -97,24 +96,25 @@
                                 <% items.forEach(item=> { %>
                                     <!-- Replace these rows with dynamic data -->
                                     <tr>
-                                        <td>
+                                        <!-- <td>
                                             <%= item.item_code %>
-                                        </td>
+                                        </td> -->
                                         <td>
                                             <%= item.item_name %>
                                         </td>
-                                        <td>
+                                        <!-- <td>
                                             <%= item.categoryName ? item.categoryName : 'N/A' %>
-                                        </td>
-                                        <td>
+                                        </td> -->
+                                        <!-- <td>
                                             <%= item.sale_price %>
-                                        </td>
+                                        </td> -->
                                         <td>
                                             <%= item.purchase_price %>
                                         </td>
-                                        <td><img src="/uploads/<%= item.image %>" class="img-sm "
-                                                alt=""></td>
-                                                <td><%= item.stock %></td>
+                                        <!-- <td><img src="/uploads/<%= item.image %>" class="img-sm "
+                                                alt=""></td> -->
+                                                
+                                        <td><%= item.stock %></td>
                                     </tr>
                                     <% }); %>
 

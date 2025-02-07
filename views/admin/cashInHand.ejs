@@ -7,6 +7,7 @@
     <title>Cash In Hand</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -116,27 +117,30 @@
                 
             </div>
             <a href="/admin/adjustCash"><button class="btn btn-primary">Adjust Cash</button></a>
-            <div class="transaction-table">
-                
-                <table id="Payable">
-                    <thead>
-                        <tr>
-                            <th>Transaction Details</th>
-                            <th>Date</th>
-                            <th>Amount(SAR)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% transactionDetails.forEach(element=> { %>
-                            <% if(element.received_amount > 0){ %>
-                            <tr>
-                                <td><h5> <%= element.transaction_type %></h5><% if(element.PartyName){ %><span><%= element.PartyName %></span><% } %></td>
-                                <td><%= formatDateToDDMMYYYY(element.date) %></td>
-                                <td <% if(element.transaction_type == 'sale' || element?.money_type === 'money_in'){ %>style="color: green;" <% }else{ %>style="color: red;"<% } %>><%= element.received_amount %></td>
-                            </tr>
-                            <% }}); %>
-                    </tbody>
-                </table>
+            <div class="container mt-4">
+                <div class="row">
+                    <% transactionDetails.forEach(element => { %>
+                        <% if (element.received_amount > 0) { %>
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><%= element.transaction_type.toUpperCase() %></h5>
+                                        <% if (element.PartyName) { %>
+                                            <h6 class="text-muted"><%= element.PartyName %></h6>
+                                        <% } %>
+                                        <p class="card-text">
+                                            <strong>Date:</strong> <%= formatDateToDDMMYYYY(element.date) %> <br>
+                                            <strong>Amount:</strong> 
+                                            <span style="font-weight: bold; <% if (element.transaction_type == 'sale' || element?.money_type === 'money_in') { %> color: green; <% } else { %> color: red; <% } %>">
+                                                SAR <%= element.received_amount %>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+                    <% }); %>
+                </div>
             </div>
         </div>
 </body>

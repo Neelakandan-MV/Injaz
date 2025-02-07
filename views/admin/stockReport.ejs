@@ -139,10 +139,11 @@
             <tr>
                 <th>Item Name</th>
                 <th>Stock Quantity</th>
-                <th>Unit</th>
+                <!-- <th>Unit</th> -->
                 <th>Sale Price</th>
-                <th>Quantity In</th>
-                <th>Quantity Out</th>
+                <th>Purchase Price</th>
+                <!-- <th>Quantity In</th>
+                <th>Quantity Out</th> -->
                 <th>Actions</th>
             </tr>
         </thead>
@@ -151,10 +152,11 @@
                 <tr>
                     <td><%= item.item_name %></td>
                     <td><%= item.stock %></td>
-                    <td><%= item.unit %></td>
+                    <!-- <td><%= item.unit %></td> -->
                     <td><%= item.sale_price %></td>
-                    <td style="color: red;"><%= item.quantity_in %></td>
-                    <td style="color:green"><%= item.quantity_out %></td>
+                    <td><%= item.purchase_price %></td>
+                    <!-- <td style="color: red;"><%= item.quantity_in %></td>
+                    <td style="color:green"><%= item.quantity_out %></td> -->
                     <td class="d-flex"><a href="/admin/adjustStock?item_id=<%= item.id %>" class="btn btn-success btn-sm">Adjust Stock</a>
                     <a href="/admin/adjustStockDetails?item_id=<%= item.id %>" class="btn btn-success btn-sm ms-2">View</a></td>
                 </tr>

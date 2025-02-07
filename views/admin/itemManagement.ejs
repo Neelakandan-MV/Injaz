@@ -78,12 +78,12 @@
                         <table class="table table-bordered">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Item Code</th>
+                                    <!-- <th>Item Code</th> -->
                                     <th>Name</th>
-                                    <th>Category</th>
-                                    <th>Sale Price</th>
+                                    <!-- <th>Category</th> -->
+                                    <!-- <th>Sale Price</th> -->
                                     <th>Purchase Price</th>
-                                    <th>Image</th>
+                                    <!-- <th>Image</th> -->
                                     <th>Stock</th>
                                     <th>Actions</th>
                                 </tr>
@@ -92,12 +92,12 @@
                                 <% items.forEach(item => { %>
                                 <!-- Replace these rows with dynamic data -->
                                 <tr>
-                                    <td><%= item.item_code %></td>
+                                    <!-- <td><%= item.item_code %></td> -->
                                     <td><%= item.item_name %></td>
-                                    <td><%= item.categoryName ? item.categoryName : 'N/A' %></td>
-                                    <td><%= item.sale_price %></td>
+                                    <!-- <td><%= item.categoryName ? item.categoryName : 'N/A' %></td> -->
+                                    <!-- <td><%= item.sale_price %></td> -->
                                     <td><%= item.purchase_price %></td>
-                                    <td><img src="/uploads/<%= item.image %>" class="img-sm img-thumbnail" alt=""></td>
+                                    <!-- <td><img src="/uploads/<%= item.image %>" class="img-sm img-thumbnail" alt=""></td> -->
                                     <td><%= item.stock %></td>
                                     <td>
                                         <a class="btn btn-sm btn-warning" href="/admin/editItems?item_id=<%= item.id %>"><i class="fas fa-edit"></i> Edit</a>

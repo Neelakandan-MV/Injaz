@@ -67,6 +67,8 @@ router.post('/business-owner/addPaymentIn',isLogged,businessController.addPaymen
 router.get('/business-owner/addPaymentOut',isLogged,businessController.viewAddPaymentOut);
 router.post('/business-owner/addPaymentOut',isLogged,businessController.addPaymentOut);
 router.get('/business-owner/calculator',isLogged,businessController.viewCalculator);
+router.get('/business-owner/partyTransactions',isLogged,businessController.viewPartyTransactions)
+router.get('/business-owner/delivered',isLogged,businessController.viewTotalDelivered)
 
 
 
