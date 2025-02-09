@@ -194,6 +194,7 @@
                                 <th>Total (SAR)</th>
                                 <th>Delivered</th>
                                 <th>Free</th>
+                                <th>Serial Number</th>
                                 <th id="actionTh">Action</th>
                             </tr>
                         </thead>
@@ -311,6 +312,7 @@
             <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
             <td><input type="text" id="deliveredQuantity" name="products[${count}][deliveredQuantity]"></td>
             <td><input type="text" id="freeQuantity" name="products[${count}][freeQuantity]"></td>
+            <td><input type="text"  name="products[${count}][serial_number]"></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
             <td id="actionTd"><button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
         </tr>
@@ -681,18 +683,30 @@ window.onload = setDefaultDate;
 <script>
     let allowSubmit = false; 
 
-    document.getElementById("saleForm").addEventListener("submit", async function(event) {
+    document.getElementById("saleForm").addEventListener("submit", function(event) {
         if (!allowSubmit) {
             event.preventDefault(); 
-            await downloadPdf();
-            setTimeout(()=>{
-                this.submit()
-            },2000)
-            
-            
+            Swal.fire({
+                title: "Do you want to Download Invoice?",
+                showDenyButton: true,
+                confirmButtonText: "Yes",
+                denyButtonText: `No`
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await downloadPdf();
+                    setTimeout(() => {
+                        allowSubmit = true;
+                        event.target.submit();
+                    }, 2000);
+                } else if (result.isDenied) {
+                    allowSubmit = true;
+                    event.target.submit();
+                }
+            });
         }
     });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </html>

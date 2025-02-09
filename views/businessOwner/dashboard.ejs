@@ -77,7 +77,7 @@
     <div class="main-content">
         <!-- Header Section -->
         <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Injaz Dashboard</h1>
+            <h1 class="fw-bold"><%= currentCompany[0].name %></h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
 
@@ -86,7 +86,7 @@
                 <a href="/business-owner/totalReceivable">
                 <div class="card text-center bg-light">
                     <h5>To Receive</h5>
-                    <p class="text-success display-6">SAR <%= totalReceivable ? totalReceivable : 0 %></p>
+                    <!-- <p class="text-success display-6">SAR <%= totalReceivable ? totalReceivable : 0 %></p> -->
                     <!-- <p class="text-muted">You don’t have any receivables as of now.</p> -->
                 </div></a>
             </div>
@@ -94,7 +94,7 @@
                 <a href="/business-owner/totalPayable">
                 <div class="card text-center bg-light">
                     <h5>To Pay</h5>
-                    <p class="display-6" style="color: red;">SAR <%= totalPayable ? totalPayable : 0 %></p>
+                    <!-- <p class="display-6" style="color: red;">SAR <%= totalPayable ? totalPayable : 0 %></p> -->
                     <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
                 </div></a>
             </div>

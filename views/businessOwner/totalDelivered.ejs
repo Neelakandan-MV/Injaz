@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delivery Details</title>
+    <title>Total Delivered by Parties</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -102,31 +103,61 @@
 </head>
 
 <body>
-    <%- include('./aside.ejs')  %>
+    <%- include('./aside')  %>
     <div class="main-content">
         <div class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Delivery Details</h1>
+            <h1 class="fw-bold">Total Delivered by Parties</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </div>
 
-        <div class="container mt-4">
+        <div class="container mt-4 ">
             <div class="row">
                 <% items.forEach(item => { %>
-                        <!-- <a href="/admin/partyTransactions?partyId=<%= item.id %>"> -->
-                        <div class="col-md-4 col-sm-6 mb-3">
-                            <div class="card shadow-sm border-0">
+                        <div class="col-md-4 col-md-6 mb-3">
+                            <div class="card shadow-sm border-0 ">
                                 <div class="card-body text-center">
-                                    <h5 class="card-title"><%= item.item_name %></h5>
-                                    <span class="card-text text-muted">Total Quantity : <%= item.total_quantity|| 0 %></span>
-                                    <br>
-                                    <span class="card-text text-muted">Total Delivered : <%= item.total_delivered ||0 %></span>
-                                    <br>
-                                    <span class="card-text text-muted">Delivery Pending : <%= item.remaining_quantity||0 %></span>
+                                     <!-- <div class="d-flex"> 
+                                        <span>Party Name: </span>
+                                        <h5 class="card-title"><%= item.party_name %></h5>
+                                        </div> -->
+                                    <!-- <table class="table table-responsive table-bordered table-dark" >
+                                        <thead>
+                                            <tr>
+                                                <th>Item Name</th>
+                                                <th>Total Delivered</th>
+                                                <th>Pending Delivery</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% let total_delivered = 0 %>
+                                    <% item.products.forEach(product => {%>
+                                        <tr>
+                                            <td><%= product.item_name|| 'N/A' %></td>
+                                            <td><%= product.total_delivered ||0 %></td>
+                                            <td><%= product.remaining_quantity||0 %></td>
+                                            <% total_delivered += Number(product.total_delivered) %>
+                                        </tr>
+                                    <% });  %>
+                                </tbody>
+                                </table> -->
+                                <!-- <div class="d-flex"> -->
+                                    <!-- <span>Party Name: </span> -->
+                                    <h5 class="card-title"><%= item.party_name %> </h5>
+                                    <h6>Total Delivered : <%= total_delivered %></h6>
                                     
+                                <!-- </div>  -->
+                                     
+                                <a href="/business-owner/deliveryDetails?partyId=<%= item.party_id %>" 
+                                        class="d-block text-decoration-none text-muted btn btn-warning">
+                                         View Details
+                                     </a>
+                                
+                                <!-- </div> -->
+                                
                                 </div>
                             </div>
                         </div>
-                    <!-- </a> -->
+                    </a>
                     <% }); %>
             </div>
         </div>

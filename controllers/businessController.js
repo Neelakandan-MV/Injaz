@@ -652,7 +652,7 @@ const businessOwnerController = {
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id, opening_cash, closing_cash) VALUES (?,?,?,?,?,?,?,?,?)`,
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
         if (products) {
-            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit,free_quantity) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.freeQuantity])]);
+            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit,free_quantity,serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.freeQuantity,product.serial_number])]);
 
             //controlling stock and cash in hand
             if (transactionType === "purchase") {
@@ -1706,6 +1706,8 @@ const businessOwnerController = {
 
         const [items] = await mysql.query(`
             SELECT 
+                s.customer_name AS party_id,
+                p.PartyName AS party_name,
                 sp.item_id,
                 i.item_name,
                 SUM(sp.delivered_quantity) AS total_delivered,
@@ -1714,18 +1716,90 @@ const businessOwnerController = {
             FROM 
                 sale_products sp
             JOIN 
-                items i ON sp.item_id = i.id
+                sales s ON sp.sale_id = s.id  -- Join sales to get party information
+            JOIN 
+                parties p ON s.customer_name = p.id  -- Join parties table to get party names
+            JOIN 
+                items i ON sp.item_id = i.id  -- Join items table to get item names
             WHERE 
-                sp.company_id = ?
+                s.company_id = ?  -- Filter by company ID
             GROUP BY 
-                sp.item_id, i.item_name
+                s.customer_name, sp.item_id, i.item_name, p.PartyName
             ORDER BY 
-                i.item_name
-        `,[companyId]);
+                p.PartyName, i.item_name
+        `, [companyId]);
+        
+        // console.log(items);
 
-        res.render('admin/totalDelivered.ejs',{companies,currentCompany,items})
+        const formattedData = items.reduce((acc, item) => {
+            // Find existing party in the accumulator
+            let party = acc.find(p => p.party_id === item.party_id);
+        
+            // If the party doesn't exist, create a new entry
+            if (!party) {
+                party = {
+                    party_id: item.party_id,
+                    party_name: item.party_name,
+                    products: []
+                };
+                acc.push(party);
+            }
+        
+            // Push the product details into the party's product array
+            party.products.push({
+                item_id: item.item_id,
+                item_name: item.item_name,
+                total_delivered: item.total_delivered,
+                total_quantity: item.total_quantity,
+                remaining_quantity: item.remaining_quantity
+            });
+        
+            return acc;
+        }, []);
+        console.log(formattedData);
+        
+        
+        // console.log(JSON.stringify(formattedData, null, 2));
+        res.render('businessOwner/totalDelivered.ejs',{companies,currentCompany,items:formattedData})
         
     },
+
+    viewDeliveryDetails:async(req,res)=>{   
+        
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+
+        const partyId = req.query.partyId
+        console.log(partyId);
+        
+
+        try {
+            // Fetch pending deliveries from sale_products where quantity > delivered_quantity
+            const [pendingSales] = await mysql.query(`
+                SELECT sp.item_id,sp.serial_number, sp.product_name, sp.sale_id, sp.quantity AS total_quantity, 
+                       sp.delivered_quantity, 
+                       (sp.quantity - sp.delivered_quantity) AS remaining_quantity
+                FROM sale_products sp
+                JOIN sales s ON sp.sale_id = s.id
+                WHERE s.customer_name = ? 
+                      AND sp.quantity > sp.delivered_quantity
+                      AND s.transaction_type = 'sale'
+            `, [partyId,partyId]);
+    
+            // Fetch party name
+            const [party] = await mysql.query(`SELECT PartyName as party_name FROM parties WHERE id = ?`, [partyId]);
+
+        res.render('businessOwner/deliveryDetails.ejs', {
+            party_name: party[0]?.party_name || "Unknown",
+            pendingSales: pendingSales, companies,currentCompany
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error");
+    }
+}
 
     
 }

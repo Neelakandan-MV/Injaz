@@ -794,7 +794,7 @@ const adminController = {
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
         }
         if (products) {
-            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit])]);
+            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit, serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.serial_number])]);
 
             //controlling stock
             if (transactionType === "purchase") {
@@ -1964,16 +1964,44 @@ const adminController = {
         
             return acc;
         }, []);
-        
-        // console.log(JSON.stringify(formattedData, null, 2));
-        console.log(formattedData);
-        
-        
-        
+    
 
         res.render('admin/totalDelivered.ejs',{companies,currentCompany,items:formattedData})
         
     },
+    viewDeliveryDetails:async(req,res)=>{   
+        
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+
+        const partyId = req.query.partyId
+
+        try {
+            // Fetch pending deliveries from sale_products where quantity > delivered_quantity
+            const [pendingSales] = await mysql.query(`
+                SELECT sp.item_id,sp.serial_number, sp.product_name,sp.sale_id, sp.quantity AS total_quantity, 
+                       sp.delivered_quantity, 
+                       (sp.quantity - sp.delivered_quantity) AS remaining_quantity
+                FROM sale_products sp
+                JOIN sales s ON sp.sale_id = s.id
+                WHERE s.customer_name = ?
+                      AND sp.quantity > sp.delivered_quantity
+            `, [partyId,partyId]);
+    
+            // Fetch party name
+            const [party] = await mysql.query(`SELECT PartyName as party_name FROM parties WHERE id = ?`, [partyId]);
+
+        res.render('admin/deliveryDetails', {
+            party_name: party[0]?.party_name || "Unknown",
+            pendingSales: pendingSales, companies,currentCompany
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error");
+    }
+}
     
     
     

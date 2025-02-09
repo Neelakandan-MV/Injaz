@@ -118,9 +118,10 @@
                         <div class="col-md-4 col-sm-6 mb-3">
                             <div class="card shadow-sm border-0">
                                 <div class="card-body text-center">
-                                    <h5 class="card-title"><%= party.PartyName %></h5>
-                                    <p class="card-text text-muted">Payable</p>
-                                    <h6 class="fw-bold text-danger">SAR <%= party.payable %></h6>
+                                    <div class="d-flex">
+                                    <h5 ><%= party.PartyName %> : </h5>
+                                    <h5 class="fw-bold text-danger"> SAR <%= party.payable %></h5>
+                                </div>
                                 </div>
                             </div>
                         </div>

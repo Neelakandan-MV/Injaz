@@ -80,6 +80,7 @@ router.get('/api/getExchange-rates',adminController.getExchangeRate)
 router.get('/admin/profitAndLoss',isLoggedAdmin,adminController.viewProfitAndLoss)
 router.get('/admin/partyTransactions',isLoggedAdmin,adminController.viewPartyTransactions)
 router.get('/admin/delivered',isLoggedAdmin,adminController.viewTotalDelivered)
+router.get('/admin/deliveryDetails',isLoggedAdmin,adminController.viewDeliveryDetails)
 
   
 
