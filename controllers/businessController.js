@@ -1756,7 +1756,6 @@ const businessOwnerController = {
         
             return acc;
         }, []);
-        console.log(formattedData);
         
         
         // console.log(JSON.stringify(formattedData, null, 2));
@@ -1772,13 +1771,14 @@ const businessOwnerController = {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
 
         const partyId = req.query.partyId
-        console.log(partyId);
+        console.log(companyId);
+        
         
 
         try {
             // Fetch pending deliveries from sale_products where quantity > delivered_quantity
             const [pendingSales] = await mysql.query(`
-                SELECT sp.item_id,sp.serial_number, sp.product_name, sp.sale_id, sp.quantity AS total_quantity, 
+                SELECT sp.item_id,sp.serial_number,sp.company_id, sp.product_name, sp.sale_id, sp.quantity AS total_quantity, 
                        sp.delivered_quantity, 
                        (sp.quantity - sp.delivered_quantity) AS remaining_quantity
                 FROM sale_products sp
@@ -1786,7 +1786,11 @@ const businessOwnerController = {
                 WHERE s.customer_name = ? 
                       AND sp.quantity > sp.delivered_quantity
                       AND s.transaction_type = 'sale'
-            `, [partyId,partyId]);
+                      AND sp.company_id = ?
+                      AND s.company_id = ?
+            `, [partyId,companyId,companyId]);
+            console.log(pendingSales);
+            
     
             // Fetch party name
             const [party] = await mysql.query(`SELECT PartyName as party_name FROM parties WHERE id = ?`, [partyId]);

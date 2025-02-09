@@ -1988,7 +1988,10 @@ const adminController = {
                 JOIN sales s ON sp.sale_id = s.id
                 WHERE s.customer_name = ?
                       AND sp.quantity > sp.delivered_quantity
-            `, [partyId,partyId]);
+                      AND s.transaction_type = 'sale'
+                      AND sp.company_id = ?
+                      AND s.company_id = ?
+            `, [partyId,companyId,companyId]);
     
             // Fetch party name
             const [party] = await mysql.query(`SELECT PartyName as party_name FROM parties WHERE id = ?`, [partyId]);
