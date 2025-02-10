@@ -772,4 +772,65 @@ window.onload = setDefaultDate;
    
       </script>
 
+<script>
+    async function importContacts() {
+       if ('contacts' in navigator && 'ContactsManager' in window) {
+           try {
+               const props = ['name', 'tel', 'email', 'address'];
+               const contacts = await navigator.contacts.select(props, { multiple: true });
+               console.log(contacts);
+   
+               // Prepare the contacts to be sent to the server
+   
+               // Send contacts to the server
+               const response = await fetch('/admin/add-contacts', {
+                   method: 'POST',
+                   headers: {
+                       'Content-Type': 'application/json',
+                   },
+                   body: JSON.stringify({ contacts }),
+               })
+               .then(response => {
+               if (response.ok) {
+                   return response.json();
+               } else if (response.status === 409) {
+                   return response.json().then(data => {
+                       throw new Error(data.data);
+                   });
+               } else {
+                   throw new Error('Failed to import contacts');
+               }
+           })
+           .then(data => {
+               Swal.fire({
+               title: `${data.data}`,
+               icon: "success",
+               draggable: false
+               });
+               setTimeout(()=>{
+                   window.location.reload()
+               },300)
+           })
+           .catch(error => {
+               Swal.fire({
+                   icon: "error",
+                   title: "Oops...",
+                   text: `${error.message}`
+                   });
+           });
+           } catch (error) {
+               console.error('Error accessing contacts:', error);
+           }
+       } else {
+           Swal.fire({
+                   icon: "error",
+                   title: "Oops...",
+                   text: "Contact Picker is not supported on this device.",
+                   footer:'Try again from mobile devices'
+                   });
+       }
+   }
+   
+      </script>
+
 </html>

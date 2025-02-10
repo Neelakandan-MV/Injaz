@@ -67,7 +67,7 @@ router.get('/admin/cashInHand',isLoggedAdmin,adminController.viewCashInHand);
 router.get('/admin/totalReceivable',isLoggedAdmin,adminController.totalReceivable);
 router.get('/admin/totalPayable',isLoggedAdmin,adminController.totalPayable);
 router.post('/admin/return',isLoggedAdmin,adminController.itemReturn);
-router.post('/admin/add-contacts',isLoggedAdmin,adminController.addContacts);
+router.post('/admin/add-contacts',adminController.addContacts);
 router.get('/admin/adjustCash',isLoggedAdmin,adminController.viewAdjustCash);
 router.post('/admin/adjustCash',isLoggedAdmin,adminController.adjustCash);
 router.get('/admin/addPaymentIn',isLoggedAdmin,adminController.viewAddPaymentIn);
