@@ -118,7 +118,7 @@
                                 <div class="card-body text-center">
                                      <!-- <div class="d-flex"> 
                                         <span>Party Name: </span>
-                                        <h5 class="card-title"><%= item.party_name %></h5>
+                                        <h5 class="card-title"><%= item.item_name %></h5>
                                         </div> -->
                                     <!-- <table class="table table-responsive table-bordered table-dark" >
                                         <thead>
@@ -130,24 +130,24 @@
                                         </thead>
                                         <tbody>
                                             <% let total_delivered = 0 %>
-                                    <% item.products.forEach(product => {%>
+                                    <% item.parties.forEach(party => {%>
                                         <tr>
-                                            <td><%= product.item_name|| 'N/A' %></td>
-                                            <td><%= product.total_delivered ||0 %></td>
-                                            <td><%= product.remaining_quantity||0 %></td>
-                                            <% total_delivered += Number(product.total_delivered) %>
+                                            <td><%= party.party_name|| 'N/A' %></td>
+                                            <td><%= party.delivered ||0 %></td>
+                                            <td><%= party.remaining_quantity||0 %></td>
+                                            <% total_delivered += Number(party.total_delivered) %>
                                         </tr>
                                     <% });  %>
                                 </tbody>
                                 </table> -->
                                 <!-- <div class="d-flex"> -->
                                     <!-- <span>Party Name: </span> -->
-                                    <h5 class="card-title"><%= item.party_name %> </h5>
-                                    <h6>Total Delivered : <%= total_delivered %></h6>
+                                    <h5 class="card-title"><%= item.item_name %> </h5>
+                                    <h6>Total Delivered : <%= item.total_delivered %></h6>
                                     
                                 <!-- </div>  -->
                                      
-                                <a href="/business-owner/deliveryDetails?partyId=<%= item.party_id %>" 
+                                <a href="/business-owner/deliveryDetails?itemId=<%= item.item_id %>" 
                                         class="d-block text-decoration-none text-muted btn btn-warning">
                                          View Details
                                      </a>
