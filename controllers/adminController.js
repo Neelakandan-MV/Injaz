@@ -794,7 +794,7 @@ const adminController = {
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
         }
         if (products) {
-            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit, serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.serial_number])]);
+            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit, serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.serial_number||0])]);
 
             //controlling stock
             if (transactionType === "purchase") {
@@ -1970,7 +1970,7 @@ const adminController = {
         
             return acc;
         }, []);
-        
+        console.log(formattedData);
     
         // console.log(JSON.stringify(formattedData, null, 2));
         res.render('admin/totalDelivered.ejs',{companies,currentCompany,items:formattedData})
@@ -2016,6 +2016,7 @@ const adminController = {
                     p.PartyName
             `, [itemId, companyId, companyId]);
             // Fetch party name
+            
             const [item] = await mysql.query(`SELECT PartyName as party_name FROM parties WHERE id = ?`, [itemId]);
 
         res.render('admin/deliveryDetails.ejs', {
