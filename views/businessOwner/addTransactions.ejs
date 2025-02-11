@@ -413,7 +413,6 @@ function updateReceived(){
         let priceInput = document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value;
         console.log(priceInput);
         
-        
         if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
             console.log(selectedProduct.wholesale_price_1);
@@ -427,20 +426,7 @@ function updateReceived(){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
             console.log(selectedProduct.sale_price);
         }
-    }
-    
-    if(selectedProduct.service_charge_quantity_1 > 0){
-        if(quantity >= 1 && quantity < selectedProduct.service_charge_quantity_1){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.service_charge_1) + Number(selectedProduct.sale_price)
-        }else if(quantity >= selectedProduct.service_charge_quantity_1 && quantity < selectedProduct.service_charge_quantity_2){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.service_charge_2) + Number(selectedProduct.sale_price)
-        }else if(quantity >= selectedProduct.service_charge_quantity_2 && quantity < selectedProduct.service_charge_quantity_3){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.service_charge_3) + Number(selectedProduct.sale_price)
-        }else{
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = Number(selectedProduct.sale_price)
-        }
-    }
-            
+    }        
         const pricePerUnit = parseFloat(row.querySelector(`[name^="products"][name$="[pricePerUnit]"]`)?.value) || 0;
         const discount = parseFloat(row.querySelector(`[name^="products"][name$="[discount]"]`)?.value) || 0;
         const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
@@ -449,7 +435,19 @@ function updateReceived(){
         productTotal += (productTotal * tax) / 100;
         productTotal -= (productTotal * discount) / 100;
 
-        row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);
+
+        if(selectedProduct.service_charge_quantity_1 > 0){
+        if(quantity >= 1 && quantity < selectedProduct.service_charge_quantity_1){
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_1)
+        }else if(quantity >= selectedProduct.service_charge_quantity_1 && quantity < selectedProduct.service_charge_quantity_2){
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_2)
+        }else if(quantity >= selectedProduct.service_charge_quantity_2 && quantity < selectedProduct.service_charge_quantity_3){
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_3)
+        }else{
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
+        }
+    }
+
 
         productTotalInput = document.getElementById('productTotal');
         productTotalInput.dispatchEvent(new Event('change'));
