@@ -300,20 +300,19 @@
             <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this)" required ></td>
             <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
-            <td><div class="d-flex"><button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,${count})">Free</button>
-            <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
+            <td><button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
             </tr>
         `;
 
         table.appendChild(row);
         updateRowNumbers();
     }
-    function makeFree(element,count){
-        const row = element.closest('tr')
-        row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = 0;
-        productTotalInput = document.getElementById('productTotal');
-        productTotalInput.dispatchEvent(new Event('change'));
-    }
+    // function makeFree(element,count){
+    //     const row = element.closest('tr')
+    //     row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = 0;
+    //     productTotalInput = document.getElementById('productTotal');
+    //     productTotalInput.dispatchEvent(new Event('change'));
+    // }
     
     function updateSaleTotal() {
     const element = document.getElementById('table')
