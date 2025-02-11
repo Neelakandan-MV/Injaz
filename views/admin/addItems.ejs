@@ -99,7 +99,7 @@
                                         </option>
                                         <% })} %>
                                 </select>
-                                <button  class="btn btn-primary mt-3" id="addCategoryButton">+ Add New Category</button>
+                                <button  class="btn btn-primary mt-3" id="addCategoryItemButton">+ Add New Category</button>
                             </div>
                             <div class="col-md-6">
                                 <label for="itemCode" class="form-label">Item Code</label>
@@ -282,7 +282,7 @@
 
         <!-- JavaScript to trigger the modal -->
         <script>
-            document.querySelector('#addCategoryButton').addEventListener('click', function () {
+            document.querySelector('#addCategoryItemButton').addEventListener('click', function () {
                     var myModal = new bootstrap.Modal(document.getElementById('addCategoryModal'));
                     myModal.show();
             });

@@ -669,8 +669,12 @@ const adminController = {
 
     // Add new category, linking it to the user's company
     addCategory: async (req, res) => {
+
+
         const user = req.session.user;
         const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
             return res.render("admin/error.ejs", { error: 'No company found for this user.' });
@@ -694,7 +698,9 @@ const adminController = {
             const [categories] = await mysql.query("SELECT * FROM categories");
             return res.render('admin/addItems.ejs', {
                 categories,
-                success: 'Category added successfully.'
+                success: 'Category added successfully.',
+                companies,
+                currentCompany
             });
         } catch (error) {
             console.error('Error in addCategory:', error);
@@ -702,7 +708,9 @@ const adminController = {
             const [categories] = await mysql.query("SELECT * FROM categories");
             return res.render('admin/addItems.ejs', {
                 error: 'An error occurred. Please try again.',
-                categories
+                categories,
+                companies,
+                currentCompany
             });
         }
     },
