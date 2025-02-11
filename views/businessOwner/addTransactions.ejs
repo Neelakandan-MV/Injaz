@@ -406,32 +406,47 @@ function updateReceived(){
         const products = <%- JSON.stringify(products) %>
         
         const selectedProduct = products.find((product) => product.item_name == selectedProductName);
-
+        
+        
         const quantity = parseFloat(row.querySelector(`[name^="products"][name$="[quantity]"]`)?.value) || 0;
 
-        const stockDisplay = document.getElementById(`stockDisplay${count}`)
+         const stockDisplay = document.getElementById(`stockDisplay${count}`)
         stockDisplay.textContent = `(${selectedProduct.stock - quantity})`
-
 // whole sale
-    if(selectedProduct.wholesale_quantity_1 > 0){
+    if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 > 0 && selectedProduct.wholesale_quantity_3 > 0){
 
-        let priceInput = document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value;
-        console.log(priceInput);
+        if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
+        }else if(quantity>=selectedProduct.wholesale_quantity_2 && quantity<selectedProduct.wholesale_quantity_3){
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_2;
+        }else if(quantity>=selectedProduct.wholesale_quantity_3){
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_3;
+        }else if(quantity<selectedProduct.wholesale_quantity_1){
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
+        }
+        console.log('3 only case');
+    }else if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 > 0 && selectedProduct.wholesale_quantity_3 == 0){
         
         if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
-            console.log(selectedProduct.wholesale_price_1);
-        }else if(quantity>=selectedProduct.wholesale_quantity_2 && quantity<selectedProduct.wholesale_quantity_3){
+        }else if(quantity>=selectedProduct.wholesale_quantity_2){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_2;
-            console.log(selectedProduct.wholesale_price_2);
-        }else if(quantity>=selectedProduct.wholesale_quantity_3){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_3;
-            console.log(selectedProduct.wholesale_price_3);
-        }else if(quantity<selectedProduct.wholesale_quantity_1){
-            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
-            console.log(selectedProduct.sale_price);
+        }else{
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
         }
-    }        
+        console.log('2 only case');
+
+    }else if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 == 0 && selectedProduct.wholesale_quantity_3 == 0){
+        if(quantity>=selectedProduct.wholesale_quantity_1){
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
+        }else{
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
+        }
+        console.log('1 only case');
+    }
+
+    
+
         const pricePerUnit = parseFloat(row.querySelector(`[name^="products"][name$="[pricePerUnit]"]`)?.value) || 0;
         const discount = parseFloat(row.querySelector(`[name^="products"][name$="[discount]"]`)?.value) || 0;
         const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
@@ -455,8 +470,10 @@ function updateReceived(){
             document.getElementById(`serviceCharge${count}`).textContent = 0
         }
     }
+
         productTotalInput = document.getElementById('productTotal');
         productTotalInput.dispatchEvent(new Event('change'));
+        
     }
 
     function validateForm(event) {

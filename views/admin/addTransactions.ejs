@@ -401,7 +401,7 @@ function updateReceived(){
          const stockDisplay = document.getElementById(`stockDisplay${count}`)
         stockDisplay.textContent = `(${selectedProduct.stock - quantity})`
 // whole sale
-    if(selectedProduct.wholesale_quantity_1 > 0){
+    if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 > 0 && selectedProduct.wholesale_quantity_3 > 0){
 
         if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
@@ -412,8 +412,29 @@ function updateReceived(){
         }else if(quantity<selectedProduct.wholesale_quantity_1){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
         }
+        console.log('3 only case');
+    }else if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 > 0 && selectedProduct.wholesale_quantity_3 == 0){
+        
+        if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
+        }else if(quantity>=selectedProduct.wholesale_quantity_2){
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_2;
+        }else{
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
+        }
+        console.log('2 only case');
 
+    }else if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 == 0 && selectedProduct.wholesale_quantity_3 == 0){
+        if(quantity>=selectedProduct.wholesale_quantity_1){
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.wholesale_price_1
+        }else{
+            document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
+        }
+        console.log('1 only case');
     }
+
+    
+
         const pricePerUnit = parseFloat(row.querySelector(`[name^="products"][name$="[pricePerUnit]"]`)?.value) || 0;
         const discount = parseFloat(row.querySelector(`[name^="products"][name$="[discount]"]`)?.value) || 0;
         const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
@@ -440,6 +461,7 @@ function updateReceived(){
 
         productTotalInput = document.getElementById('productTotal');
         productTotalInput.dispatchEvent(new Event('change'));
+        
     }
 
     function validateForm(event) {
