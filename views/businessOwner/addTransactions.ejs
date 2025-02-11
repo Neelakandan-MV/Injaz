@@ -97,6 +97,10 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        .serviceCharge{
+            font-size: 10px;
+            font-weight: 100;
+        }
         
         @media (max-width: 768px) {
             
@@ -310,7 +314,8 @@
             <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this,'${count}')" onchange="updateWholesalePrice()" required ></td>
             <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this,'${count}')" required ></td>
             <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this,'${count}')" required></td>
-            <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
+            <td><div class= "d-flex"><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required>
+                <span id="serviceCharge${count}" class="serviceCharge"></span></div></td>
             <td><input type="text" id="deliveredQuantity" name="products[${count}][deliveredQuantity]"></td>
             <td><input type="text" id="freeQuantity" name="products[${count}][freeQuantity]"></td>
             <td><input type="text"  name="products[${count}][serial_number]" required></td>
@@ -438,12 +443,16 @@ function updateReceived(){
         if(selectedProduct.service_charge_quantity_1 > 0){
         if(quantity >= 1 && quantity < selectedProduct.service_charge_quantity_1){
             row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_1)
+           document.getElementById(`serviceCharge${count}`).textContent = 'Service Charge :'+selectedProduct.service_charge_1
         }else if(quantity >= selectedProduct.service_charge_quantity_1 && quantity < selectedProduct.service_charge_quantity_2){
             row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_2)
+            document.getElementById(`serviceCharge${count}`).textContent = 'Service Charge :'+selectedProduct.service_charge_2
         }else if(quantity >= selectedProduct.service_charge_quantity_2 && quantity < selectedProduct.service_charge_quantity_3){
             row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_3)
+            document.getElementById(`serviceCharge${count}`).textContent ='Service Charge :'+ selectedProduct.service_charge_3
         }else{
             row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
+            document.getElementById(`serviceCharge${count}`).textContent = 0
         }
     }
         productTotalInput = document.getElementById('productTotal');
