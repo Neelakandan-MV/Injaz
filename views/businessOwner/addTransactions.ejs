@@ -435,7 +435,6 @@ function updateReceived(){
         productTotal += (productTotal * tax) / 100;
         productTotal -= (productTotal * discount) / 100;
 
-
         if(selectedProduct.service_charge_quantity_1 > 0){
         if(quantity >= 1 && quantity < selectedProduct.service_charge_quantity_1){
             row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_1)
@@ -447,8 +446,6 @@ function updateReceived(){
             row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
         }
     }
-
-
         productTotalInput = document.getElementById('productTotal');
         productTotalInput.dispatchEvent(new Event('change'));
     }
