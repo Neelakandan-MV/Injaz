@@ -616,7 +616,12 @@ const businessOwnerController = {
                     receivable = 0;
                 }
             } else {
-                payable += balance;
+                if(balance>0){
+                    payable += balance;
+                }else{
+                    receivable -= balance
+                }
+                
             }
         } else { // Sale transaction
             if (payable > 0) {
@@ -627,7 +632,11 @@ const businessOwnerController = {
                     payable = 0;
                 }
             } else {
+                if(balance>0){
                 receivable += balance;
+                }else{
+                    payable -= balance
+                }
             }
         }
         
