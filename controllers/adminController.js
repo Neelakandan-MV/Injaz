@@ -1711,32 +1711,54 @@ const adminController = {
         res.render('admin/paymentOut.ejs',{party:party[0],companies,currentCompany})
     },
 
-    addPaymentOut:async(req,res)=>{
-        const user = req.session.user
-        const {partyName,partyId,date,phone,amount,desc} = req.body
+    addPaymentOut: async (req, res) => {
+        const user = req.session.user;
+        const { partyName, partyId, date, phone, amount, desc } = req.body;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId])
-        let receivable = party[0].receivable
-        let payable = party[0].payable
-
-        if(receivable){
-                receivable += amount
-        }else if(payable){
-
-            if(amount<=payable){
-                payable -= amount
-            }else{
-                    let diff =  Math.abs(payable - amount)
-                    receivable -= diff
-                    payable = 0
-                }
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`, [partyId]);
+        // Ensure receivable and payable are numbers (defaulting to 0 if null)
+        let receivable = Number(party[0].receivable) || 0;
+        let payable = Number(party[0].payable) || 0;
+    
+        // Payment Out: Money paid out to the party
+        if (payable > 0) {
+            // If the business owes the party money, reduce that payable.
+            if (amount <= payable) {
+                payable -= amount;
+            } else {
+                let diff = amount - payable; // Excess payment
+                payable = 0;
+                // The excess means the party now owes money, so increase receivable.
+                receivable += diff;
+            }
+        } else if (receivable > 0) {
+            // If the party owes money (receivable), then paying them would reduce what they owe.
+            if (amount <= receivable) {
+                receivable -= amount;
+            } else {
+                let diff = amount - receivable;
+                receivable = 0;
+                // The excess payment now creates a credit (business owes party)
+                payable += diff;
+            }
+        } else {
+            // If both receivable and payable are zero, you might decide to create a payable.
+            payable = amount;
         }
-        await mysql.query(`INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id) VALUES(?,?,?,?,?,?,?)`,[partyName,phone,date,desc,amount,'payment_out',partyId])
-        await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`,[receivable,payable,partyId])
-        await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[amount,user.company_id]);
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,[partyName,created_at,'Payment_Out',amount,'money_out',user.company_id])
-        res.redirect('/admin/viewParty')  
+    
+        await mysql.query(
+            `INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id) VALUES(?,?,?,?,?,?,?)`,
+            [partyName, phone, date, desc, amount, 'payment_out', partyId]
+        );
+        await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`, [receivable, payable, partyId]);
+        await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`, [amount, user.company_id]);
+        await mysql.query(
+            `INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,
+            [partyName, created_at, 'Payment_Out', amount, 'money_out', user.company_id]
+        );
+        res.redirect('/admin/viewParty');
     },
+    
     viewexchangeRates:async(req,res)=>{
         const user = req.session.user
         const companyId = user.company_id;

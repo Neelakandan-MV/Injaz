@@ -367,7 +367,18 @@ function updateReceived(){
     const saleTotalInput = document.getElementById('totalAmount')
     const balanceDue = document.getElementById('balanceDue')
     const received = document.getElementById('received')
+    const totalAmount = document.getElementById('totalAmount')
     balanceDue.value = Number(saleTotalInput.value).toFixed(4)- Number(received.value).toFixed(4);
+
+    if(Number(received.value) > Number(totalAmount.value)){
+        Swal.fire({
+            title: "Check the Value Again",
+            text: "Received amount can't be more than Total?",
+            icon: "question"
+            });
+            document.getElementById('received').value = totalAmount.value
+            document.getElementById('balanceDue').value = 0
+    }
 }
 
 
@@ -431,6 +442,8 @@ function updateReceived(){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
         }
         console.log('1 only case');
+    }else{
+        document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
     }
 
     
@@ -457,7 +470,10 @@ function updateReceived(){
             row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
             document.getElementById(`serviceCharge${count}`).textContent = 0
         }
-    }
+    }else{
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
+            document.getElementById(`serviceCharge${count}`).textContent = 0
+        }
 
         productTotalInput = document.getElementById('productTotal');
         productTotalInput.dispatchEvent(new Event('change'));
