@@ -866,8 +866,9 @@ const businessOwnerController = {
             const [transactionDetails] = await mysql.query(`SELECT s.received_amount, s.transaction_type, s.date, p.PartyName FROM sales s LEFT JOIN parties p ON s.customer_name = p.id WHERE s.payment_type = 'Credit' AND s.company_id = ?`,[companyId])
             const [expenses] = await mysql.query(`SELECT e.amount AS received_amount, c.category_name AS transaction_type, date FROM expenses e LEFT JOIN expense_category c ON e.category_id = c.id WHERE e.company_id = ?`, [companyId]);
             const [cashFlows] = await mysql.query(`SELECT c.amount AS received_amount, c.money_type,c.tnx_type AS transaction_type, date, c.name AS PartyName FROM cash_flows c WHERE tnx_type = 'Cash Adjusted' AND company_id = ?`,[user.company_id])
+            const [party_payments] = await mysql.query(`SELECT p.amount AS received_amount, p.payment_type AS transaction_type,p.date,p.party_name FROM party_payments p WHERE p.company_id = ?`,[companyId])
             
-            res.render('businessOwner/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses,...cashFlows],totalCashInHand})
+            res.render('businessOwner/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses,...cashFlows,...party_payments],totalCashInHand})
         } catch (error) {
             console.error(error);
             
@@ -1575,7 +1576,23 @@ const businessOwnerController = {
         const user = req.session.user
         const {partyName,partyId,date,phone,amount,desc} = req.body
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        await mysql.query(`INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id) VALUES(?,?,?,?,?,?,?)`,[partyName,phone,date,desc,amount,'payment_in',partyId])
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId])
+        let receivable = party[0].receivable
+        let payable = party[0].payable
+        if(receivable){
+            
+            if(amount<=receivable){
+                receivable -= amount
+            }else{
+               let diff =  Math.abs(receivable - amount)
+               payable += diff
+               receivable = 0   
+            }
+        }else if(payable){
+                payable+=amount
+        }
+        await mysql.query(`INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id,company_id) VALUES(?,?,?,?,?,?,?,?)`,[partyName,phone,date,desc,amount,'payment_in',partyId,user.company_id])
+        await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`,[receivable,payable,partyId])
         await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[amount, user.company_id]);
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,[partyName,created_at,'Payment_In',amount,'money_in',user.company_id])
         res.redirect('/business-owner/viewParty')  
@@ -1591,14 +1608,52 @@ const businessOwnerController = {
         res.render('businessOwner/paymentOut.ejs',{party:party[0],companies,currentCompany})
     },
 
-    addPaymentOut:async(req,res)=>{
-        const user = req.session.user
-        const {partyName,partyId,date,phone,amount,desc} = req.body
+    addPaymentOut: async (req, res) => {
+        const user = req.session.user;
+        const { partyName, partyId, date, phone, amount, desc } = req.body;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
-        await mysql.query(`INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id) VALUES(?,?,?,?,?,?,?)`,[partyName,phone,date,desc,amount,'payment_out',partyId])
-        await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[amount,user.company_id]);
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,[partyName,created_at,'Payment_Out',amount,'money_out',user.company_id])
-        res.redirect('/business-owner/viewParty')  
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`, [partyId]);
+        // Ensure receivable and payable are numbers (defaulting to 0 if null)
+        let receivable = Number(party[0].receivable) || 0;
+        let payable = Number(party[0].payable) || 0;
+    
+        // Payment Out: Money paid out to the party
+        if (payable > 0) {
+            // If the business owes the party money, reduce that payable.
+            if (amount <= payable) {
+                payable -= amount;
+            } else {
+                let diff = amount - payable; // Excess payment
+                payable = 0;
+                // The excess means the party now owes money, so increase receivable.
+                receivable += diff;
+            }
+        } else if (receivable > 0) {
+            // If the party owes money (receivable), then paying them would reduce what they owe.
+            if (amount <= receivable) {
+                receivable -= amount;
+            } else {
+                let diff = amount - receivable;
+                receivable = 0;
+                // The excess payment now creates a credit (business owes party)
+                payable += diff;
+            }
+        } else {
+            // If both receivable and payable are zero, you might decide to create a payable.
+            payable = amount;
+        }
+    
+        await mysql.query(
+            `INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id,company_id) VALUES(?,?,?,?,?,?,?,?)`,
+            [partyName, phone, date, desc, amount, 'payment_out', partyId,user.company_id]
+        );
+        await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`, [receivable, payable, partyId]);
+        await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`, [amount, user.company_id]);
+        await mysql.query(
+            `INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,
+            [partyName, created_at, 'Payment_Out', amount, 'money_out', user.company_id]
+        );
+        res.redirect('/business-owner/viewParty');
     },
     viewCalculator:async(req,res)=>{
         const user = req.session.user;

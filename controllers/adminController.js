@@ -87,8 +87,6 @@ const adminController = {
                     p.company_id = ?
             `, [companyId]);
 
-            console.log(partyWisePayable);
-            console.log(partyWiseReceivable);
             
            
            
@@ -199,8 +197,6 @@ const adminController = {
             GROUP BY 
                 sales.id, parties.PartyName
         `, [companyId]);
-
-        console.log(items);
 
         res.render("admin/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
     },
@@ -474,7 +470,6 @@ const adminController = {
             await mysql.query("INSERT INTO users (name,email,password,role,available_companies) VALUES (?,?,?,?,?)", [data.userName, data.userEmail, hashedPassword, data.role,companyJSON])
             res.json({success:true})
         }else{
-            console.log('else is working')
             return res.status(404).json({error:'User already exists'});
         }
         
@@ -1519,9 +1514,7 @@ const adminController = {
                         sales 
                     WHERE 
                         payment_type = 'Cash'
-            
                     UNION ALL
-            
                     -- Cash flow from expenses
                     SELECT 
                         company_id, 
@@ -1536,9 +1529,12 @@ const adminController = {
             
             const [transactionDetails] = await mysql.query(`SELECT s.received_amount, s.transaction_type, s.date, p.PartyName FROM sales s LEFT JOIN parties p ON s.customer_name = p.id WHERE s.payment_type = 'Credit' AND s.company_id = ?`,[companyId])
             const [expenses] = await mysql.query(`SELECT e.amount AS received_amount, c.category_name AS transaction_type, date FROM expenses e LEFT JOIN expense_category c ON e.category_id = c.id WHERE e.company_id = ?`, [companyId]);
-            const [cashFlows] = await mysql.query(`SELECT c.amount AS received_amount, c.money_type,c.tnx_type AS transaction_type, date, c.name AS PartyName FROM cash_flows c WHERE tnx_type = 'Cash Adjusted' AND company_id = ?`,[user.company_id])
+            const [cashFlows] = await mysql.query(`SELECT c.amount AS received_amount, c.money_type,c.tnx_type AS transaction_type, c.date, c.name AS PartyName FROM cash_flows c WHERE tnx_type = 'Cash Adjusted' AND company_id = ?`,[user.company_id])
+            const [party_payments] = await mysql.query(`SELECT p.amount AS received_amount, p.payment_type AS transaction_type,p.date,p.party_name FROM party_payments p WHERE p.company_id = ?`,[companyId])
+            console.log(party_payments);
+            
         
-            res.render('admin/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses,...cashFlows],totalCashInHand})
+            res.render('admin/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses,...cashFlows,...party_payments],totalCashInHand})
         } catch (error) {
             console.error(error);
             
@@ -1690,7 +1686,6 @@ const adminController = {
         let receivable = party[0].receivable
         let payable = party[0].payable
         if(receivable){
-            console.log('if works receivable');
             
             if(amount<=receivable){
                 receivable -= amount
@@ -1700,10 +1695,9 @@ const adminController = {
                receivable = 0   
             }
         }else if(payable){
-            console.log('else payable');
                 payable+=amount
         }
-        await mysql.query(`INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id) VALUES(?,?,?,?,?,?,?)`,[partyName,phone,date,desc,amount,'payment_in',partyId])
+        await mysql.query(`INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id,company_id) VALUES(?,?,?,?,?,?,?,?)`,[partyName,phone,date,desc,amount,'payment_in',partyId,user.company_id])
         await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`,[receivable,payable,partyId])
         await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[amount, user.company_id]);
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,[partyName,created_at,'Payment_In',amount,'money_in',user.company_id])
@@ -1756,8 +1750,8 @@ const adminController = {
         }
     
         await mysql.query(
-            `INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id) VALUES(?,?,?,?,?,?,?)`,
-            [partyName, phone, date, desc, amount, 'payment_out', partyId]
+            `INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id,company_id) VALUES(?,?,?,?,?,?,?,?)`,
+            [partyName, phone, date, desc, amount, 'payment_out', partyId,user.company_id]
         );
         await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`, [receivable, payable, partyId]);
         await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`, [amount, user.company_id]);
@@ -1891,7 +1885,6 @@ const adminController = {
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
         const {partyId} = req.query
-        console.log(partyId);
         
 
         const [results] = await mysql.query(`
@@ -2048,7 +2041,6 @@ const adminController = {
         
             return acc;
         }, []);
-        console.log(formattedData);
     
         // console.log(JSON.stringify(formattedData, null, 2));
         res.render('admin/totalDelivered.ejs',{companies,currentCompany,items:formattedData})
