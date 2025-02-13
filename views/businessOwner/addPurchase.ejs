@@ -163,7 +163,7 @@
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="Payment Type">Payment Type *</label>
-                            <select id="paymentType" name="paymentType" class="form-select">
+                            <select id="paymentType" name="paymentType" class="form-select" onchange="paymentTypeChange(this)">
                                 <option value="credit">Credit</option>
                                 <option value="cash">Cash</option>
                             </select>
@@ -331,12 +331,31 @@
     saleTotalInput.dispatchEvent(new Event('change'));
     
 }
+function paymentTypeChange(element){
+        let balanceDue = document.getElementById('balanceDue').value
+        let received = document.getElementById('received').value
+        let temp = balanceDue
+        document.getElementById('balanceDue').value= received
+        document.getElementById('received').value  = temp
+    }
+
+
 function updateBalanceDue(){
-    const saleTotalInput = document.getElementById('totalAmount')
-    const balanceDue = document.getElementById('balanceDue')
-    const received = document.getElementById('received')
-    balanceDue.value = saleTotalInput.value;
-    received.value = 0
+
+    let paymentType = document.getElementById('paymentType').value
+    if(paymentType == 'credit'){
+        const saleTotalInput = document.getElementById('totalAmount')
+        const balanceDue = document.getElementById('balanceDue')
+        const received = document.getElementById('received')
+        balanceDue.value = saleTotalInput.value;
+        received.value = 0
+    }else{
+        const saleTotalInput = document.getElementById('totalAmount')
+        const balanceDue = document.getElementById('balanceDue')
+        const received = document.getElementById('received')
+        balanceDue.value = 0;
+        received.value = saleTotalInput.value
+    }
 }
 function updateReceived(){
     const saleTotalInput = document.getElementById('totalAmount')
