@@ -635,7 +635,8 @@ const adminController = {
                     WHERE items.company_id = ?
                 `, [companyId]);
 
-                res.render('admin/itemManagement.ejs', { items, user, companies, currentCompany });
+                // res.render('admin/itemManagement.ejs', { items, user, companies, currentCompany });
+                res.redirect('/admin/viewItems')
 
             } catch (error) {
                 console.error(error);
@@ -1983,66 +1984,23 @@ const adminController = {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
 
         const [items] = await mysql.query(`
-            SELECT 
-                sp.item_id,
+            SELECT
                 i.item_name,
-                SUM(sp.delivered_quantity) AS total_delivered,
-                SUM(sp.quantity) AS total_quantity,
-                (SUM(sp.quantity) - SUM(sp.delivered_quantity)) AS remaining_quantity,
-                s.customer_name AS party_id,
-                p.PartyName AS party_name
-            FROM 
-                sale_products sp
-            JOIN 
-                sales s ON sp.sale_id = s.id  -- Join sales to get party information
-            JOIN 
-                parties p ON s.customer_name = p.id  -- Join parties table to get party names
-            JOIN 
-                items i ON sp.item_id = i.id  -- Join items table to get item names
-            WHERE 
-                s.company_id = ?  -- Filter by company ID
-            GROUP BY 
-                sp.item_id, i.item_name, s.customer_name, p.PartyName
-            ORDER BY 
-                i.item_name, p.PartyName;
+                i.id,
+                SUM(sp.quantity - sp.delivered_quantity) AS total_delivery_pending
+            FROM sale_products sp
+            JOIN items i ON sp.item_id = i.id
+            JOIN sales s ON sp.sale_id = s.id
+            WHERE s.company_id = ?
+            GROUP BY sp.item_id, i.item_name
+            ORDER BY i.item_name
         `, [companyId]);
         
-        const formattedData = items.reduce((acc, item) => {
-            // Find existing item in the accumulator
-            let product = acc.find(p => p.item_id === item.item_id);
+        console.log(items);
         
-            // If the product doesn't exist, create a new entry
-            if (!product) {
-                product = {
-                    item_id: item.item_id,
-                    item_name: item.item_name,
-                    total_delivered: 0, // Initialize total delivered count
-                    total_quantity: 0,   // Initialize total quantity count
-                    remaining_quantity: 0, // Initialize remaining quantity count
-                    parties: [] // Array to hold party-wise details
-                };
-                acc.push(product);
-            }
-        
-            // Update total delivered, total quantity, and remaining quantity
-            product.total_delivered += Number(item.total_delivered)
-            product.total_quantity += Number(item.total_quantity)
-            product.remaining_quantity += Number(item.remaining_quantity)
-        
-            // Push the party details into the product's parties array
-            product.parties.push({
-                party_id: item.party_id,
-                party_name: item.party_name,
-                delivered: item.total_delivered,
-                total_quantity: item.total_quantity,
-                remaining_quantity: item.remaining_quantity
-            });
-        
-            return acc;
-        }, []);
     
         // console.log(JSON.stringify(formattedData, null, 2));
-        res.render('admin/totalDelivered.ejs',{companies,currentCompany,items:formattedData})
+        res.render('admin/totalDelivered.ejs',{companies,currentCompany,items})
         
     },
 
@@ -2059,7 +2017,7 @@ const adminController = {
             // Fetch pending deliveries from sale_products where quantity > delivered_quantity
             const [pendingSales] = await mysql.query(`
                 SELECT 
-                    sp.item_id, 
+                    sp.item_id,
                     sp.serial_number, 
                     sp.company_id, 
                     sp.product_name, 
@@ -2086,8 +2044,8 @@ const adminController = {
             `, [itemId, companyId, companyId]);
             // Fetch party name
             
-            const [item] = await mysql.query(`SELECT PartyName as party_name FROM parties WHERE id = ?`, [itemId]);
-
+            const [item] = await mysql.query(`SELECT item_name FROM items WHERE id = ?`, [itemId]);
+                
         res.render('admin/deliveryDetails.ejs', {
             item_name: item[0]?.item_name || "Unknown",
             pendingSales: pendingSales, companies,currentCompany

@@ -116,44 +116,13 @@
                         <div class="col-md-4 col-md-6 mb-3">
                             <div class="card shadow-sm border-0 ">
                                 <div class="card-body text-center">
-                                     <!-- <div class="d-flex"> 
-                                        <span>Party Name: </span>
-                                        <h5 class="card-title"><%= item.item_name %></h5>
-                                        </div> -->
-                                    <!-- <table class="table table-responsive table-bordered table-dark" >
-                                        <thead>
-                                            <tr>
-                                                <th>Item Name</th>
-                                                <th>Total Delivered</th>
-                                                <th>Pending Delivery</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% let total_delivered = 0 %>
-                                    <% item.parties.forEach(party => {%>
-                                        <tr>
-                                            <td><%= party.party_name|| 'N/A' %></td>
-                                            <td><%= party.delivered ||0 %></td>
-                                            <td><%= party.remaining_quantity||0 %></td>
-                                            <% total_delivered += Number(party.total_delivered) %>
-                                        </tr>
-                                    <% });  %>
-                                </tbody>
-                                </table> -->
-                                <!-- <div class="d-flex"> -->
-                                    <!-- <span>Party Name: </span> -->
-                                    <h5 class="card-title"><%= item.item_name %> </h5>
-                                    <h6>Total Pending Deliveries : <%= item.remaining_quantity %></h6>
-                                    
-                                <!-- </div>  -->
+                                    <h4><%= item.item_name %></h4>
+                                    <p>Total Pending Deliveries : <%= item.total_delivery_pending %></p>
                                      
-                                <a href="/admin/deliveryDetails?itemId=<%= item.item_id %>" 
+                                <a href="/admin/deliveryDetails?itemId=<%= item.id %>" 
                                         class="d-block text-decoration-none text-muted btn btn-warning">
                                          View Details
-                                     </a>
-                                
-                                <!-- </div> -->
-                                
+                                     </a>        
                                 </div>
                             </div>
                         </div>
