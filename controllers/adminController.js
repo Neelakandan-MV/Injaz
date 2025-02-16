@@ -367,7 +367,8 @@ const adminController = {
             [partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id]
         );
         if(products && products?.length){
-        for (let product of products) {
+
+        for (let [i, product] of products.entries()) {
             await mysql.query(`
                 UPDATE sale_products
                 SET  
@@ -396,11 +397,34 @@ const adminController = {
                     product.saleProduct_id
                 ]
             );
+
+            if(transactionType == 'sale'){
+                const currentProduct = currentProductsInTransactions.find(p => p?.saleProduct_id == products[i].id);
+                console.log('if worked',currentProduct);
+                if (currentProduct) {
+                    if (Number(currentProduct.delivered_quantity) !== Number(products[i].deliveredQuantity)) {
+                        await mysql.query(
+                        `INSERT INTO delivery_details (sale_id, sale_product_id, delivery_date, delivered_quantity, company_id, item_id, notes)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        [
+                            currentProduct.sale_id,
+                            currentProduct.id,
+                            created_at,
+                            Number(products[i].deliveredQuantity)-Number(currentProduct.delivered_quantity),
+                            user.company_id,
+                            currentProduct.item_id,
+                            `Delivery Updated from ${currentProduct.delivered_quantity} to ${products[i].deliveredQuantity} in ${created_at}`
+                        ]
+                    );
+                    console.log('edited');
+                    }
+                    }
+                }
            
         } 
         if(currentProductsInTransactions.length < products.length){
             for(let i= currentProductsInTransactions.length; i<products.length;i++){
-            await mysql.query(`
+            const [new_sale_product] = await mysql.query(`
                 INSERT INTO sale_products (
                     item_id, 
                     sale_id,
@@ -429,6 +453,20 @@ const adminController = {
                     products[i].unit
                 ]
             );
+            if(transactionType == 'sale'){
+                await mysql.query(
+                    `INSERT INTO delivery_details (sale_id, sale_product_id, delivery_date, delivered_quantity, company_id, item_id)
+                    VALUES (?, ?, ?, ?, ?, ?)`,
+                    [
+                    transaction_id,
+                    new_sale_product.insertId,
+                    created_at,
+                    products[i].deliveredQuantity,
+                    user.company_id,
+                    products[i].itemId
+                    ]
+                );
+            }
         }                
         }
     }
@@ -812,6 +850,10 @@ const adminController = {
         }
         if (products) {
             await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit, serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.serial_number||0])]);
+            if(transactionType == 'sale'){
+            const [sale_products] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`,[sales[0].insertId])
+            await mysql.query("INSERT INTO delivery_details(sale_id, sale_product_id,delivery_date,delivered_quantity,company_id,item_id) VALUES ?",[sale_products.map(product=>[ sales[0].insertId, product.id, date, product.delivered_quantity, user.company_id,product.item_id])])
+            }
 
             //controlling stock
             if (transactionType === "purchase") {
@@ -1995,9 +2037,7 @@ const adminController = {
             GROUP BY sp.item_id, i.item_name
             ORDER BY i.item_name
         `, [companyId]);
-        
-        console.log(items);
-        
+
     
         // console.log(JSON.stringify(formattedData, null, 2));
         res.render('admin/totalDelivered.ejs',{companies,currentCompany,items})
@@ -2045,6 +2085,10 @@ const adminController = {
             // Fetch party name
             
             const [item] = await mysql.query(`SELECT item_name FROM items WHERE id = ?`, [itemId]);
+
+            const [deliveries] = await mysql.query(`SELECT * FROM delivery_details WHERE item_id = ?`,[itemId])
+            console.log(deliveries);
+            
                 
         res.render('admin/deliveryDetails.ejs', {
             item_name: item[0]?.item_name || "Unknown",

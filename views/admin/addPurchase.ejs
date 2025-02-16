@@ -188,8 +188,8 @@
                                 </th>
                                 <th>Price/Unit<p style="font-size: 12px; color: gray;">(Price per Unit)</p>
                                 </th>
-                                <th>Discount (%)</th>
-                                <th>Tax (%)</th>
+                                <!-- <th>Discount (%)</th>
+                                <th>Tax (%)</th> -->
                                 <th>Total (SAR)</th>
                                 <th>Action</th>
                             </tr>
@@ -296,8 +296,8 @@
             <td><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this)" required></td>
             <td><input type="text"  id="unit${count}" name="products[${count}][unit]" required ></td>
             <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this)" onchange="updateWholesalePrice()" required ></td>
-            <td><input type="text" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required ></td>
-            <td><input type="text" name="products[${count}][tax]" oninput="updateProductTotal(this)" required ></td>
+            <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required >
+            <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this)" required >
             <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
             <td><button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>

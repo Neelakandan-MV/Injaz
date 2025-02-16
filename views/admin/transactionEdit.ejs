@@ -362,15 +362,13 @@ function addRow() {
      <td><input type="number" name="products[${currentIndex}][quantity]" oninput="updateProductTotal(this)" required></td>
      <td><input type="text" id="unit${currentIndex}" name="products[${currentIndex}][unit]" required ></td>
      <td><input type="text" id="priceInput${currentIndex}" name="products[${currentIndex}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
-     <td><input type="text" id="discount${currentIndex}" name="products[${currentIndex}][discount]" oninput="updateProductTotal(this)" required ></td>
-     <td><input type="text" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required ></td>
+     <input type="hidden" id="discount${currentIndex}" name="products[${currentIndex}][discount]" oninput="updateProductTotal(this)" required >
+     <input type="hidden" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required >
      <td><input type="text" id="productTotal" name="products[${currentIndex}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
       <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[${currentIndex}][deliveredQuantity]" ><span style="color: rgb(95, 95, 95);">(N/A)</span></div></td>
      <input type="hidden" id="productId" name="products[${currentIndex}][productId]" >
      <input type="hidden" id="itemId" name="products[${currentIndex}][itemId]" value="" >
-     
-     <td><div class="d-flex"><button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,${currentIndex})">Free</button>
-            <button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></div></td>
+     <td><button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
             </tr>
  `;
  
