@@ -852,7 +852,7 @@ const adminController = {
             await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit, serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.serial_number||0])]);
             if(transactionType == 'sale'){
             const [sale_products] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`,[sales[0].insertId])
-            await mysql.query("INSERT INTO delivery_details(sale_id, sale_product_id,delivery_date,delivered_quantity,company_id,item_id) VALUES ?",[sale_products.map(product=>[ sales[0].insertId, product.id, date, product.delivered_quantity, user.company_id,product.item_id])])
+            await mysql.query("INSERT INTO delivery_details(sale_id, sale_product_id,delivery_date,delivered_quantity,company_id,item_id,notes) VALUES ?",[sale_products.map(product=>[ sales[0].insertId, product.id, date, product.delivered_quantity, user.company_id,product.item_id,'Delivered while creating sale'])])
             }
 
             //controlling stock
@@ -2098,9 +2098,39 @@ const adminController = {
         console.error(err);
         res.status(500).send("Server Error");
     }
-}
-    
-    
+},
+
+    viewDeliveryUpdates:async(req,res)=>{
+        try {
+            // Get the logged-in user from the session
+            const user = req.session.user;
+            const companyId = user.company_id;
+            const [companies] = await mysql.query(`SELECT * FROM companies`);
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+            
+            // Query to fetch delivery details for this company, ordered by delivery_date (newest first)
+            const [deliveryDetails] = await mysql.query(`
+                SELECT 
+                  DATE_FORMAT(dd.delivery_date, '%d/%m/%Y') AS delivery_date,
+                  dd.delivered_quantity,
+                  dd.notes,
+                  i.item_name,
+                  p.PartyName AS party_name
+                FROM delivery_details dd
+                JOIN items i ON dd.item_id = i.id
+                JOIN sales s ON dd.sale_id = s.id
+                JOIN parties p ON s.customer_name = p.id
+                WHERE dd.company_id = ?
+                ORDER BY dd.delivery_date DESC
+              `, [user.company_id]);
+        
+            // Render the deliveryDetails EJS view and pass the data
+            res.render('admin/delivery_update', { deliveryDetails,companies,currentCompany });
+          } catch (error) {
+            console.error("Error fetching delivery details:", error);
+            res.status(500).send("Internal Server Error");
+          }
+    }
 
 
 };

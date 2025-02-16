@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Updates</title>
+  <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- CSS Framework -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+        }
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .table thead th {
+        background-color: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('./navbar')  %>
+    <div class="main-content">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h1 class="fw-bold">Delivery Updates</h1>
+            <i class="fas fa-bars hamburger" id="hamburger"></i>
+        </div>
+
+        <div class="container">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Item Name</th>
+                        <th>Party Name</th>
+                        <th>Delivery Date</th>
+                        <th>Delivered Quantity</th>
+                        <th>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% if (deliveryDetails && deliveryDetails.length) { %>
+                        <% deliveryDetails.forEach(detail => { %>
+                          <tr>
+                            <td><%= detail.item_name %></td>
+                            <td><%= detail.party_name %></td>
+                            <td><%= detail.delivery_date %></td>
+                            <td><%= detail.delivered_quantity %></td>
+                            <td><%= detail.notes || '' %></td>
+                          </tr>
+                        <% }) %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="5" class="text-center">No delivery details found.</td>
+                        </tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+            </div>
+          </div>
+        
+          <!-- Bootstrap JS (optional) -->
+          <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+    </div>
+</body>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>
+</html>
