@@ -168,7 +168,7 @@
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label for="Payment Type">Payment Type *</label>
-                            <select id="paymentType" name="paymentType" class="form-select" id="paymentType" onchange="paymentTypeChange(this)">
+                            <select name="paymentType" class="form-select" id="paymentType" onchange="paymentTypeChange(this)">
                                 <option value="credit">Credit</option>
                                 <option value="cash">Cash</option>
                             </select>
@@ -310,7 +310,7 @@
             <td></td>
             <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
             <td><div class="d-flex"><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this,'${count}')" required><span class="stockDisplay" id="stockDisplay${count}"></span></div></td>
-            <input type="hidden"  id="unit${count}" name="products[${count}][unit]" required ></td>
+            <input type="hidden"  id="unit${count}" name="products[${count}][unit]" required >
             <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this,'${count}')" onchange="updateWholesalePrice()" required ></td>
             <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this,'${count}')" required ></td>
             <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this,'${count}')" required></td>
@@ -443,6 +443,8 @@ function updateReceived(){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
         }
         console.log('1 only case');
+    }else{
+        document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
     }
 
     
@@ -469,7 +471,10 @@ function updateReceived(){
             row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
             document.getElementById(`serviceCharge${count}`).textContent = 0
         }
-    }
+    }else{
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
+            document.getElementById(`serviceCharge${count}`).textContent = 0
+        }
 
         productTotalInput = document.getElementById('productTotal');
         productTotalInput.dispatchEvent(new Event('change'));
