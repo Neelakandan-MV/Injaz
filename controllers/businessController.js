@@ -1097,6 +1097,7 @@ const businessOwnerController = {
 
         const transaction_id = req.query.id
         await mysql.query(`DELETE FROM cash_flows WHERE tnx_id = ?`, [transaction_id]);
+        await mysql.query(`DELETE FROM delivery_details WHERE sale_id = ?`,[transaction_id])
         await mysql.query(`DELETE FROM sale_products WHERE sale_id = ?`, [transaction_id]);
         await mysql.query(`DELETE FROM sales WHERE id = ?`, [transaction_id]);
         res.redirect('/business-owner/dashboard')
