@@ -761,7 +761,8 @@ if (products && products.length) {
                 categories,
                 success: 'Category added successfully.',
                 companies,
-                currentCompany
+                currentCompany,
+                user
             });
         } catch (error) {
             console.error('Error in addCategory:', error);
