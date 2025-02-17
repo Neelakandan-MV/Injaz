@@ -205,6 +205,39 @@ const adminController = {
     transactionDelete: async (req, res) => {
 
         const transaction_id = req.query.id
+        const [transaction] = await mysql.query(`SELECT * FROM sales WHERE id = ?`,[transaction_id])
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[transaction[0].customer_name])
+        let payable = Number(party[0].payable)
+        let receivable = Number(party[0].receivable)
+        let balance_due = Number(transaction[0].balance_due)
+
+        if(transaction[0].transaction_type == 'sale'){
+
+            if(receivable >= 0 ){
+                if(receivable > balance_due){
+                    receivable -= balance_due
+                }else{
+                    payable += (balance_due-receivable)
+                    receivable = 0
+                }
+            }else{
+                payable += balance_due
+            }
+        }else{
+
+            if(payable >= 0 ){
+                if(payable > balance_due){
+                    payable -= balance_due
+                }else{
+                    receivable += (balance_due-payable)
+                    payable = 0
+                }
+            }else{
+                receivable += balance_due
+            }
+        }
+        await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`,[receivable,payable,transaction[0].customer_name])
+
         await mysql.query(`DELETE FROM cash_flows WHERE tnx_id = ?`, [transaction_id]);
         await mysql.query(`DELETE FROM delivery_details WHERE sale_id = ?`,[transaction_id])
         await mysql.query(`DELETE FROM sale_products WHERE sale_id = ?`, [transaction_id]);
@@ -1870,8 +1903,8 @@ if (products && products.length) {
                     COALESCE(SUM(CASE WHEN transaction_type = 'sale' THEN total_amount ELSE 0 END), 0) AS total_sales,
                     COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS total_purchases
                 FROM sales
-                WHERE date BETWEEN ? AND ?`,
-                [start || '2000-01-01', end || '2099-12-31']
+                WHERE company_id = ? AND date BETWEEN ? AND ? `,
+                [companyId ,start || '2000-01-01', end || '2099-12-31']
             );
     
             const totalSales = grossProfit[0]?.total_sales || 0;
@@ -1879,21 +1912,21 @@ if (products && products.length) {
             const grossProfitValue = totalSales - totalPurchases;
     
             const [otherIncome] = await mysql.query(
-                `SELECT COALESCE(SUM(amount), 0) AS total_income FROM other_income WHERE date BETWEEN ? AND ?`,
-                [start || '2000-01-01', end || '2099-12-31']
+                `SELECT COALESCE(SUM(amount), 0) AS total_income FROM other_income WHERE company_id = ? AND date BETWEEN ? AND ?`,
+                [companyId ,start || '2000-01-01', end || '2099-12-31']
             );
             const totalOtherIncome = otherIncome[0]?.total_income || 0;
     
             const [otherExpenses] = await mysql.query(
-                `SELECT COALESCE(SUM(amount), 0) AS total_expenses FROM expenses WHERE date BETWEEN ? AND ?`,
-                [start || '2000-01-01', end || '2099-12-31']
+                `SELECT COALESCE(SUM(amount), 0) AS total_expenses FROM expenses WHERE company_id = ? AND date BETWEEN ? AND ?`,
+                [companyId ,start || '2000-01-01', end || '2099-12-31']
             );
             const totalOtherExpenses = otherExpenses[0]?.total_expenses || 0;
     
             const [openingStock] = await mysql.query(
                 `SELECT COALESCE(SUM(stock * purchase_price), 0) AS opening_stock 
                 FROM items 
-                WHERE created_at < ?`,
+                WHERE company_id AND created_at < ?`,
                 [start || '2000-01-01']
             );
             const totalOpeningStock = openingStock[0]?.opening_stock || 0;
@@ -1901,8 +1934,8 @@ if (products && products.length) {
             const [closingStock] = await mysql.query(
                 `SELECT COALESCE(SUM(stock * purchase_price), 0) AS closing_stock 
                 FROM items 
-                WHERE created_at <= ?`,
-                [end || '2099-12-31']
+                WHERE company_id = ? AND created_at <= ?`,
+                [companyId ,end || '2099-12-31']
             );
             const totalClosingStock = closingStock[0]?.closing_stock || 0;
 
