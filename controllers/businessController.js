@@ -576,7 +576,7 @@ const businessOwnerController = {
         const today = new Date().toISOString().split('T')[0];
         const companyId = user.company_id;
         const products = await mysql.query(
-            "SELECT * FROM items WHERE company_id = ? AND stock >0", [ companyId]);
+            "SELECT * FROM items WHERE company_id = ? AND item_hsn = true", [companyId]);
 
         res.render('businessOwner/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties, previousRoute });
     },

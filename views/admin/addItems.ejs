@@ -81,9 +81,13 @@
                                     placeholder="Enter item name" required>
                             </div>
                             <div class="col-md-6">
-                                <label for="itemHsn" class="form-label"></label>
-                                <input type="text" class="form-control" id="itemHsn" name="itemHSN"
-                                    placeholder="Enter HSN code" >
+                                <label for="active" class="form-label">Status</label>
+                                <!-- <input type="text" class="form-control" id="itemHsn" name="itemHSN"
+                                    placeholder="Enter HSN code" > -->
+                                    <select name="itemHSN" id="itemHsn" class="form-control">
+                                        <option value="1" selected>Active</option>
+                                        <option value="0">Inactive</option>
+                                    </select>
                             </div>
                         </div>
 

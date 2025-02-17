@@ -206,6 +206,7 @@ const adminController = {
 
         const transaction_id = req.query.id
         await mysql.query(`DELETE FROM cash_flows WHERE tnx_id = ?`, [transaction_id]);
+        await mysql.query(`DELETE FROM delivery_details WHERE sale_id = ?`,[transaction_id])
         await mysql.query(`DELETE FROM sale_products WHERE sale_id = ?`, [transaction_id]);
         await mysql.query(`DELETE FROM sales WHERE id = ?`, [transaction_id]);
         res.redirect('/admin/dashboard')
@@ -786,7 +787,7 @@ if (products && products.length) {
         const today = new Date().toISOString().split('T')[0];
         const companyId = user.company_id;
         const products = await mysql.query(
-            "SELECT * FROM items WHERE company_id = ? AND stock >0", [companyId]);
+            "SELECT * FROM items WHERE company_id = ? AND item_hsn = true", [companyId]);
 
         res.render('admin/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties, previousRoute });
     },
