@@ -46,43 +46,65 @@
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </div>
 
-        <div class="container">
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered">
-                    <thead class="table-light">
-                      <tr>
-                        <th>Serial Number</th>
-                        <th>Item Name</th>
-                        <th>Party Name</th>
-                        <th>Delivery Date</th>
-                        <th>Delivered Quantity</th>
-                        <th>Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <% if (deliveryDetails && deliveryDetails.length) { %>
-                        <% deliveryDetails.forEach(detail => { %>
-                          <tr>
-                            <td><%= detail.serial_number || 'N/A' %></td>
-                            <td><%= detail.item_name %></td>
-                            <td><%= detail.party_name %></td>
-                            <td><%= detail.delivery_date %></td>
-                            <td><%= detail.delivered_quantity %></td>
-                            <td><%= detail.notes || '' %></td>
-                          </tr>
-                        <% }) %>
-                      <% } else { %>
-                        <tr>
-                          <td colspan="5" class="text-center">No delivery details found.</td>
-                        </tr>
-                      <% } %>
-                    </tbody>
-                  </table>
-            </div>
+        <div class="container"> 
+          <!-- Search Bar -->
+          <div class="mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by Serial Number..." onkeyup="filterTable()">
           </div>
+          
+          <div class="table-responsive">
+            <table class="table table-striped table-bordered" id="deliveryTable">
+              <thead class="table-light">
+                <tr>
+                  <th>Serial Number</th>
+                  <th>Item Name</th>
+                  <th>Party Name</th>
+                  <th>Delivery Date</th>
+                  <th>Delivered Quantity</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (deliveryDetails && deliveryDetails.length) { %>
+                  <% deliveryDetails.forEach(detail => { %>
+                    <tr>
+                      <td><%= detail.serial_number || 'N/A' %></td>
+                      <td><%= detail.item_name %></td>
+                      <td><%= detail.party_name %></td>
+                      <td><%= detail.delivery_date %></td>
+                      <td><%= detail.delivered_quantity %></td>
+                      <td><%= detail.notes || '' %></td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="6" class="text-center">No delivery details found.</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>  
         
           <!-- Bootstrap JS (optional) -->
           <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+          <script>
+            function filterTable() {
+              const input = document.getElementById("searchInput");
+              const filter = input.value.toUpperCase();
+              const table = document.getElementById("deliveryTable");
+              const rows = table.getElementsByTagName("tr");
+              
+              // Start at 1 to skip header row
+              for (let i = 1; i < rows.length; i++) {
+                const cell = rows[i].cells[0]; // First cell (Serial Number)
+                if (cell) {
+                  const text = cell.textContent || cell.innerText;
+                  rows[i].style.display = text.toUpperCase().includes(filter) ? "" : "none";
+                }
+              }
+            }
+          </script>
         
     </div>
 </body>
