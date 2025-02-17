@@ -70,6 +70,7 @@ router.get('/business-owner/calculator',isLogged,businessController.viewCalculat
 router.get('/business-owner/partyTransactions',isLogged,businessController.viewPartyTransactions)
 router.get('/business-owner/delivered',isLogged,businessController.viewTotalDelivered)
 router.get('/business-owner/deliveryDetails',isLogged,businessController.viewDeliveryDetails)
+router.get('/business-owner/deliveryUpdates',isLogged,businessController.viewDeliveryUpdates)
 
 
 

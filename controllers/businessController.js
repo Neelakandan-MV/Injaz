@@ -662,10 +662,10 @@ const businessOwnerController = {
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
         if (products) {
             await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit,free_quantity,serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.freeQuantity,product.serial_number||0])]);
-
+            
             if(transactionType == 'sale'){
                 const [sale_products] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`,[sales[0].insertId])
-                await mysql.query("INSERT INTO delivery_details(sale_id, sale_product_id,delivery_date,delivered_quantity,company_id,item_id,notes) VALUES ?",[sale_products.map(product=>[ sales[0].insertId, product.id, date, product.delivered_quantity, user.company_id,product.item_id,'Delivered while creating sale'])])
+                await mysql.query("INSERT INTO delivery_details(sale_id, sale_product_id,delivery_date,delivered_quantity,company_id,item_id,notes,serial_number) VALUES ?",[sale_products.map(product=>[ sales[0].insertId, product.id, date, product.delivered_quantity, user.company_id,product.item_id,'Delivered while creating sale',product.serial_number])])
                 }
 
             //controlling stock and cash in hand
@@ -1125,7 +1125,7 @@ const businessOwnerController = {
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
         const [currentProductsInTransactions] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id=?`,[transaction_id])
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
-        
+
         if(Number(transactionDetails[0].balance_due) != Number(balanceDue)){
             let payable = Number(party[0].payable);
             let receivable = Number(party[0].receivable) ;
@@ -1161,10 +1161,10 @@ const businessOwnerController = {
                 [payable, receivable, partyName]
             ); 
         }
-      //cashflow updating
+        //cashflow updating
             await mysql.query(`UPDATE cash_flows SET name =?, date=?,amount=? WHERE tnx_id = ?`,
                 [party[0].PartyName,date,recieved,transactionDetails[0].id])
-
+        
         await mysql.query(`
             UPDATE sales 
             SET 
@@ -1179,73 +1179,124 @@ const businessOwnerController = {
             WHERE id = ?`,
             [partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id]
         );
-        if(products && products?.length){
-        for (let product of products) {
-            await mysql.query(`
-                UPDATE sale_products
-                SET  
-                    item_id = ?, 
-                    quantity = ?, 
-                    delivered_quantity = ?,
-                    price = ?, 
-                    discount = ?, 
-                    tax_rate = ?, 
-                    total = ?, 
-                    company_id = ?, 
-                    product_name = ?, 
-                    unit = ?
-                WHERE id = ?`,
-                [
-                    product.itemId,
-                    product.quantity,
-                    product.deliveredQuantity,
-                    product.pricePerUnit,
-                    product.discount,
-                    product.tax,
-                    product.productTotal,
-                    user.company_id,
-                    product.item,
-                    product.unit,
-                    product.saleProduct_id
-                ]
-            );
-           
-        } 
-        if(currentProductsInTransactions.length < products.length){
-            for(let i= currentProductsInTransactions.length; i<products.length;i++){
-            await mysql.query(`
-                INSERT INTO sale_products (
-                    item_id, 
-                    sale_id,
-                    quantity, 
-                    delivered_quantity,
-                    price, 
-                    discount, 
-                    tax_rate, 
-                    total, 
-                    company_id, 
-                    product_name, 
-                    unit
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
-                [
-                    products[i].itemId,
-                    transaction_id,
-                    products[i].quantity,
-                    products[i].deliveredQuantity,
-                    products[i].pricePerUnit,
-                    products[i].discount,
-                    products[i].tax,
-                    products[i].productTotal,
-                    user.company_id,
-                    products[i].item,
-                    products[i].unit
-                ]
-            );
-        }                
-        }
-    }
+
+// 
+if (products && products.length) {
+    for (let [i, product] of products.entries()) {
+      // Check if this product already exists in the sale (i.e. has a saleProduct_id)
+      if (product.saleProduct_id) {
+        // Process update for existing product
+        await mysql.query(`
+            UPDATE sale_products
+            SET  
+                item_id = ?, 
+                quantity = ?, 
+                delivered_quantity = ?,
+                price = ?, 
+                discount = ?, 
+                tax_rate = ?, 
+                total = ?, 
+                company_id = ?, 
+                product_name = ?, 
+                unit = ?
+            WHERE id = ?`,
+          [
+            product.itemId,
+            product.quantity,
+            product.deliveredQuantity,
+            product.pricePerUnit,
+            product.discount,
+            product.tax,
+            product.productTotal,
+            user.company_id,
+            product.item,
+            product.unit,
+            product.saleProduct_id
+          ]
+        );
         
+        // Find the matching current product (if available)
+        const currentProduct = currentProductsInTransactions.find(p => p.id == product.saleProduct_id);
+        if (currentProduct) {
+          if (Number(currentProduct.delivered_quantity) !== Number(product.deliveredQuantity)) {
+            await mysql.query(
+              `INSERT INTO delivery_details (sale_id, sale_product_id, delivery_date, delivered_quantity, company_id, item_id, notes ,serial_number)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                currentProduct.sale_id,
+                currentProduct.id,
+                created_at,
+                Number(product.deliveredQuantity) - Number(currentProduct.delivered_quantity),
+                user.company_id,
+                currentProduct.item_id,
+                `Delivery updated from ${currentProduct.delivered_quantity} to ${product.deliveredQuantity} on ${created_at}`,
+                currentProduct.serial_number
+              ]
+            );
+            console.log('Delivery detail inserted for updated product');
+          }
+        }
+      } else {
+        // NEW ITEM: This covers cases where a new item is inserted in between.
+        // (Even if products.length > currentProductsInTransactions.length, 
+        // this condition ensures we catch products without saleProduct_id.)
+        
+        // Insert a new sale_product record:
+        const [new_sale_product] = await mysql.query(`
+            INSERT INTO sale_products (
+                item_id, 
+                sale_id,
+                quantity, 
+                delivered_quantity,
+                price, 
+                discount, 
+                tax_rate, 
+                total, 
+                company_id, 
+                product_name, 
+                unit
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
+          [
+            product.itemId,
+            transaction_id,
+            product.quantity,
+            product.deliveredQuantity,
+            product.pricePerUnit,
+            product.discount,
+            product.tax,
+            product.productTotal,
+            user.company_id,
+            product.item,
+            product.unit
+          ]
+        );
+        
+        // Optionally, update product.saleProduct_id here if needed for subsequent processing
+        product.saleProduct_id = new_sale_product.insertId;
+        
+        // Then, if it's a sale transaction, insert into delivery_details:
+        if (transactionType === 'sale') {
+          await mysql.query(
+            `INSERT INTO delivery_details (sale_id, sale_product_id, delivery_date, delivered_quantity, company_id, item_id, notes, serial_number)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              transaction_id,
+              new_sale_product.insertId,
+              created_at,
+              product.deliveredQuantity,
+              user.company_id,
+              product.itemId,
+            "New Product and delivery added by editing a sale",
+            product.serial_number
+
+            ]
+          );
+        }
+      }
+    }
+  } 
+// 
         if (transactionType === "purchase") {
             return res.redirect('/business-owner/purchases');
         }
@@ -1842,6 +1893,40 @@ const businessOwnerController = {
         console.error(err);
         res.status(500).send("Server Error");
     }
+},
+
+viewDeliveryUpdates:async(req,res)=>{
+    try {
+        // Get the logged-in user from the session
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+        
+        // Query to fetch delivery details for this company, ordered by delivery_date (newest first)
+        const [deliveryDetails] = await mysql.query(`
+            SELECT 
+              DATE_FORMAT(dd.delivery_date, '%d/%m/%Y') AS delivery_date,
+              dd.delivered_quantity,
+              dd.notes,
+              i.item_name,
+              dd.created_at,
+              dd.serial_number,
+              p.PartyName AS party_name
+            FROM delivery_details dd
+            JOIN items i ON dd.item_id = i.id
+            JOIN sales s ON dd.sale_id = s.id
+            JOIN parties p ON s.customer_name = p.id
+            WHERE dd.company_id = ?
+            ORDER BY dd.created_at DESC
+          `, [user.company_id]);
+    
+        // Render the deliveryDetails EJS view and pass the data
+        res.render('businessOwner/delivery_update.ejs', { deliveryDetails,companies,currentCompany });
+      } catch (error) {
+        console.error("Error fetching delivery details:", error);
+        res.status(500).send("Internal Server Error");
+      }
 }
 
     
