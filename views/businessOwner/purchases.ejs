@@ -110,7 +110,7 @@
                                 <!-- <td>
                                     <%= item.payment_type %>
                                 </td> -->
-                                <td>SAR <%= item.total_amount %>
+                                <td  class="<%= item.payment_type == 'Credit'? 'text-warning':'text-success' %>">SAR <%= item.total_amount %>
                                 </td>
                                 <!-- <td> SAR <%= item.balance_due %>
                                 </td> -->

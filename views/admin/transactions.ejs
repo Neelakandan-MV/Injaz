@@ -93,10 +93,9 @@
             <tbody>
                 <% transactions.forEach(function(transaction) { %>
                     <tr>
-                        
                         <td><%= transaction.customer_name %></td>
                         <td><%= transaction.transaction_type %></td>
-                        <td><%= transaction.total_amount %></td>
+                        <td  class="<%= transaction.payment_type == 'Credit'? 'text-warning':'text-success' %>"><%= transaction.total_amount %></td>
                         <td><%= transaction.received_amount %></td>
                         <td><%= transaction.balance_due %></td>
                         <td><%= transaction.payment_type %></td>
