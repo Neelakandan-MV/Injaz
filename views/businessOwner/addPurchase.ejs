@@ -185,7 +185,7 @@
                                 <th>#</th>
                                 <th>Item</th>
                                 <th>Quantity</th>
-                                <th>Unit<p style="font-size: 12px; color: gray;">(kg,mtr,ltr,pac)</p>
+                                <!-- <th>Unit<p style="font-size: 12px; color: gray;">(kg,mtr,ltr,pac)</p> -->
                                 </th>
                                 <th>Price/Unit<p style="font-size: 12px; color: gray;">(Price per Unit)</p>
                                 </th>
@@ -295,7 +295,7 @@
             <td></td>
             <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
             <td><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this)" required></td>
-            <td><input type="text"  id="unit${count}" name="products[${count}][unit]" required ></td>
+            <input type="hidden"  id="unit${count}" name="products[${count}][unit]" required >
             <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this)" required ></td>
             <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required >
             <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this)" required >
