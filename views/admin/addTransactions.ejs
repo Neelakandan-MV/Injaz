@@ -731,8 +731,22 @@ window.onload = setDefaultDate;
 
     document.getElementById("saleForm").addEventListener("submit", function(event) {
         if (!allowSubmit) {
-            event.preventDefault(); 
-            Swal.fire({
+
+            event.preventDefault();
+
+        const partyId = document.getElementById('partyId')
+        const phoneInput = document.getElementById('phone')
+        const element = document.getElementById('partyName')
+        const parties = <%-JSON.stringify(parties)%>
+        parties.map(party=>{
+            console.log(party.PartyName);
+            console.log(element.value);
+            
+            
+            
+            if(party.PartyName == element.value){
+
+                Swal.fire({
                 title: "Do you want to Download Invoice?",
                 showDenyButton: true,
                 confirmButtonText: "Yes",
@@ -749,6 +763,17 @@ window.onload = setDefaultDate;
                     event.target.submit();
                 }
             });
+            }else{
+                Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Party is not available!"
+                });
+            }
+        })    
+    
+            
+           
         }
     });
 </script>
