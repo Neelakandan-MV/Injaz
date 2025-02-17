@@ -160,7 +160,8 @@ const adminController = {
                 currentCompany,
                 companies,
                 apiKey,
-                totalDelivered:totalDelivered[0]
+                totalDelivered:totalDelivered[0],
+                user
             });
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
@@ -285,7 +286,8 @@ const adminController = {
             totalPages,
             currentPage: parseInt(page),
             limit: parseInt(limit),
-            currentCompany,companies
+            currentCompany,companies,
+            user
         });
     },
 
@@ -302,7 +304,7 @@ const adminController = {
         const [current_party] = await mysql.query('SELECT * FROM parties WHERE id = ?', transactionDetails[0].customer_name)
         const previousRoute = res.locals.previousRoute
 
-        res.render('admin/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0], current_party: current_party[0], previousRoute })
+        res.render('admin/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0], current_party: current_party[0], previousRoute,user })
     },
     transactionEdit: async (req, res) => {
         const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;
@@ -366,6 +368,8 @@ const adminController = {
             WHERE id = ?`,
             [partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id]
         );
+        console.log(products);
+        
 
 // 
 if (products && products.length) {
@@ -385,7 +389,8 @@ if (products && products.length) {
                 total = ?, 
                 company_id = ?, 
                 product_name = ?, 
-                unit = ?
+                unit = ?,
+                serial_number = ?
             WHERE id = ?`,
           [
             product.itemId,
@@ -398,6 +403,7 @@ if (products && products.length) {
             user.company_id,
             product.item,
             product.unit,
+            product.serial_number,
             product.saleProduct_id
           ]
         );
@@ -417,7 +423,7 @@ if (products && products.length) {
                 user.company_id,
                 currentProduct.item_id,
                 `Delivery updated from ${currentProduct.delivered_quantity} to ${product.deliveredQuantity} on ${created_at}`,
-                currentProduct.serial_number
+                product.serial_number
               ]
             );
             console.log('Delivery detail inserted for updated product');
@@ -441,7 +447,8 @@ if (products && products.length) {
                 total, 
                 company_id, 
                 product_name, 
-                unit
+                unit,
+                serial_number
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
           [
@@ -455,7 +462,8 @@ if (products && products.length) {
             product.productTotal,
             user.company_id,
             product.item,
-            product.unit
+            product.unit,
+            product.serial_number
           ]
         );
         
@@ -510,7 +518,7 @@ if (products && products.length) {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const currentUser = req.session.user;
         const [users] = await mysql.query("SELECT * FROM users WHERE role != 'superAdmin'")
-        res.render('admin/manageUsers.ejs', { users, currentUser, companies,currentCompany })
+        res.render('admin/manageUsers.ejs', { users, currentUser, companies,currentCompany,user })
     },
 
     addUser: async (req, res) => {
@@ -561,7 +569,7 @@ if (products && products.length) {
 
 
 
-        res.render('admin/addItems.ejs', { categories: categories.length > 0 ? categories : [] ,currentCompany,companies});
+        res.render('admin/addItems.ejs', { categories: categories.length > 0 ? categories : [] ,currentCompany,companies,user});
     },
 
     // Add new item, associating it with the company
@@ -1065,7 +1073,7 @@ if (products && products.length) {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {partyId} = req.query;
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId]);
-        res.render('admin/partyEdit',{party:party[0],currentCompany,companies})
+        res.render('admin/partyEdit',{party:party[0],currentCompany,companies,user})
 
     },
     editParty: async (req, res) => {
@@ -1103,7 +1111,7 @@ if (products && products.length) {
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [total_profit] = await mysql.query("SELECT (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'sale') - (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'purchase') AS total_profit;");
-        res.render('admin/reports.ejs', { total_profit,companies,currentCompany });
+        res.render('admin/reports.ejs', { total_profit,companies,currentCompany,user });
     },
     viewExpense: async (req, res) => {
         const user = req.session.user;
@@ -1128,7 +1136,7 @@ if (products && products.length) {
                 expenses: filteredExpenses,
             };
         });
-        res.render('admin/expenseDisplay.ejs', { categories: formattedData,currentCompany,companies })
+        res.render('admin/expenseDisplay.ejs', { categories: formattedData,currentCompany,companies,user })
     },
     viewIncome: async (req, res) => {
         const user = req.session.user;
@@ -1153,7 +1161,7 @@ if (products && products.length) {
                 incomes: filteredExpenses,
             };
         });
-        res.render('admin/otherIncomeDisplay.ejs', { categories: formattedData,companies,currentCompany })
+        res.render('admin/otherIncomeDisplay.ejs', { categories: formattedData,companies,currentCompany,user })
     },
 
     viewItemProfitAndLoss: async (req, res) => {
@@ -1198,7 +1206,7 @@ if (products && products.length) {
             
             
 
-            res.render('admin/itemProfitAndLoss.ejs', { results,companies,currentCompany })
+            res.render('admin/itemProfitAndLoss.ejs', { results,companies,currentCompany,user })
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Internal server error' });
@@ -1301,7 +1309,7 @@ if (products && products.length) {
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [categories] = await mysql.query('SELECT * FROM expense_category');
-        res.render('admin/addExpense.ejs', { categories,companies,currentCompany });
+        res.render('admin/addExpense.ejs', { categories,companies,currentCompany,user });
     },
     viewAddIncome: async (req, res) => {
         const user = req.session.user;
@@ -1309,7 +1317,7 @@ if (products && products.length) {
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [categories] = await mysql.query('SELECT * FROM income_category');
-        res.render('admin/addOtherIncome.ejs', { categories,currentCompany,companies });    
+        res.render('admin/addOtherIncome.ejs', { categories,currentCompany,companies,user });    
     },
     addExpense: async (req, res) => {
         const user = req.session.user;
@@ -1360,7 +1368,7 @@ if (products && products.length) {
         `, [user.company_id]);
     
             
-    res.render('admin/stockReport.ejs',{items,companies,currentCompany})
+    res.render('admin/stockReport.ejs',{items,companies,currentCompany,user})
     },
     viewAdjustStock:async(req,res)=>{
         const user = req.session.user;
@@ -1368,7 +1376,7 @@ if (products && products.length) {
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {item_id} = req.query
-        res.render('admin/adjustStock',{item_id,companies,currentCompany})
+        res.render('admin/adjustStock',{item_id,companies,currentCompany,user})
         
     },
     viewAdjustStockDetails:async(req,res)=>{
@@ -1379,7 +1387,7 @@ if (products && products.length) {
         const {item_id} = req.query
         const [stock_adjustments] = await mysql.query(`SELECT * FROM stock_adjustments WHERE item_id=?`,[item_id])
         const [item] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id])
-        res.render('admin/adjustStockDetails.ejs',{stock_adjustments,item:item[0],companies,currentCompany})
+        res.render('admin/adjustStockDetails.ejs',{stock_adjustments,item:item[0],companies,currentCompany,user})
     },
     adjustStock:async(req,res)=>{
         const user = req.session.user
@@ -1407,7 +1415,7 @@ if (products && products.length) {
         const [item] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id])
         
         
-        res.render('admin/itemEdit.ejs',{item:item[0],user,companies,currentCompany,categories})
+        res.render('admin/itemEdit.ejs',{item:item[0],user,companies,currentCompany,categories,user})
         
     },
 
@@ -1587,7 +1595,7 @@ if (products && products.length) {
             const [party_payments] = await mysql.query(`SELECT p.amount AS received_amount, p.payment_type AS transaction_type,p.date,p.party_name FROM party_payments p WHERE p.company_id = ?`,[companyId])
             
         
-            res.render('admin/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses,...cashFlows,...party_payments],totalCashInHand})
+            res.render('admin/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses,...cashFlows,...party_payments],totalCashInHand,user})
         } catch (error) {
             console.error(error);
             
@@ -1705,7 +1713,7 @@ if (products && products.length) {
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        res.render('admin/adjustCash.ejs',{currentCompany,companies})
+        res.render('admin/adjustCash.ejs',{currentCompany,companies,user})
     },
 
     adjustCash:async(req,res)=>{
@@ -1728,7 +1736,7 @@ if (products && products.length) {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {partyId} = req.query
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId])
-        res.render('admin/paymentIn.ejs',{party:party[0],currentCompany,companies})
+        res.render('admin/paymentIn.ejs',{party:party[0],currentCompany,companies,user})
     },
 
     addPaymentIn:async(req,res)=>{
@@ -1764,7 +1772,7 @@ if (products && products.length) {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const {partyId} = req.query
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId])
-        res.render('admin/paymentOut.ejs',{party:party[0],companies,currentCompany})
+        res.render('admin/paymentOut.ejs',{party:party[0],companies,currentCompany,user})
     },
 
     addPaymentOut: async (req, res) => {
@@ -1821,7 +1829,7 @@ if (products && products.length) {
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [rates] = await mysql.query('SELECT * FROM exchange_rates');
-        res.render('admin/exchangeRates.ejs', { rates,currentCompany,companies });
+        res.render('admin/exchangeRates.ejs', { rates,currentCompany,companies,user });
     },
 
     updateExchangeRates:async(req,res)=>{
@@ -1923,7 +1931,8 @@ if (products && products.length) {
                 totalOpeningStock,
                 totalClosingStock,
                 start,
-                end
+                end,
+                user
             });
     
         } catch (error) {
@@ -2026,7 +2035,7 @@ if (products && products.length) {
 
         const parties = Object.values(partiesMap);
 
-        res.render('admin/partyTransactions.ejs',{companies,currentCompany,parties})
+        res.render('admin/partyTransactions.ejs',{companies,currentCompany,parties,user})
     },
 
     viewTotalDelivered:async(req,res)=>{
@@ -2051,7 +2060,7 @@ if (products && products.length) {
 
     
         // console.log(JSON.stringify(formattedData, null, 2));
-        res.render('admin/totalDelivered.ejs',{companies,currentCompany,items})
+        res.render('admin/totalDelivered.ejs',{companies,currentCompany,items,user})
         
     },
 
@@ -2103,7 +2112,7 @@ if (products && products.length) {
                 
         res.render('admin/deliveryDetails.ejs', {
             item_name: item[0]?.item_name || "Unknown",
-            pendingSales: pendingSales, companies,currentCompany
+            pendingSales: pendingSales, companies,currentCompany,user
         });
     } catch (err) {
         console.error(err);
@@ -2138,14 +2147,54 @@ if (products && products.length) {
               `, [user.company_id]);
         
             // Render the deliveryDetails EJS view and pass the data
-            res.render('admin/delivery_update', { deliveryDetails,companies,currentCompany });
+            res.render('admin/delivery_update', { deliveryDetails,companies,currentCompany,user });
           } catch (error) {
             console.error("Error fetching delivery details:", error);
             res.status(500).send("Internal Server Error");
           }
+    },
+
+    viewEditUser:async(req,res)=>{
+        const user = req.session.user;
+        const {userId} = req.query
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+        const [selectedUser] = await mysql.query(`SELECT * FROM users WHERE id = ?`,[userId])
+
+        
+        res.render('admin/userEdit.ejs',{companies,currentCompany,selectedUser:selectedUser[0],user})
+    },
+
+    editUser:async(req,res)=>{
+        
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const editedData = req.body
+        const companyJSON = JSON.stringify(editedData.selectedCompanies)
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+        console.log(editedData);
+        
+        try {
+        if(!editedData.password){
+            await mysql.query(`UPDATE users SET name = ?, email = ?, role = ?, available_companies = ? WHERE id = ?`,[editedData.userName,editedData.userEmail,editedData.role,companyJSON,editedData.userId])
+            console.log('if works');
+            return res.json({success:true})
+        }else{
+            const hashedPassword = await bcrypt.hash(editedData.password, 10);
+            await mysql.query(`UPDATE users SET name = ?, email = ?, password = ?, role = ?, available_companies = ? WHERE id = ?`,[editedData.userName,editedData.userEmail,hashedPassword,editedData.role,companyJSON,editedData.userId])
+            console.log('else works');
+            return res.json({success:true})
+            
+        }
+    }catch (error) {
+    console.error("Error fetching companies:", error)
+    return res.status(500).json({ success: false, message: "Database error" })
+    }
     }
 
 
-};
+}
 
 module.exports = adminController;

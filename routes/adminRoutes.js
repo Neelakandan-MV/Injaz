@@ -82,6 +82,8 @@ router.get('/admin/partyTransactions',isLoggedAdmin,adminController.viewPartyTra
 router.get('/admin/delivered',isLoggedAdmin,adminController.viewTotalDelivered)
 router.get('/admin/deliveryDetails',isLoggedAdmin,adminController.viewDeliveryDetails)
 router.get('/admin/deliveryUpdates',isLoggedAdmin,adminController.viewDeliveryUpdates)
+router.get('/admin/editUser',isLoggedAdmin,adminController.viewEditUser)
+router.post('/admin/editUser',isLoggedAdmin,adminController.editUser)
 
   
 
