@@ -81,7 +81,7 @@
               </div>
               
                 <div class="mt-3 d-flex">
-                <button class="btn btn-success" type="submit">Add User</button>
+                <button class="btn btn-success" type="submit">Submit</button>
             </div>
             </form>
         </div>
@@ -100,14 +100,10 @@
         const userId = document.getElementById('userId').value
         
         let selectedCompanies = []
-        if(role !== 'businessOwner'){
-            
-            selectedCompanies = Array.from(document.querySelectorAll('input[name="companies"]'))
-            .map(checkbox => checkbox.value);
-        }else{
+       
         selectedCompanies = Array.from(document.querySelectorAll('input[name="companies"]:checked'))
         .map(checkbox => checkbox.value);
-        }
+
         const data= {userId,userName,userEmail,password,role,selectedCompanies}
 
         fetch("/admin/editUser", {

@@ -78,7 +78,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>User ID</th>
+                        <!-- <th>User ID</th> -->
                         <th>Name</th>
                         <th>Email</th>
                         <th>Status</th>
@@ -111,7 +111,7 @@
                 </div>
                 <div class="mt-2">
                     <label for="password">Role:</label>
-                    <select name="role" id="role" class="form-control" onchange="roleSelection()">
+                    <select name="role" id="role" class="form-control">
                         <option value="businessOwner">Sales' Man</option>
                         <option value="admin">Admin</option>
                         <!-- <option value="superAdmin">Super Admin</option> -->
@@ -121,7 +121,7 @@
                     <h6>Select Companies:</h6>
 
                     <% companies.forEach((company,index) => { %>
-                    <input type="checkbox" id="company1" name="companies" value="<%= company.id %>">
+                    <input type="checkbox" id="company1" name="companies" value="<%= company.id %>" checked>
                     <label for="company1"><%= company.name %></label>
                     <br>
                     <% }) %>
@@ -137,20 +137,20 @@
 
     <script>
 
-        function roleSelection(){
-            const role = document.getElementById('role').value
-            if(role != 'businessOwner'){
-            Array.from(document.querySelectorAll('input[name="companies"]'))
-            .map(checkbox => checkbox.style.display = 'none');
-            Array.from(document.querySelectorAll('label[for="company1"]'))
-            .map(checkbox => checkbox.style.display = 'none');
-            }else{
-                Array.from(document.querySelectorAll('input[name="companies"]'))
-            .map(checkbox => checkbox.style.display = 'inline');
-            Array.from(document.querySelectorAll('label[for="company1"]'))
-            .map(checkbox => checkbox.style.display = 'inline');
-            }
-        }
+        // function roleSelection(){
+        //     const role = document.getElementById('role').value
+        //     if(role != 'businessOwner'){
+        //     Array.from(document.querySelectorAll('input[name="companies"]'))
+        //     .map(checkbox => checkbox.style.display = 'none');
+        //     Array.from(document.querySelectorAll('label[for="company1"]'))
+        //     .map(checkbox => checkbox.style.display = 'none');
+        //     }else{
+        //         Array.from(document.querySelectorAll('input[name="companies"]'))
+        //     .map(checkbox => checkbox.style.display = 'inline');
+        //     Array.from(document.querySelectorAll('label[for="company1"]'))
+        //     .map(checkbox => checkbox.style.display = 'inline');
+        //     }
+        // }
 
         document.getElementById("addUserForm").addEventListener("submit", function(event) {
         event.preventDefault(); 
@@ -160,14 +160,10 @@
         const password = document.getElementById('password').value
         const role = document.getElementById('role').value
         let selectedCompanies = []
-        if(role !== 'businessOwner'){
-            
-            selectedCompanies = Array.from(document.querySelectorAll('input[name="companies"]'))
-            .map(checkbox => checkbox.value);
-        }else{
+      
         selectedCompanies = Array.from(document.querySelectorAll('input[name="companies"]:checked'))
         .map(checkbox => checkbox.value);
-        }
+
         const data= {userName,userEmail,password,role}
 
         fetch("/admin/addUser", {
@@ -214,7 +210,6 @@ function renderUserList() {
     userList.forEach(user => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>${user.id}</td>
             <td>${user.name}</td>
             <td>${user.email}</td>
             <td>${user.isActive? 'Active':'Blocked' }</td>

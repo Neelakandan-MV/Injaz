@@ -2167,33 +2167,44 @@ if (products && products.length) {
         res.render('admin/userEdit.ejs',{companies,currentCompany,selectedUser:selectedUser[0],user})
     },
 
-    editUser:async(req,res)=>{
-        
-        const user = req.session.user;
-        const companyId = user.company_id;
-        const editedData = req.body
-        const companyJSON = JSON.stringify(editedData.selectedCompanies)
-        const [companies] = await mysql.query(`SELECT * FROM companies`);
-        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
-        console.log(editedData);
-        
+    editUser: async (req, res) => {
         try {
-        if(!editedData.password){
-            await mysql.query(`UPDATE users SET name = ?, email = ?, role = ?, available_companies = ? WHERE id = ?`,[editedData.userName,editedData.userEmail,editedData.role,companyJSON,editedData.userId])
-            console.log('if works');
-            return res.json({success:true})
-        }else{
-            const hashedPassword = await bcrypt.hash(editedData.password, 10);
-            await mysql.query(`UPDATE users SET name = ?, email = ?, password = ?, role = ?, available_companies = ? WHERE id = ?`,[editedData.userName,editedData.userEmail,hashedPassword,editedData.role,companyJSON,editedData.userId])
-            console.log('else works');
-            return res.json({success:true})
-            
+            const user = req.session.user;
+            const companyId = user.company_id;
+            const {data} = req.body;
+                
+            // Ensure selectedCompanies is a valid JSON array
+            const companyJSON = Array.isArray(data.selectedCompanies)
+                ? JSON.stringify(data.selectedCompanies)
+                : '[]';
+    
+            // Fetch companies (inside try block for error handling)
+            const [companies] = await mysql.query(`SELECT * FROM companies`);
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+    
+            if (!data.password || data.password.trim() === '') {
+                await mysql.query(
+                    `UPDATE users SET name = ?, email = ?, role = ?, available_companies = ? WHERE id = ?`,
+                    [data.userName, data.userEmail, data.role, companyJSON, data.userId]
+                );
+                console.log('if works');
+            } else {
+                const hashedPassword = await bcrypt.hash(data.password, 10);
+                await mysql.query(
+                    `UPDATE users SET name = ?, email = ?, password = ?, role = ?, available_companies = ? WHERE id = ?`,
+                    [data.userName, data.userEmail, hashedPassword, data.role, companyJSON, data.userId]
+                );
+                console.log('else works');
+            }
+    
+            return res.json({ success: true });
+    
+        } catch (error) {
+            console.error("Error updating user:", error);
+            return res.status(500).json({ success: false, message: "Database error" });
         }
-    }catch (error) {
-    console.error("Error fetching companies:", error)
-    return res.status(500).json({ success: false, message: "Database error" })
     }
-    }
+    
 
 
 }
