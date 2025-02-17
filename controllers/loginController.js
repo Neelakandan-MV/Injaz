@@ -5,6 +5,10 @@ const db = require('../mySql');
 exports.showLoginPage = (req, res) => {
   if(!req.session.user){
   res.render('auth/login', { error: null });
+  }else if(req.session.user.role == 'admin' || req.session.user.role == 'superAdmin'){
+    res.redirect('admin/dashboard')
+  }else{
+    res.redirect('business-owner/dashboard')
   }
 };
 

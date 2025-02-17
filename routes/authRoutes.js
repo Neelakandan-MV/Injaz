@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const loginController = require('../controllers/loginController');
 
+
 // Show login page
 router.get('/login', loginController.showLoginPage);
 

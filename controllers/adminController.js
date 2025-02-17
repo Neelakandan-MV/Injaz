@@ -1614,7 +1614,8 @@ if (products && products.length) {
         res.render('admin/totalReceivable.ejs', {
             companies: companyData,
             currentCompany: currentCompany,
-            partyWiseReceivable 
+            partyWiseReceivable ,
+            user
         });
     },
 
@@ -1630,7 +1631,8 @@ if (products && products.length) {
         res.render('admin/totalPayable.ejs', {
             companies: companyData,
             currentCompany: currentCompany,
-            partyWisePayable 
+            partyWisePayable ,
+            user
         });
     },
     itemReturn:async(req,res)=>{
