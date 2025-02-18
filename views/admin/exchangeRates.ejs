@@ -49,6 +49,7 @@
         a{
             text-decoration: none;
         }
+      
     </style>
     
 </head>
@@ -62,20 +63,25 @@
             <h1 class="fw-bold">Exchange Rates</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
-        <div class="col-md-12 card">
+        <div class="col-md-12 card position-relative p-3" id="exchangeRateCard" style="height: 45px;">
+            <!-- Minimize Icon -->
+            <span class="position-absolute top-0 end-0 p-2" style="cursor: pointer;" onclick="toggleCard()">
+                <i id="toggleIcon" class="fas fa-caret-down"></i>
+            </span>
+        
             <h5 class="text-center">Adjust Exchange Rate</h5>
-        <form action="/admin/exchange-rates" class="m-3" method="POST">
-            <label>SAR:</label>
-            <input type="number" step="0.0001" name="inrToSar" required class="form-control mb-3"
-                value="<%= (rates.find(r => r.currency_from === 'INR') || { exchange_rate: '' }).exchange_rate %>">
+            <form action="/admin/exchange-rates" class="m-3" method="POST">
+                <label>SAR:</label>
+                <input type="number" step="0.0001" name="inrToSar" required class="form-control mb-3"
+                    value="<%= (rates.find(r => r.currency_from === 'INR') || { exchange_rate: '' }).exchange_rate %>">
         
-            <label>INR:</label>
-            <input type="number" step="0.0001" name="sarToInr" required class="form-control"
-                value="<%= (rates.find(r => r.currency_from === 'SAR') || { exchange_rate: '' }).exchange_rate %>">
+                <label>INR:</label>
+                <input type="number" step="0.0001" name="sarToInr" required class="form-control"
+                    value="<%= (rates.find(r => r.currency_from === 'SAR') || { exchange_rate: '' }).exchange_rate %>">
         
-            <button class="btn btn-primary" type="submit">Update Rates</button>
-        </form>
-    </div>
+                <button class="btn btn-primary" type="submit">Update Rates</button>
+            </form>
+        </div>
 
         <div class="card mt-3 align-items-center p-3">
             <h5>Calculator</h5>
@@ -322,5 +328,27 @@
                 overlay.classList.remove('active');
             });
         </script>
+       <script>
+        function toggleCard() {
+            const card = document.getElementById("exchangeRateCard");
+            const icon = document.getElementById("toggleIcon");
+    
+            if (card.style.height === "45px") {
+                card.style.height = "auto"; // Expand smoothly
+                card.style.overflow = "visible";
+                icon.classList.remove("fa-caret-down");
+                icon.classList.add("fa-caret-up");
+            } else {
+                card.style.height = "45px"; // Minimize smoothly
+                card.style.overflow = "hidden";
+                icon.classList.remove("fa-caret-up");
+                icon.classList.add("fa-caret-down");
+                
+            }
+        }
+    </script>
+        
+        <!-- FontAwesome for icons -->
+        <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
