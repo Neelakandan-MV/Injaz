@@ -278,6 +278,7 @@
                         <th>Date</th>
                         <th>Amount</th>
                         <th>Balance Due</th>
+                        <th>Action</th>
                     </tr>
                 </table>
         </div>
@@ -378,6 +379,9 @@ function selectParty(partyName) {
             row.insertCell(1).textContent = formatDateToDDMMYYYY(transaction.date);
             row.insertCell(2).textContent = transaction.amount;
             row.insertCell(3).textContent = transaction.balance_due;
+            if(transaction.transaction_type == 'payment_in' || transaction.transaction_type == 'payment_out'){
+                row.insertCell(4).innerHTML = `<a class="btn btn-warning" href="/admin/paymentEdit?paymentId=${transaction.id}">Edit</a>`;
+            }
         });
     }
 }

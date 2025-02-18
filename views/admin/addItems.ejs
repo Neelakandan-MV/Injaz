@@ -95,7 +95,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="category" class="form-label">Category *</label>
-                                <select class="form-select" id="category" name="category" required>
+                                <select class="form-select" id="category" name="category">
                                     <option value="">Select Category</option>
                                     <% if(categories.length){ categories.map((category)=>{ %>
                                         <option value="<%= category.id %>">

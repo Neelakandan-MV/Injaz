@@ -693,7 +693,7 @@ if (products && products.length) {
                     [
                         itemName,
                         itemHSN,
-                        category,
+                        category || null,
                         unit,
                         image || null,
                         salePrice || 0,
@@ -733,7 +733,6 @@ if (products && products.length) {
 
             } catch (error) {
                 console.error(error);
-                return res.render('admin/addItems.ejs', { error: 'An error occurred. Please try again.' });
             }
         });
     },

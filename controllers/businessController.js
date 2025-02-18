@@ -82,7 +82,7 @@ const businessOwnerController = {
     viewSales: async (req, res) => {
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
@@ -1680,49 +1680,50 @@ if (products && products.length) {
         const user = req.session.user;
         const { partyName, partyId, date, phone, amount, desc } = req.body;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    
+        // Fetch the current party details
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`, [partyId]);
-        // Ensure receivable and payable are numbers (defaulting to 0 if null)
+    
+        // Ensure receivable and payable are numbers, defaulting to 0 if null
         let receivable = Number(party[0].receivable) || 0;
         let payable = Number(party[0].payable) || 0;
+        let paymentAmount = Number(amount);
     
-        // Payment Out: Money paid out to the party
         if (payable > 0) {
-            // If the business owes the party money, reduce that payable.
-            if (amount <= payable) {
-                payable -= amount;
+            if (paymentAmount <= payable) {
+                payable -= paymentAmount; // Directly deduct from payable
             } else {
-                let diff = amount - payable; // Excess payment
-                payable = 0;
-                // The excess means the party now owes money, so increase receivable.
-                receivable += diff;
-            }
-        } else if (receivable > 0) {
-            // If the party owes money (receivable), then paying them would reduce what they owe.
-            if (amount <= receivable) {
-                receivable -= amount;
-            } else {
-                let diff = amount - receivable;
-                receivable = 0;
-                // The excess payment now creates a credit (business owes party)
-                payable += diff;
+                let diff = paymentAmount - payable;
+                payable = 0; // Payable is fully cleared
+                receivable += diff; // Excess payment increases receivable
             }
         } else {
-            // If both receivable and payable are zero, you might decide to create a payable.
-            payable = amount;
+            receivable += paymentAmount; // If no payable, entire amount increases receivable
         }
     
+        // Insert into party_payments
         await mysql.query(
-            `INSERT INTO party_payments (party_name,phone,date,description,amount,payment_type,party_id,company_id) VALUES(?,?,?,?,?,?,?,?)`,
-            [partyName, phone, date, desc, amount, 'payment_out', partyId,user.company_id]
+            `INSERT INTO party_payments (party_name, phone, date, description, amount, payment_type, party_id, company_id) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [partyName, phone, date, desc, amount, 'payment_out', partyId, user.company_id]
         );
+    
+        // Update party's receivable and payable amounts
         await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`, [receivable, payable, partyId]);
+    
+        // Update company's cash-in-hand
         await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`, [amount, user.company_id]);
+    
+        // Insert into cash_flows
         await mysql.query(
-            `INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,
+            `INSERT INTO cash_flows (name, date, tnx_type, amount, money_type, company_id) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
             [partyName, created_at, 'Payment_Out', amount, 'money_out', user.company_id]
         );
+    
         res.redirect('/business-owner/viewParty');
     },
+    
     viewCalculator:async(req,res)=>{
         const user = req.session.user;
         const companyId = user.company_id;
@@ -1939,7 +1940,96 @@ viewDeliveryUpdates:async(req,res)=>{
         console.error("Error fetching delivery details:", error);
         res.status(500).send("Internal Server Error");
       }
+},
+
+viewPaymentEdit:async(req,res)=>{
+
+    const user = req.session.user;
+    const companyId = user.company_id;
+    const [companies] = await mysql.query(`SELECT * FROM companies`);
+    const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+
+    const {paymentId} = req.query
+    const [payment] = await mysql.query(`SELECT * FROM party_payments WHERE id = ?`,[paymentId])
+
+    res.render('admin/paymentEdit.ejs',{companies,currentCompany,payment:payment[0],user})
+    
+},
+
+paymentEdit: async (req, res) => {
+    const { paymentId, amount, desc, payment_type, partyId } = req.body;
+
+    const [current_payment] = await mysql.query('SELECT * FROM party_payments WHERE id = ?', [paymentId]);
+
+    const [current_party] = await mysql.query('SELECT * FROM parties WHERE id = ?', [partyId]);
+
+    let payable = Number(current_party[0].payable) || 0;
+    let receivable = Number(current_party[0].receivable) || 0;
+
+    let current_amount = Number(current_payment[0].amount);
+    let updated_amount = Number(amount);
+
+    let diff = updated_amount - current_amount; 
+
+    let transaction_type = '';
+    if (diff > 0) {
+        transaction_type = 'money_increased';
+    } else if (diff < 0) {
+        transaction_type = 'money_decreased';
+    } else {
+        transaction_type = 'money_unchanged';
+    }
+
+    if (payment_type === 'payment_in') {
+        // Handling Payment In
+        if (receivable > 0) { 
+            if (receivable >= Math.abs(diff)) { 
+                receivable -= diff;
+            } else {
+                payable += Math.abs(diff) - receivable;
+                receivable = 0;
+            }
+        } else {
+            payable += diff;
+        }
+        console.log('if - payment_in');
+    } else { 
+        // Handling Payment Out (FIXED with money_increased & money_decreased)
+        if (transaction_type === 'money_increased') {
+            if (payable > 0) {
+                if (payable >= diff) {
+                    payable -= diff;
+                } else {
+                    receivable += diff - payable;
+                    payable = 0;
+                }
+            } else {
+                receivable += diff;
+            }
+        } else if (transaction_type === 'money_decreased') {
+            if (receivable > 0) {
+                if (receivable >= Math.abs(diff)) {
+                    receivable += diff;
+                } else {
+                    payable += Math.abs(diff) - receivable;
+                    receivable = 0;
+                }
+            } else {
+                payable += Math.abs(diff);
+            }
+        }
+        console.log('else - payment_out');
+    }
+
+    // Update the payment details
+    await mysql.query('UPDATE party_payments SET description = ?, amount = ? WHERE id = ?', [desc, amount, paymentId]);
+
+    // Update the party balance
+    await mysql.query('UPDATE parties SET receivable = ?, payable = ? WHERE id = ?', [receivable, payable, partyId]);
+
+    res.redirect('/admin/viewParty');
 }
+
 
     
 }

@@ -71,6 +71,8 @@ router.get('/business-owner/partyTransactions',isLogged,businessController.viewP
 router.get('/business-owner/delivered',isLogged,businessController.viewTotalDelivered)
 router.get('/business-owner/deliveryDetails',isLogged,businessController.viewDeliveryDetails)
 router.get('/business-owner/deliveryUpdates',isLogged,businessController.viewDeliveryUpdates)
+router.get('/business-owner/paymentEdit',isLogged,businessController.viewPaymentEdit)
+router.post('/business-owner/paymentEdit',isLogged,businessController.paymentEdit)
 
 
 
