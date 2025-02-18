@@ -374,7 +374,7 @@ const adminController = {
                         payable = 0;
                     }
                 } else {
-                    receivable += balance;
+                    receivable -= balance;
                 }
             }
             
