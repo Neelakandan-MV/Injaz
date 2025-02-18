@@ -661,6 +661,17 @@ const businessOwnerController = {
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id, opening_cash, closing_cash) VALUES (?,?,?,?,?,?,?,?,?)`,
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
         if (products) {
+
+            if(transactionType == 'purchase'){
+                for (const product of products) {
+                    await mysql.query(
+                      `UPDATE items SET purchase_price = ? WHERE id = ?`,
+                      [product.pricePerUnit, product.productId]
+                    );
+                  }
+                  
+            }
+
             await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit,free_quantity,serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.freeQuantity,product.serial_number||0])]);
             
             if(transactionType == 'sale'){
