@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaymentOut</title>
+    <title>Payment Edit</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
@@ -59,47 +59,50 @@
     <div class="main-content">
         <!-- Header Section -->
         <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Payment Out</h1>
+            <h1 class="fw-bold">Payment Edit</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
-
 <section class="form-section mt-4">
-    <form action="/admin/addPaymentOut" method="POST">
+    <form action="/admin/paymentEdit" method="POST">
         <!-- Existing fields -->
         <div class="row mb-3">
             <input type="hidden" value="sale" name="transactionType">
         <div class="row mb-3">
             <div class="col-md-4">
                 <label for="partyName" class="form-label">Party Name *</label>
-                <input type="text" id="partyName" name="partyName" class="form-control" placeholder="Enter Party Name" value="<%= party.PartyName %>"  list="partySuggestions" oninput="partyChange(this)" required>    
-                <input type="hidden" id="partyId" name="partyId" value="<%= party.id %>" required>
+                <input type="text" id="partyName" name="partyName" class="form-control" placeholder="Enter Party Name" value="<%= payment.party_name %>"  list="partySuggestions" oninput="partyChange(this)" required readonly>    
+                <input type="hidden" id="partyId" name="paymentId" value="<%= payment.id %>" required>
+                <input type="hidden" name="partyId" value="<%= payment.party_id %>">
+                <input type="hidden" value="<%= payment.payment_type %>" name="payment_type">
             </div>
-            <div class="col-md-3">
+
+            <!-- <div class="col-md-3">
                 <label for="date" class="form-label">Date</label>
-                <input type="date" id="date" name="date" class="form-control" required >
-            </div>
+                <input type="date" id="date" name="date" class="form-control"  required>
+            </div> -->
         </div>
         <div class="row mb-3">
             <div class="col-md-4">
                 <label for="number" class="form-label">Phone Number</label>
                 <input type="number" id="phone" name="phone" class="form-control"
-                    placeholder="Enter Phone Number" value="<%= party.Phone %>" required>
+                    placeholder="Enter Phone Number" value="<%= payment.phone %>" required readonly>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-4">
                 <label for="number" class="form-label">Amount *</label>
                 <input type="text" id="phone" name="amount" class="form-control"  
-                    placeholder="Enter Amount" required>
+                    placeholder="Enter Amount" value="<%= payment.amount %>" required>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
                 <label for="number" class="form-label">Description</label>
                 <input type="text" id="desc" name="desc" class="form-control"  
-                    placeholder="Enter Description (optional)" >
+                    placeholder="Enter Description (optional)" value="<%= payment.description %>">
             </div>
         </div>
+        
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
         </form>
@@ -107,18 +110,6 @@
 
     </div>
 </body>
-<script>
-    function setDefaultDate() {
-const dateInput = document.getElementById('date');
-const today = new Date();
-const formattedDate = today.toISOString().split('T')[0]; 
-dateInput.value = formattedDate;
-}
-
-
-window.onload = setDefaultDate;
-
-</script>
 </html>   
 <script>
     const sidebar = document.getElementById('sidebar');
