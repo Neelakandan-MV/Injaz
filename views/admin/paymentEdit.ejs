@@ -64,6 +64,7 @@
         </header>
 <section class="form-section mt-4">
     <form action="/admin/paymentEdit" method="POST">
+        <h4 class="mt-2 mb-4">Payment Type : <%= payment.payment_type.toUpperCase() %></h4>
         <!-- Existing fields -->
         <div class="row mb-3">
             <input type="hidden" value="sale" name="transactionType">
