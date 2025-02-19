@@ -224,7 +224,7 @@
                 <option value="0">Hidden</option>
             </select>
             <input type="hidden" id="partyId">
-            <button type="button" class="btn btn-primary w-100" onclick="importContacts()">Import Contacts</button>
+            <button type="button" class="btn btn-primary w-100" onclick="importContacts('<%= access_token %>')">Import Contacts</button>
             <br>
             <div class="d-flex">
             <button type="button" class="btn btn-secondary  mt-2 w-50" onclick="editParty()">Edit Party</button>
@@ -481,7 +481,7 @@ function selectParty(partyName) {
 
 
 <script>
-    async function importContacts() {
+    async function importContact() {
        if ('contacts' in navigator && 'ContactsManager' in window) {
            try {
                const props = ['name', 'tel', 'email', 'address'];
@@ -540,6 +540,128 @@ function selectParty(partyName) {
    }
    
       </script>
+
+
+<script>
+    
+async function importContacts(accessToken) {
+    alert(accessToken)
+
+    if (!accessToken) {
+        authenticateWithGoogle(); 
+    } else {
+        const contacts = await fetchGoogleContacts(accessToken);
+        console.log(contacts);
+        sendContactsToServer(contacts);
+    }
+}
+
+
+    const CLIENT_ID = "820300599951-chq1g1l44ub8626kls0e8crkrmv8605u.apps.googleusercontent.com";
+const REDIRECT_URI = "http://localhost:3000/";
+const SCOPE = "https://www.googleapis.com/auth/contacts.readonly";
+
+// Step 1: Redirect User to Google OAuth
+async function authenticateWithGoogle() {
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?
+client_id=820300599951-chq1g1l44ub8626kls0e8crkrmv8605u.apps.googleusercontent.com&
+redirect_uri=http://localhost:3000&
+response_type=token&
+scope=https://www.googleapis.com/auth/contacts.readonly`;
+
+    window.location.href = googleAuthUrl;
+}
+
+function getAccessTokenFromUrl() {
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    return params.get("access_token");
+}
+
+// Step 3: Fetch Contacts from Google People API
+async function fetchGoogleContacts(accessToken) {
+    try {
+        const response = await fetch(
+            "https://people.googleapis.com/v1/people/me/connections?personFields=names,emailAddresses,phoneNumbers",
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch contacts");
+        }
+
+        const data = await response.json();
+        const contacts = data.connections || [];
+        console.log("Google Contacts:", contacts);
+
+        // Extract only necessary fields
+        const formattedContacts = contacts.map(contact => ({
+            name: contact.names?.[0]?.displayName || "Unknown",
+            email: contact.emailAddresses?.[0]?.value || "",
+            tel: contact.phoneNumbers?.[0]?.value || ""
+        }));
+
+        return formattedContacts;
+    } catch (error) {
+        console.error("Error fetching contacts:", error);
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Failed to fetch Google contacts",
+        });
+        return [];
+    }
+}
+
+// Step 4: Send Contacts to Server
+async function sendContactsToServer(contacts) {
+    if (contacts.length === 0) {
+        Swal.fire({
+            icon: "warning",
+            title: "No Contacts Found",
+            text: "Your Google Contacts list is empty.",
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch('/admin/add-contacts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ contacts }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            Swal.fire({
+                title: `${data.data}`,
+                icon: "success",
+                draggable: false
+            });
+            setTimeout(() => {
+                window.location.reload();
+            }, 300);
+        } else {
+            throw new Error(data.data || "Failed to import contacts");
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: `${error.message}`,
+        });
+    }
+}
+
+
+</script>
 
 <script>
     function downloadPdf() {

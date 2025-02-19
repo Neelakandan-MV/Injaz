@@ -37,6 +37,8 @@ app.get('/', (req, res) => {
       return res.redirect('/admin/dashboard');
     } else if (req.session.user.role === 'businessOwner') {
       return res.redirect('/business-owner/dashboard');
+    } else if(req.session.user.role == 'superAdmin'){
+      return res.redirect('/admin/dashboard');
     }
   } else {
     res.render('auth/login', { error: null }); // Render login page if not logged in

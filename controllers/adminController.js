@@ -53,7 +53,8 @@ const adminController = {
 
     viewDashboard: async (req, res) => {
         const user = req.session.user;
-        const apiKey = process.env.EXCHANGE_RATE_API_KEY
+        const apiKey = process.env.EXCHANGE_RATE_API_KEY;
+        
 
         try {
             const [companies] = await mysql.query(`SELECT * FROM companies`);
@@ -974,6 +975,9 @@ if (products && products.length) {
     viewParty: async (req, res) => {
         const user = req.session.user
         const companyId = user.company_id;
+        const [oauth_tokens] = await mysql.query('SELECT * FROM oauth_tokens WHERE user_id = ?',[user.id]) 
+        const access_token = oauth_tokens[0].access_token
+        
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [results] = await mysql.query(`
@@ -1061,7 +1065,7 @@ if (products && products.length) {
 
         const parties = Object.values(partiesMap);
         
-        res.render('admin/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user, parties });
+        res.render('admin/partyDisplay.ejs', { title: 'parties', currentCompany, companies, user, parties , access_token});
     },
     addParty: async (req, res) => {
         upload(req, res, async function (err) {
@@ -1752,12 +1756,15 @@ if (products && products.length) {
         const contactData = req.body;
         const contacts = contactData.contacts;
         const [parties] = await mysql.query(`SELECT * FROM parties WHERE company_id =?`, [user.company_id]);
+
+        console.log(contacts);
+        
     
         for (const item of contacts) {
-            const name = item.name[0];
-            const phone = item.tel[0]?.replace(/\D/g, '') || 'No Number found';
-            const email = item.email[0] || null;
-            const address = item.address[0] || null;
+            const name = item.name;
+            const phone = item.tel
+            const email = item.email || '';
+            const address = null;
             const image = null;
     
             const isDuplicate = parties.some(party => party.PartyName == name);
@@ -2418,6 +2425,24 @@ if (products && products.length) {
         await mysql.query('UPDATE cash_flows SET amount = ?, date = ? WHERE other_tnx_id = ?',[amount,date,income_id])
         res.redirect('/admin/otherIncome')
         
+    },
+
+    storeAccessToken:async(req,res)=>{
+
+        const user = req.session.user
+        const body = req.body
+        const access_token = body.access_token
+    
+        const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+        try {
+            if(access_token){
+        await mysql.query(`INSERT INTO oauth_tokens (user_id, access_token, expires_at)
+                   VALUES (?, ?, ?)`,[user.id,access_token,expiresAt])
+            }
+        }catch (error) {
+            console.error("Error storing access token:", error);
+        }
+    
     },
     
 

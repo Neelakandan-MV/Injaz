@@ -195,6 +195,24 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
+
+<script>
+    function getAccessTokenFromUrl() {
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    console.log(params.get("access_token"));
+    const access_token =  params.get("access_token");
+    fetch('/admin/store-access-token',{
+        method:'POST',
+        headers: {
+        'Content-Type': 'application/json'  // Indicate JSON payload
+    },
+    body: JSON.stringify({access_token: params.get("access_token")})
+    })
+
+}
+getAccessTokenFromUrl()
+</script>
+
 <script>
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');

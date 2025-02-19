@@ -90,6 +90,7 @@ router.get('/admin/expenseEdit',isLoggedAdmin,adminController.viewExpenseEdit)
 router.post('/admin/expenseEdit',isLoggedAdmin,adminController.expenseEdit)
 router.get('/admin/incomeEdit',isLoggedAdmin,adminController.viewIncomeEdit)
 router.post('/admin/incomeEdit',isLoggedAdmin,adminController.incomeEdit)
+router.post('/admin/store-access-token',adminController.storeAccessToken)
 
   
 
