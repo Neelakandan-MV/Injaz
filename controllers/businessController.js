@@ -1014,17 +1014,18 @@ const businessOwnerController = {
 
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
-            return res.render("businessOwner/error.ejs", { error: 'No company found for this user.' });
+            return res.render("admin/error.ejs", { error: 'No company found for this user.' });
         }
 
-        const [items] = await mysql.query(`
+        const [item] = await mysql.query(`
             SELECT 
                 sales.*, 
                 parties.PartyName AS customer_name
+                
             FROM 
                 sales
             LEFT JOIN 
@@ -1034,12 +1035,29 @@ const businessOwnerController = {
                 sales.company_id = ?
         `, [startOfDay, endOfDay, companyId]);
 
+       
+        const [items] = await mysql.query(`
+            SELECT 
+                c.id,
+                c.date,
+                c.amount AS total_amount,
+                c.tnx_type AS transaction_type,
+                c.money_type,
+                c.company_id,
+                c.name AS customer_name
+            FROM 
+              cash_flows c
+            WHERE 
+               date BETWEEN ? AND ? AND
+                company_id = ?
+        `, [startOfDay, endOfDay, companyId]);
+
         let total_money_in = 0
         let total_money_out = 0
         items.forEach(item => {
-            if (item.transaction_type === 'sale') {
+            if (item.transaction_type === 'sale' || item?.money_type === 'money_in') {
                 total_money_in += Number(item.total_amount);
-            } else {
+            } else if(item.transaction_type === 'purchase' || item?.money_type === 'money_out'){
                 total_money_out += Number(item.total_amount);
             }
         });
@@ -1441,8 +1459,9 @@ if (products && products.length) {
     addIncome: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
-        const { category_id, expense_number, date, amount } = req.body
-        await mysql.query(`INSERT INTO other_income (category_id,income_number,date,amount,company_id) VALUES(?,?,?,?,?)`, [category_id, expense_number, date, amount, company_id])
+        const { category_id, date, amount } = req.body
+        await mysql.query(`INSERT INTO other_income (category_id,income_number,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES (?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id])
         res.redirect('/business-owner/otherIncome');
     },
     addIncomeCategory: async (req, res) => {
@@ -1462,10 +1481,10 @@ if (products && products.length) {
     addExpense: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
-        const { category_id, expense_number, date, amount } = req.body
-        await mysql.query(`INSERT INTO expenses (category_id,expense_number,date,amount,company_id) VALUES(?,?,?,?,?)`, [category_id, expense_number, date, amount, company_id])
+        const { category_id, date, amount } = req.body
+        await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES (?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id])
         res.redirect('/business-owner/expenses');
-
     },
     addExpenseCategory: async (req, res) => {
         const { name } = req.body

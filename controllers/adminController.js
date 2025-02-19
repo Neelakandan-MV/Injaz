@@ -387,6 +387,7 @@ const adminController = {
         //cashflow updating
             await mysql.query(`UPDATE cash_flows SET name =?, date=?,amount=? WHERE tnx_id = ?`,
                 [party[0].PartyName,date,recieved,transactionDetails[0].id])
+
         
         await mysql.query(`
             UPDATE sales 
@@ -1313,10 +1314,11 @@ if (products && products.length) {
             return res.render("admin/error.ejs", { error: 'No company found for this user.' });
         }
 
-        const [items] = await mysql.query(`
+        const [item] = await mysql.query(`
             SELECT 
                 sales.*, 
                 parties.PartyName AS customer_name
+                
             FROM 
                 sales
             LEFT JOIN 
@@ -1326,12 +1328,29 @@ if (products && products.length) {
                 sales.company_id = ?
         `, [startOfDay, endOfDay, companyId]);
 
+       
+        const [items] = await mysql.query(`
+            SELECT 
+                c.id,
+                c.date,
+                c.amount AS total_amount,
+                c.tnx_type AS transaction_type,
+                c.money_type,
+                c.company_id,
+                c.name AS customer_name
+            FROM 
+              cash_flows c
+            WHERE 
+               date BETWEEN ? AND ? AND
+                company_id = ?
+        `, [startOfDay, endOfDay, companyId]);
+
         let total_money_in = 0
         let total_money_out = 0
         items.forEach(item => {
-            if (item.transaction_type === 'sale') {
+            if (item.transaction_type === 'sale' || item?.money_type === 'money_in') {
                 total_money_in += Number(item.total_amount);
-            } else {
+            } else if(item.transaction_type === 'purchase' || item?.money_type === 'money_out'){
                 total_money_out += Number(item.total_amount);
             }
         });
@@ -1363,15 +1382,17 @@ if (products && products.length) {
     addExpense: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
-        const { category_id, expense_number, date, amount } = req.body
-        await mysql.query(`INSERT INTO expenses (category_id,expense_number,date,amount,company_id) VALUES(?,?,?,?,?)`, [category_id, expense_number, date, amount, company_id])
+        const { category_id, date, amount } = req.body
+        await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES (?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id])
         res.redirect('/admin/expense');
     },
     addIncome: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
-        const { category_id, expense_number, date, amount } = req.body
-        await mysql.query(`INSERT INTO other_income (category_id,income_number,date,amount,company_id) VALUES(?,?,?,?,?)`, [category_id, expense_number, date, amount, company_id])
+        const { category_id, date, amount } = req.body
+        await mysql.query(`INSERT INTO other_income (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES (?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id])
         res.redirect('/admin/otherIncome');
     },
 
@@ -1764,10 +1785,10 @@ if (products && products.length) {
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         if(adjustmentType == 'add'){
         await mysql.query(`UPDATE companies set cash_in_hand = cash_in_hand + ? WHERE id = ?`,[amount,user.company_id])
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,['Cash Added',created_at,'Cash Adjusted',amount,'money_in',user.company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,['Cash Added',date,'Cash Adjusted',amount,'money_in',user.company_id])
         }else{
             await mysql.query(`UPDATE companies set cash_in_hand = cash_in_hand - ? WHERE id = ?`,[amount,user.company_id])
-            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,['Cash Reduced',created_at,'Cash Adjusted',amount,'money_out',user.company_id])
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,['Cash Reduced',date,'Cash Adjusted',amount,'money_out',user.company_id])
         }
         res.redirect('/admin/cashInHand')
     },

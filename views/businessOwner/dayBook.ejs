@@ -83,7 +83,7 @@
                     <div class="card text-center">
                         <div class="card-header">Total:</div>
                         <div class="card-body">
-                            <h5 class="card-title" style="color:<%=day_book_total>0? 'green':'red'%>">SAR <%= day_book_total %></h5>
+                            <h5 class="card-title" id="day_book_total" style="color:<%=day_book_total>0? 'green':'red'%>">SAR <%= day_book_total %></h5>
                         </div>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                     <div class="card text-center">
                         <div class="card-header">Money In</div>
                         <div class="card-body">
-                            <h5 class="card-title" style="color: green;">SAR <%= total_money_in %></h5>
+                            <h5 class="card-title" id="total_money_in" style="color: green;">SAR <%= total_money_in %></h5>
                         </div>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                     <div class="card text-center">
                         <div class="card-header">Money Out</div>
                         <div class="card-body">
-                            <h5 class="card-title" style="color: red;">SAR <%= total_money_out %></h5>
+                            <h5 class="card-title" id="total_money_out" style="color: red;">SAR <%= total_money_out %></h5>
                         </div>
                     </div>
                 </div>
@@ -112,12 +112,9 @@
                     <thead class="table-light" style="vertical-align: top;">
                         <tr>
                             <th>Date</th>
-                            <th>Invoice No.</th>
-                            <th>Party Name</th>
                             <th>Transaction Type</th>
-                            <th>Payment Type</th>
-                            <th>Amount</th>
-                            <th>Balance Due</th>
+                            <th>Money In</th>
+                            <th>Money Out</th>
 
                         </tr>
                     </thead>
@@ -125,12 +122,14 @@
                         <% items.forEach(item=> { %>
                             <tr>
                                 <td><%= formatDateToDDMMYYYY(item.date) %>.</td>
-                                <td><%= item.invoice_number %></td>
-                                <td><%= item.customer_name %></td>
                                 <td><%= item.transaction_type %></td>
-                                <td><%= item.payment_type %></td>
-                                <td style="color: <%= item.transaction_type == 'sale'? 'green':'red' %>"><%= item.total_amount %></td>
-                                <td style="color: <%= item.transaction_type == 'sale'? 'green':'red' %>"><%= item.balance_due %></td>
+                                <% if(item.transaction_type == 'sale'){ %>
+                                <td class="text-success"><%= item.total_amount %></td>
+                                <td></td>
+                                <% }else{ %>
+                                <td></td>
+                                <td class="text-danger"><%= item.total_amount %></td>
+                                <% } %>
                             </tr>
                             <% }); %>
                     </tbody>
@@ -208,26 +207,37 @@
 
         if (data.items.length === 0) {
             tableBody.innerHTML = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
+            document.getElementById('day_book_total').innerText= `Total: 0`
+        document.getElementById('total_money_in').innerText= `Total: 0`
+        document.getElementById('total_money_out').innerText= `Total: 0`
             return;
         }
 
         data.items.forEach(item => {
             const row = `
                 <tr>
-                    <td>${(new Date(item.date).getMonth() + 1).toString().padStart(2, '0')}/${new Date(item.date).getDate().toString().padStart(2, '0')}/${new Date(item.date).getFullYear()}</td>
-                    <td>${item.invoice_number}</td>
-                    <td>${item.customer_name}</td>
+                    <td>${formatDateToDDMMYYYY(item.date)}</td>
                     <td>${item.transaction_type}</td>
-                    <td>${item.payment_type}</td>
-                    <td>&#8377; ${item.total_amount}</td>
-                    <td>&#8377; ${item.balance_due}</td>
-                    
+                    <td class="text-success">${item.transaction_type == 'sale'? item.total_amount: '' }</td>
+                    <td class="text-danger">${item.transaction_type == 'purchase'? item.total_amount: '' }</td>  
                 </tr>
             `;
             tableBody.innerHTML += row;
         });
         document.getElementById('day_book_total').innerText= `Total: ${data.day_book_total}`
+        document.getElementById('total_money_in').innerText= `Total: ${data.total_money_in}`
+        document.getElementById('total_money_out').innerText= `Total: ${data.total_money_out}`
+        console.log(data);
+        
     }
+
+    function formatDateToDDMMYYYY(mysqlDate) {
+    const date = new Date(mysqlDate); // Parse the MySQL date
+    const day = String(date.getDate()).padStart(2, '0'); // Ensure two digits
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
 
 </script>
 
