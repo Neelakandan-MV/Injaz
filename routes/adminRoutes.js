@@ -49,6 +49,7 @@ router.post('/admin/addExpense',isLoggedAdmin,adminController.addExpense);
 router.post('/admin/addExpenseCategory',isLoggedAdmin,adminController.addExpenseCategory);
 router.post('/admin/addIncomeCategory',isLoggedAdmin,adminController.addIncomeCategory);
 router.get('/admin/itemWiseProfitAndLoss',isLoggedAdmin,adminController.viewItemProfitAndLoss);
+router.get('/admin/item-detail',isLoggedAdmin,adminController.viewItemDetail);
 router.get('/admin/cashFlow',isLoggedAdmin,adminController.viewCashFlow);
 router.get('/admin/dayBook',isLoggedAdmin,adminController.viewDayBook);
 router.get('/admin/viewParty',isLoggedAdmin,adminController.viewParty);

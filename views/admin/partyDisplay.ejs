@@ -543,15 +543,14 @@ function selectParty(partyName) {
 
 
 <script>
+
     
 async function importContacts(accessToken) {
-    alert(accessToken)
 
     if (!accessToken) {
         authenticateWithGoogle(); 
     } else {
         const contacts = await fetchGoogleContacts(accessToken);
-        console.log(contacts);
         sendContactsToServer(contacts);
     }
 }
