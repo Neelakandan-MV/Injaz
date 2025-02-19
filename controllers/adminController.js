@@ -1168,6 +1168,7 @@ if (products && products.length) {
             const filteredExpenses = expenses
                 .filter(expense => expense.category_id === category.id)
                 .map(expense => ({
+                    id:expense.expense_id,
                     expense_number: expense.expense_number,
                     date: new Date(expense.date),
                     amount: expense.amount,
@@ -1178,6 +1179,7 @@ if (products && products.length) {
                 expenses: filteredExpenses,
             };
         });
+        
         res.render('admin/expenseDisplay.ejs', { categories: formattedData,currentCompany,companies,user })
     },
     viewIncome: async (req, res) => {
@@ -1193,6 +1195,7 @@ if (products && products.length) {
             const filteredExpenses = incomes
                 .filter(income => income.category_id === category.id)
                 .map(income => ({
+                    id:income.id,
                     income_number: income.income_number,
                     date: new Date(income.date),
                     amount: income.amount,
@@ -1383,16 +1386,16 @@ if (products && products.length) {
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES (?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id])
+        const [expense] = await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
         res.redirect('/admin/expense');
     },
     addIncome: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        await mysql.query(`INSERT INTO other_income (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES (?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id])
+        const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id,income.insertId])
         res.redirect('/admin/otherIncome');
     },
 
@@ -1567,8 +1570,8 @@ if (products && products.length) {
                      WHERE id = ?`,
                     [
                         itemName,
-                        itemHSN,
-                        category,
+                        itemHSN || null,
+                        category || null,
                         unit,
                         image || null,
                         salePrice || 0,
@@ -1604,11 +1607,11 @@ if (products && products.length) {
                     WHERE items.company_id = ?
                 `, [companyId]);
 
-                res.render('admin/itemManagement.ejs', { items, user, companies, currentCompany });
+                // res.render('admin/itemManagement.ejs', { items, user, companies, currentCompany });
+                res.redirect('/admin/viewItems')
 
             } catch (error) {
                 console.error(error);
-                return res.render('admin/itemEdit.ejs', { error: 'An error occurred. Please try again.' });
             }
         });
     },
@@ -1931,6 +1934,10 @@ if (products && products.length) {
             const user = req.session.user;
             const companyId = user.company_id;
             const { start, end } = req.query;
+
+            console.log("start",start);
+            console.log("end",end);
+            
     
             const [companies] = await mysql.query(`SELECT * FROM companies`);
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
@@ -1947,12 +1954,15 @@ if (products && products.length) {
     
             const totalSales = grossProfit[0]?.total_sales || 0;
             const totalPurchases = grossProfit[0]?.total_purchases || 0;
-            const grossProfitValue = totalSales - totalPurchases;
+            const grossProfitValue = Number(totalSales) - totalPurchases;
     
             const [otherIncome] = await mysql.query(
                 `SELECT COALESCE(SUM(amount), 0) AS total_income FROM other_income WHERE company_id = ? AND date BETWEEN ? AND ?`,
                 [companyId ,start || '2000-01-01', end || '2099-12-31']
             );
+
+            console.log(otherIncome);
+            
             const totalOtherIncome = otherIncome[0]?.total_income || 0;
     
             const [otherExpenses] = await mysql.query(
@@ -1978,7 +1988,7 @@ if (products && products.length) {
             const totalClosingStock = closingStock[0]?.closing_stock || 0;
 
     
-            const netProfit = (grossProfitValue + totalOtherIncome - totalOtherExpenses) + (totalClosingStock - totalOpeningStock);
+            const netProfit = (Number(grossProfitValue) + Number(totalOtherIncome) - Number(totalOtherExpenses)) + (Number(totalClosingStock) - Number(totalOpeningStock));
     
             if (start && end) {
                 return res.json({
@@ -2360,11 +2370,55 @@ if (products && products.length) {
         await mysql.query('UPDATE parties SET receivable = ?, payable = ? WHERE id = ?', [receivable, payable, partyId]);
     
         res.redirect('/admin/viewParty');
-    }
-    
-    
-    
-    
+    },
+
+    viewExpenseEdit:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+
+        const expenseId = req.query.expenseId
+        const [expense] = await mysql.query('SELECT * FROM expenses WHERE expense_id = ?',[expenseId])
+        const [selectedCategory] = await mysql.query('SELECT * FROM expense_category WHERE id = ?',[expense[0].category_id])
+        const [categories] = await mysql.query('SELECT * FROM expense_category')
+        console.log(expense);
+        res.render('admin/expenseEdit',{companies,currentCompany,user,expense:expense[0],selectedCategory:selectedCategory[0],categories})
+        
+    },
+
+    expenseEdit:async(req,res)=>{
+        const {expense_id,category_id,amount,date}= req.body
+        await mysql.query(`UPDATE expenses SET category_id= ?, amount = ?, date=? WHERE expense_id = ?`,[category_id,amount,date,expense_id])
+        await mysql.query('UPDATE cash_flows SET amount = ?, date = ? WHERE other_tnx_id = ?',[amount,date,expense_id])
+        res.redirect('/admin/expense')
+        
+    },
+
+    viewIncomeEdit:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+
+        const incomeId = req.query.incomeId
+        console.log(incomeId);
+        
+        const [income] = await mysql.query('SELECT * FROM other_income WHERE id = ?',[incomeId])
+        const [selectedCategory] = await mysql.query('SELECT * FROM income_category WHERE id = ?',[income[0].category_id])
+        const [categories] = await mysql.query('SELECT * FROM income_category')
+
+        res.render('admin/incomeEdit',{companies,currentCompany,user,income:income[0],selectedCategory:selectedCategory[0],categories})
+        
+    },
+
+    incomeEdit:async(req,res)=>{
+        const {income_id,category_id,amount,date}= req.body
+        await mysql.query(`UPDATE other_income SET category_id= ?, amount = ?, date=? WHERE id = ?`,[category_id,amount,date,income_id])
+        await mysql.query('UPDATE cash_flows SET amount = ?, date = ? WHERE other_tnx_id = ?',[amount,date,income_id])
+        res.redirect('/admin/otherIncome')
+        
+    },
     
 
 

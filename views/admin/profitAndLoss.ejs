@@ -139,13 +139,13 @@
             <div class="col-md-6 mb-3">
                 <div class="card text-center bg-light">
                     <h5>Other Income</h5>
-                    <p id="otherIncome"><%= totalOtherIncome %></p>
+                    <p id="otherIncome">SAR <%= totalOtherIncome %></p>
                 </div>
             </div>
             <div class="col-md-6 mb-3">
                 <div class="card text-center bg-light">
                     <h5>Other Expenses</h5>
-                    <p id="otherExpenses"><%= totalOtherExpenses %></p>
+                    <p id="otherExpenses">SAR <%= totalOtherExpenses %></p>
                 </div>
             </div>
            </div>
@@ -183,11 +183,11 @@
             const data = await response.json(); // Assuming backend sends JSON response
             console.log(data);
             document.getElementById('grossProfit').innerText = `SAR ${data.grossProfit || 0}`;
-            document.getElementById('openingStock').innerText = `Opening Stock: ${data.openingStock || 0}`;
-            document.getElementById('closingStock').innerText = `Closing Stock: ${data.closingStock || 0}`;
-            document.getElementById('otherIncome').innerText = `Other Income: ${data.otherIncome || 0}`;
-            document.getElementById('otherExpenses').innerText = `Other Expenses: ${data.otherExpenses || 0}`;
-            document.getElementById('netProfit').innerText = `Net Profit: ${data.netProfit || 0}`;
+            document.getElementById('openingStock').innerText = `${data.totalOpeningStock || 0}`;
+            document.getElementById('closingStock').innerText = `${data.totalClosingStock || 0}`;
+            document.getElementById('otherIncome').innerText = `SAR ${data.totalOtherIncome || 0}`;
+            document.getElementById('otherExpenses').innerText = `SAR ${data.totalOtherExpenses || 0}`;
+            document.getElementById('netProfit').innerText = `SAR ${data.netProfit || 0}`;
         } catch (error) {
             console.error("Error fetching profit data:", error);
         }

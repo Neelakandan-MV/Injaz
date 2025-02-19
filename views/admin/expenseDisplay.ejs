@@ -87,6 +87,7 @@
                                                 <th>#</th>
                                                 <th>Date</th>
                                                 <th>Amount</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -100,6 +101,7 @@
                                                     </td>
                                                     <td>SAR <%= expense.amount %>
                                                     </td>
+                                                    <td><a href="/admin/expenseEdit?expenseId=<%= expense.id %>" class="btn btn-warning">Edit</a></td>
                                                 </tr>
                                                 <% }) %>
                                         </tbody>

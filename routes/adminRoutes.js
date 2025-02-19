@@ -86,6 +86,10 @@ router.get('/admin/editUser',isLoggedAdmin,adminController.viewEditUser)
 router.post('/admin/editUser',isLoggedAdmin,adminController.editUser)
 router.get('/admin/paymentEdit',isLoggedAdmin,adminController.viewPaymentEdit)
 router.post('/admin/paymentEdit',isLoggedAdmin,adminController.paymentEdit)
+router.get('/admin/expenseEdit',isLoggedAdmin,adminController.viewExpenseEdit)
+router.post('/admin/expenseEdit',isLoggedAdmin,adminController.expenseEdit)
+router.get('/admin/incomeEdit',isLoggedAdmin,adminController.viewIncomeEdit)
+router.post('/admin/incomeEdit',isLoggedAdmin,adminController.incomeEdit)
 
   
 
