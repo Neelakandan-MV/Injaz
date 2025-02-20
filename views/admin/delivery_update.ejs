@@ -62,6 +62,7 @@
                   <th>Delivery Date</th>
                   <th>Delivered Quantity</th>
                   <th>Notes</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -74,6 +75,7 @@
                       <td><%= detail.delivery_date %></td>
                       <td><%= detail.delivered_quantity %></td>
                       <td><%= detail.notes || '' %></td>
+                      <td><a class="btn btn-warning" href="/admin/transactionEdit?id=<%= detail.sale_id %>">Edit</a></td>
                     </tr>
                   <% }) %>
                 <% } else { %>

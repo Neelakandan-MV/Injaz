@@ -2226,7 +2226,8 @@ if (products && products.length) {
                   i.item_name,
                   dd.created_at,
                   dd.serial_number,
-                  p.PartyName AS party_name
+                  p.PartyName AS party_name,
+                  dd.sale_id
                 FROM delivery_details dd
                 JOIN items i ON dd.item_id = i.id
                 JOIN sales s ON dd.sale_id = s.id
