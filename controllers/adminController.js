@@ -1760,9 +1760,12 @@ if (products && products.length) {
         for (const item of contacts) {
             const name = item.name;
             const phone = item.tel
-            const email = item.email || '';
+            const email = item.email || null;
             const address = null;
             const image = null;
+
+            console.log(item.tel);
+            
     
             const isDuplicate = parties.some(party => party.PartyName == name);
             if (isDuplicate) {

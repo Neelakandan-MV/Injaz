@@ -142,7 +142,7 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="number" class="form-label">Phone Number *</label>
-                            <input type="number" id="phone" name="phone" class="form-control"
+                            <input type="text" id="phone" name="phone" class="form-control"
                                 placeholder="Enter Phone Number" required>
                         </div>
                         <button type="button" class="btn btn-primary mt-2 w-50" onclick="importContacts()">Import Contacts</button>
@@ -423,7 +423,6 @@ function updateReceived(){
         }else if(quantity<selectedProduct.wholesale_quantity_1){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
         }
-        console.log('3 only case');
     }else if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 > 0 && selectedProduct.wholesale_quantity_3 == 0){
         
         if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
@@ -433,7 +432,7 @@ function updateReceived(){
         }else{
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
         }
-        console.log('2 only case');
+
 
     }else if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 == 0 && selectedProduct.wholesale_quantity_3 == 0){
         if(quantity>=selectedProduct.wholesale_quantity_1){
@@ -441,7 +440,6 @@ function updateReceived(){
         }else{
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
         }
-        console.log('1 only case');
     }else{
         document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
     }
@@ -738,13 +736,15 @@ window.onload = setDefaultDate;
         const phoneInput = document.getElementById('phone')
         const element = document.getElementById('partyName')
         const parties = <%-JSON.stringify(parties)%>
-        parties.map(party=>{
-            console.log(party.PartyName);
-            console.log(element.value);
-            
-            
-            
-            if(party.PartyName == element.value){
+        
+        const partyExist = parties.find(p => p.PartyName == element.value);
+
+        console.log(partyExist);
+        
+            if(partyExist){
+
+                console.log('if works');
+                
 
                 Swal.fire({
                 title: "Do you want to Download Invoice?",
@@ -763,14 +763,15 @@ window.onload = setDefaultDate;
                     event.target.submit();
                 }
             });
+
             }else{
+
                 Swal.fire({
                 icon: "error",
                 title: "Oops...",
                 text: "Party is not available!"
                 });
-            }
-        })    
+            }   
     
             
            

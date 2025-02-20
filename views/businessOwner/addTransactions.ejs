@@ -721,30 +721,58 @@ window.onload = setDefaultDate;
 
 </script>
 <script>
-    let allowSubmit = false; 
+     let allowSubmit = false; 
 
-    document.getElementById("saleForm").addEventListener("submit", function(event) {
-        if (!allowSubmit) {
-            event.preventDefault(); 
+document.getElementById("saleForm").addEventListener("submit", function(event) {
+    if (!allowSubmit) {
+
+        event.preventDefault();
+
+    const partyId = document.getElementById('partyId')
+    const phoneInput = document.getElementById('phone')
+    const element = document.getElementById('partyName')
+    const parties = <%-JSON.stringify(parties)%>
+    
+    const partyExist = parties.find(p => p.PartyName == element.value);
+
+    console.log(partyExist);
+    
+        if(partyExist){
+
+            console.log('if works');
+            
+
             Swal.fire({
-                title: "Do you want to Download Invoice?",
-                showDenyButton: true,
-                confirmButtonText: "Yes",
-                denyButtonText: `No`
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    await downloadPdf();
-                    setTimeout(() => {
-                        allowSubmit = true;
-                        event.target.submit();
-                    }, 2000);
-                } else if (result.isDenied) {
+            title: "Do you want to Download Invoice?",
+            showDenyButton: true,
+            confirmButtonText: "Yes",
+            denyButtonText: `No`
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await downloadPdf();
+                setTimeout(() => {
                     allowSubmit = true;
                     event.target.submit();
-                }
+                }, 2000);
+            } else if (result.isDenied) {
+                allowSubmit = true;
+                event.target.submit();
+            }
+        });
+
+        }else{
+
+            Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Party is not available!"
             });
-        }
-    });
+        }   
+
+        
+       
+    }
+});
 </script>
 
 <script>
