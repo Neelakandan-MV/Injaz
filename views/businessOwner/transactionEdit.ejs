@@ -195,6 +195,7 @@
                                 </th>
                                 <th>Total (SAR)</th>
                                 <th>Delivered<p style="font-size: 12px; color: gray;">(Balance)</p></th>
+                                <th>Serial Number</th>
                                 <th>Action</th>
                                 
                             </tr>
@@ -211,6 +212,7 @@
                               <input type="hidden" name="products[<%= index %>][tax]" oninput="updateProductTotal(this)" value="<%= product.tax_rate %>"  >
                               <td><input type="text" id="productId" name="products[<%= index %>][productTotal]" onchange="updateSaleTotal(this)" value="<%= product.total %>"  ></td>
                               <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[<%= index %>][deliveredQuantity]" value="<%= product.delivered_quantity?product.delivered_quantity:'0' %>"><span style="color: rgb(95, 95, 95);">(<%= product.delivered_quantity? product.quantity - product.delivered_quantity:product.quantity  %>)</span></div></td>
+                              <td><input type="text"  name="products[<%= index %>][serial_number]"></td>
                               <td>
                                 <div class="d-flex">
                                     <!-- <button type="button" class="btn btn-success btn-sm" onclick="makeFree(this,'<%= index %>')">Free</button> -->
@@ -229,7 +231,7 @@
                     </table>
                 </div>
                     <!-- <p style="font-size: 12px; color: rgba(255, 0, 0, 0.7);">Note: Please remove the unwanted rows</p> -->
-                    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()" >Add Row</button>
+                    <button type="button" style="display: none;" class="btn btn-secondary mb-3" onclick="addRow()" >Add Row</button>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -374,6 +376,7 @@ function addRow() {
      <input type="hidden" name="products[${currentIndex}][tax]" oninput="updateProductTotal(this)" required >
      <td><input type="text" id="productTotal" name="products[${currentIndex}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
       <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[${currentIndex}][deliveredQuantity]" ><span style="color: rgb(95, 95, 95);">(N/A)</span></div></td>
+      <td><input type="text" id="serial_number" name="product[${currentIndex}][serial_number]"></td>
      <input type="hidden" id="productId" name="products[${currentIndex}][productId]" >
      <input type="hidden" id="itemId" name="products[${currentIndex}][itemId]" value="" >
      

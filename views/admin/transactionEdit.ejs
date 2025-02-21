@@ -223,7 +223,7 @@
                     </table>
                 </div>
                     <!-- <p style="font-size: 12px; color: rgba(255, 0, 0, 0.7);">Note: Please remove the unwanted rows</p> -->
-                    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()" >Add Row</button>
+                    <button style="display: none;" type="button" class="btn btn-secondary mb-3" onclick="addRow()" >Add Row</button>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -418,8 +418,8 @@ function addRow() {
          const tax = parseFloat(row.querySelector(`[name^="products"][name$="[tax]"]`)?.value) || 0;
 
          let productTotal = quantity * pricePerUnit;
-         productTotal += (productTotal * tax) / 100; 
-         productTotal -= (productTotal * discount) / 100; 
+         productTotal += (productTotal * tax) / 100;
+         productTotal -= (productTotal * discount) / 100;
 
          row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(5);
 

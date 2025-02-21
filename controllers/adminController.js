@@ -200,6 +200,9 @@ const adminController = {
                 sales.id, parties.PartyName
         `, [companyId]);
 
+        console.log(items);
+        
+
         res.render("admin/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
     },
 
@@ -484,7 +487,7 @@ if (products && products.length) {
                 unit,
                 serial_number
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?)`,
           [
             product.itemId,
             transaction_id,
@@ -497,7 +500,7 @@ if (products && products.length) {
             user.company_id,
             product.item,
             product.unit,
-            product.serial_number
+            product.serial_number ||0
           ]
         );
         

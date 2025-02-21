@@ -82,7 +82,7 @@ const businessOwnerController = {
     viewSales: async (req, res) => {
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
@@ -1183,7 +1183,7 @@ const businessOwnerController = {
                         payable = 0;
                     }
                 } else {
-                    receivable += balance;
+                    receivable -= balance;
                 }
             }
             
@@ -1196,6 +1196,7 @@ const businessOwnerController = {
         //cashflow updating
             await mysql.query(`UPDATE cash_flows SET name =?, date=?,amount=? WHERE tnx_id = ?`,
                 [party[0].PartyName,date,recieved,transactionDetails[0].id])
+
         
         await mysql.query(`
             UPDATE sales 
@@ -1211,6 +1212,7 @@ const businessOwnerController = {
             WHERE id = ?`,
             [partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id]
         );
+        
 
 // 
 if (products && products.length) {
@@ -1230,7 +1232,8 @@ if (products && products.length) {
                 total = ?, 
                 company_id = ?, 
                 product_name = ?, 
-                unit = ?
+                unit = ?,
+                serial_number = ?
             WHERE id = ?`,
           [
             product.itemId,
@@ -1243,6 +1246,7 @@ if (products && products.length) {
             user.company_id,
             product.item,
             product.unit,
+            product.serial_number,
             product.saleProduct_id
           ]
         );
@@ -1262,10 +1266,9 @@ if (products && products.length) {
                 user.company_id,
                 currentProduct.item_id,
                 `Delivery updated from ${currentProduct.delivered_quantity} to ${product.deliveredQuantity} on ${created_at}`,
-                currentProduct.serial_number
+                product.serial_number
               ]
             );
-            console.log('Delivery detail inserted for updated product');
           }
         }
       } else {
@@ -1286,9 +1289,10 @@ if (products && products.length) {
                 total, 
                 company_id, 
                 product_name, 
-                unit
+                unit,
+                serial_number
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)`,
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?)`,
           [
             product.itemId,
             transaction_id,
@@ -1300,7 +1304,8 @@ if (products && products.length) {
             product.productTotal,
             user.company_id,
             product.item,
-            product.unit
+            product.unit,
+            product.serial_number ||0
           ]
         );
         
@@ -1327,8 +1332,10 @@ if (products && products.length) {
         }
       }
     }
-  } 
+  }
+  
 // 
+        
         if (transactionType === "purchase") {
             return res.redirect('/business-owner/purchases');
         }
@@ -1767,7 +1774,7 @@ if (products && products.length) {
     viewPartyTransactions:async(req,res)=>{
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
         const {partyId} = req.query
         console.log(partyId);
@@ -2065,7 +2072,7 @@ paymentEdit: async (req, res) => {
 
 viewParties: async (req, res) => {
     const user = req.session.user;
-    const [companyData] = await mysql.query(`SELECT * FROM companies`);
+    const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
     const companyId = user.company_id;
     const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
     const [oauth_tokens] = await mysql.query('SELECT * FROM oauth_tokens WHERE user_id = ?',[user.id]) 
@@ -2074,7 +2081,7 @@ viewParties: async (req, res) => {
     const [parties] = await mysql.query(`
         SELECT * FROM parties p WHERE p.company_id = ?`, [companyId]);
     res.render('businessOwner/allParties.ejs', {
-        companies: companyData,
+        companies,
         currentCompany: currentCompany,
         parties ,
         user,

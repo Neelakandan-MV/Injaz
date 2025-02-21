@@ -110,7 +110,7 @@
                                 <!-- <td>
                                     <%= item.payment_type %>
                                 </td> -->
-                                <td  class="<%= Number(item.balance_due) && Number(item.received_amount) == 0 ? 'text-warning' : Number(item.balance_due) && Number(item.received_amount) ? 'text-primary' : Number(item.balance_due) == 0 && Number(item.received_amount) ? 'text-success' : '' %>">SAR <%= item.total_amount %>
+                                <td  class="<%= Number(item.balance_due) && Number(item.received_amount) == 0 ? 'text-warning' : Number(item.balance_due)>0 && Number(item.received_amount) ? 'text-primary' : Number(item.balance_due) <= 0 && Number(item.received_amount) ? 'text-success' : '' %>">SAR <%= item.total_amount %>
                                 </td>
                                 <!-- <td> SAR <%= item.balance_due %>
                                 </td> -->

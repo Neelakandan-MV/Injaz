@@ -96,7 +96,7 @@
 
                         <tr>
                             <!-- Table Data -->
-                            <td class="purchase-date"><%= formatDateToDDMMYYYY(item.date) %></td><td><%= item.customer_name %></td><td><%= item.customer_name %></td> <td  class="<%= Number(item.balance_due) && Number(item.received_amount) == 0 ? 'text-warning' : Number(item.balance_due)>=0 && Number(item.received_amount) ? 'text-primary' : Number(item.balance_due) <= 0 && Number(item.received_amount) ? 'text-success' : '' %>">SAR<%= item.total_amount %></td><td><%= item.total_quantity %></td><td><%= item.total_delivered_quantity %></td>
+                            <td class="purchase-date"><%= formatDateToDDMMYYYY(item.date) %></td><td><%= item.customer_name %></td><td  class="<%= Number(item.balance_due) && Number(item.received_amount) == 0 ? 'text-warning' : Number(item.balance_due)>0 && Number(item.received_amount) ? 'text-primary' : Number(item.balance_due) <= 0 && Number(item.received_amount) ? 'text-success' : '' %>">SAR<%= item.total_amount %></td><td><%= item.total_quantity %></td><td><%= item.total_delivered_quantity %></td>
 
                             <!-- Action Buttons -->
                             <td class="d-flex">
