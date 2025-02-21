@@ -53,6 +53,7 @@ router.get('/admin/item-detail',isLoggedAdmin,adminController.viewItemDetail);
 router.get('/admin/cashFlow',isLoggedAdmin,adminController.viewCashFlow);
 router.get('/admin/dayBook',isLoggedAdmin,adminController.viewDayBook);
 router.get('/admin/viewParty',isLoggedAdmin,adminController.viewParty);
+router.get('/admin/viewParties',isLoggedAdmin,adminController.viewParties);
 router.post('/admin/addParty',isLoggedAdmin,adminController.addParty);
 router.get('/admin/updatePartyStatus',isLoggedAdmin,adminController.togglePartyStatus);
 router.get('/admin/deleteParty',isLoggedAdmin,adminController.deleteParty);

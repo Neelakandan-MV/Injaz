@@ -1086,7 +1086,7 @@ if (products && products.length) {
                     [user.id, name, email, phone, address, image, user.company_id]
                 );
 
-                res.redirect('/admin/viewParty');
+                res.redirect('/admin/viewParties');
             } catch (dbError) {
                 res.status(500).json({ error: "Database operation failed", details: dbError });
             }
@@ -1223,8 +1223,11 @@ if (products && products.length) {
                 SELECT 
                     i.id AS item_id,
                     i.item_name,
+                    i.purchase_price,
+                    i.stock,
                     COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) AS total_sales,
                     COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) AS total_purchases,
+                    COALESCE( i.purchase_price * i.stock , 0) AS stock_value,
                     CASE 
                         WHEN COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity * sp.price ELSE 0 END), 0) >
                              COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity * sp.price ELSE 0 END), 0) 
@@ -1252,10 +1255,11 @@ if (products && products.length) {
                 ORDER BY 
                     i.item_name;
             `, [company_id]);
-            
+
+            console.log(results);            
             
 
-            res.render('admin/itemProfitAndLoss.ejs', { results,companies,currentCompany,user })
+            res.render('admin/itemProfitAndLoss.ejs', { results,companies,currentCompany,user, })
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Internal server error' });
@@ -2498,6 +2502,26 @@ if (products && products.length) {
             console.error("Error fetching item details:", error);
             res.status(500).json({ success: false, error: 'Failed to fetch item details.' });
         }
+    },
+
+
+    viewParties: async (req, res) => {
+        const user = req.session.user;
+        const [companyData] = await mysql.query(`SELECT * FROM companies`);
+        const companyId = user.company_id;
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+        const [oauth_tokens] = await mysql.query('SELECT * FROM oauth_tokens WHERE user_id = ?',[user.id]) 
+        const access_token = oauth_tokens[0]?.access_token
+
+        const [parties] = await mysql.query(`
+            SELECT * FROM parties p WHERE p.company_id = ?`, [companyId]);
+        res.render('admin/allParties.ejs', {
+            companies: companyData,
+            currentCompany: currentCompany,
+            parties ,
+            user,
+            access_token
+        });
     },
     
 

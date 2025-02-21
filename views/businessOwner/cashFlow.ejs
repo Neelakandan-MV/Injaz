@@ -101,7 +101,7 @@
                     <div class="card text-center">
                         <div class="card-header">Opening Cash</div>
                         <div class="card-body">
-                            <h5 class="card-title">SAR <%= cashFlows.length > 0 ? cashFlows[0].opening_cash.toFixed(2) : '0.00' %></h5>
+                            <h5 class="card-title">SAR <%= cashFlows.length > 0 ? cashFlows[0].opening_cash.toFixed(5) : '0.00' %></h5>
                         </div>
                     </div>
                 </div>
@@ -109,7 +109,7 @@
                     <div class="card text-center">
                         <div class="card-header">Closing Cash</div>
                         <div class="card-body">
-                            <h5 class="card-title">SAR <%= closingCash.toFixed(2) %></h5>
+                            <h5 class="card-title">SAR <%= closingCash.toFixed(5) %></h5>
                         </div>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
                     <div class="card text-center">
                         <div class="card-header">Money In</div>
                         <div class="card-body">
-                            <h5 class="card-title" style="color: green;">SAR <%= moneyIn.toFixed(2) %></h5>
+                            <h5 class="card-title" style="color: green;">SAR <%= moneyIn.toFixed(5) %></h5>
                         </div>
                     </div>
                 </div>
@@ -125,7 +125,7 @@
                     <div class="card text-center">
                         <div class="card-header">Money Out</div>
                         <div class="card-body">
-                            <h5 class="card-title" style="color: red;">SAR <%= moneyOut.toFixed(2) %></h5>
+                            <h5 class="card-title" style="color: red;">SAR <%= moneyOut.toFixed(5) %></h5>
                         </div>
                     </div>
                 </div>
@@ -163,8 +163,8 @@
                                 <td><%= cashFlow.tnx_type %></td>
                                 <td><%= cashFlow.money_type %></td>
                                 <td style="color: green;">SAR <%= cashFlow.amount %></td>
-                                <!-- <td>SAR <%= Number(cashFlow.opening_cash).toFixed(2) %></td>
-                                <td>SAR <%= Number(cashFlow.closing_cash).toFixed(2) %></td> -->
+                                <!-- <td>SAR <%= Number(cashFlow.opening_cash).toFixed(5) %></td>
+                                <td>SAR <%= Number(cashFlow.closing_cash).toFixed(5) %></td> -->
                             </tr>
                         <% }}) %>
                     </tbody>
@@ -197,8 +197,8 @@
                                 <td><%= cashFlow.tnx_type %></td>
                                 <td><%= cashFlow.money_type %></td>
                                 <td style="color:red">SAR <%= cashFlow.amount %></td>
-                                <!-- <td>SAR <%= Number(cashFlow.opening_cash).toFixed(2) %></td>
-                                <td>SAR <%= Number(cashFlow.closing_cash).toFixed(2) %></td> -->
+                                <!-- <td>SAR <%= Number(cashFlow.opening_cash).toFixed(5) %></td>
+                                <td>SAR <%= Number(cashFlow.closing_cash).toFixed(5) %></td> -->
                             </tr>
                         <%} }) %>
                     </tbody>

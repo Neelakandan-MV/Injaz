@@ -421,7 +421,7 @@ function addRow() {
          productTotal += (productTotal * tax) / 100; 
          productTotal -= (productTotal * discount) / 100; 
 
-         row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);
+         row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(5);
 
          productTotalInput = document.getElementById('productTotal');
         productTotalInput.dispatchEvent(new Event('change'));
@@ -532,7 +532,7 @@ function updateReceived(){
     const saleTotalInput = document.getElementById('totalAmount')
     const balanceDue = document.getElementById('balanceDue')
     const received = document.getElementById('received')
-    balanceDue.value = Number(saleTotalInput.value).toFixed(4)- Number(received.value).toFixed(4);
+    balanceDue.value = Number(saleTotalInput.value).toFixed(5)- Number(received.value).toFixed(5);
 }
 function paymentTypeChange(element){
         let balanceDue = document.getElementById('balanceDue').value

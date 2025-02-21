@@ -368,7 +368,7 @@ function updateReceived(){
     const balanceDue = document.getElementById('balanceDue')
     const received = document.getElementById('received')
     const totalAmount = document.getElementById('totalAmount')
-    balanceDue.value = Number(saleTotalInput.value).toFixed(4)- Number(received.value).toFixed(4);
+    balanceDue.value = Number(saleTotalInput.value).toFixed(5)- Number(received.value).toFixed(5);
 
     // if(Number(received.value) > Number(totalAmount.value)){
     //     Swal.fire({
@@ -456,20 +456,20 @@ function updateReceived(){
 
         if(selectedProduct.service_charge_quantity_1 > 0){
         if(quantity >= 1 && quantity < selectedProduct.service_charge_quantity_1){
-            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_1)
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(5)) + Number(selectedProduct.service_charge_1)
            document.getElementById(`serviceCharge${count}`).textContent = 'Service Charge :'+selectedProduct.service_charge_1
         }else if(quantity >= selectedProduct.service_charge_quantity_1 && quantity < selectedProduct.service_charge_quantity_2){
-            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_2)
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(5)) + Number(selectedProduct.service_charge_2)
             document.getElementById(`serviceCharge${count}`).textContent = 'Service Charge :'+selectedProduct.service_charge_2
         }else if(quantity >= selectedProduct.service_charge_quantity_2 && quantity < selectedProduct.service_charge_quantity_3){
-            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(2)) + Number(selectedProduct.service_charge_3)
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = Number(productTotal.toFixed(5)) + Number(selectedProduct.service_charge_3)
             document.getElementById(`serviceCharge${count}`).textContent ='Service Charge :'+ selectedProduct.service_charge_3
         }else{
-            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(5);    
             document.getElementById(`serviceCharge${count}`).textContent = 0
         }
     }else{
-            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(2);    
+            row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(5);    
             document.getElementById(`serviceCharge${count}`).textContent = 0
         }
 

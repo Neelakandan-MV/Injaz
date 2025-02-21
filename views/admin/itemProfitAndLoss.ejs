@@ -149,8 +149,7 @@
                         <th>Item Name</th>
                         <th>Total Sales (SAR)</th>
                         <th>Total Purchases (SAR)</th>
-                        <th>Profit (SAR)</th>
-                        <th>Loss (SAR)</th>
+                        <th>Profit/Loss Amount (SAR)</th>
                         <!-- <th>Total (SAR)</th> -->
                     </tr>
                 </thead>
@@ -160,9 +159,9 @@
                             <td><%= item.item_name %></td>
                             <td><%= item.total_sales %></td>
                             <td><%= item.total_purchases %></td>
-                            <td><%= item.profit %></td>
-                            <td><%= item.loss %></td>
-                            <!-- <td><%= item.profit - item.loss%></td> -->
+                            <!-- <td><%= item.profit %></td>
+                            <td><%= item.loss %></td> -->
+                            <td><%= (Number(item.total_sales) - Number(item.total_purchases) + Number(item.stock_value)).toFixed(5)%></td>
                         </tr>
                     <% }); %>
                 </tbody>
