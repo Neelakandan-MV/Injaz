@@ -102,7 +102,14 @@
 </head>
 
 <body>
-    <%- include('./navbar')  %>
+    <%- include('./aside')  %>
+
+    <div id="loading-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div class="spinner-border text-light" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    
     <div class="main-content">
         <div class="mb-4 d-flex justify-content-between align-items-center">
             <h1 class="fw-bold">Parties</h1>
@@ -113,7 +120,7 @@
             <div class="input-group">
                 <input type="text" class="form-control" id="searchInput" placeholder="Search Name..." onkeyup="filterParties()"/>
             </div>
-            <button type="button" class="btn btn-success  mt-2" data-bs-toggle="modal" data-bs-target="#addPartyAdminModalLabel">Add New Party</button>
+            <button type="button" class="btn btn-success  mt-2" data-bs-toggle="modal" data-bs-target="#addPartyModalSaleMan">Add New Party</button>
             <button type="button" class="btn btn-primary mt-2" onclick="importContacts('<%= access_token %>')">Import Contacts</button>
         </form>
        
@@ -124,7 +131,7 @@
                 <% parties.forEach(party => { %>
                     <div class="col-md-4 col-sm-6 mb-3 party-card">
                         <div class="card shadow-sm border-0">
-                            <a href="/admin/partyTransactions?partyId=<%= party.id %>">
+                            <a href="/business-owner/partyTransactions?partyId=<%= party.id %>">
                                 <div class="card-body text-center">
                                         <h5 style="font-size: 17px;" class="party-name"><%= party.PartyName %></h5>
                                         <div class="align-items-center">
@@ -164,16 +171,16 @@
     }
 </script>
 
-<div class="modal fade" id="addPartyAdminModalLabel" tabindex="-1" aria-labelledby="addCompanyModalLabel"
+<div class="modal fade" id="addPartyModalSaleMan" tabindex="-1" aria-labelledby="addCompanyModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addPartyAdminModalLabel">Add New Party</h5>
+                    <h5 class="modal-title" id="addPartyModal">Add New Party</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="/admin/addParty" method="POST" enctype="multipart/form-data">
+                    <form action="/business-owner/addParty" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="companyName" class="form-label">Party Name</label>
                             <input type="text" class="form-control" id="companyName" name="name" required>
@@ -219,6 +226,28 @@
 </script>
 
 <script>
+
+    function showLoading() {
+        document.getElementById("loading-screen").style.display = "flex";
+    }
+
+    function hideLoading() {
+        document.getElementById("loading-screen").style.display = "none";
+    }
+
+    let accessToken  = getAccessTokenFromUrl()
+    
+    document.addEventListener('DOMContentLoaded',()=>{
+        if(accessToken){
+        showLoading()
+        }else{
+            hideLoading()
+        }
+    })
+    if(accessToken){
+        showLoading()
+        importContacts(accessToken)
+    }
 
     
 async function importContacts(accessToken) {
@@ -269,6 +298,7 @@ async function importContacts(accessToken) {
         });
 
         if (!response.ok) {
+            hideLoading()
             throw new Error("Failed to fetch contacts");
         }
 
@@ -293,6 +323,7 @@ async function importContacts(accessToken) {
         return allContacts;
 
     } catch (error) {
+        hideLoading()
         console.error("Error fetching contacts:", error);
         Swal.fire({
             icon: "error",
@@ -307,6 +338,7 @@ async function importContacts(accessToken) {
     // Step 4: Send Contacts to Server
     async function sendContactsToServer(contacts) {
         if (contacts.length === 0) {
+            hideLoading()
             Swal.fire({
                 icon: "warning",
                 title: "No Contacts Found",
@@ -333,12 +365,14 @@ async function importContacts(accessToken) {
                     draggable: false
                 });
                 setTimeout(() => {
-                    window.location.reload();
+                    window.location.href = '/business-owner/viewParty'
                 }, 300);
             } else {
+                hideLoading()
                 throw new Error(data.data || "Failed to import contacts");
             }
         } catch (error) {
+            hideLoading()
             Swal.fire({
                 icon: "error",
                 title: "Oops...",

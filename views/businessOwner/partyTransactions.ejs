@@ -214,6 +214,11 @@
                     <td id="totalReceivable">0</td>
                 </tr>
             </table>
+
+            <div class="d-flex">
+            <button type="button" class="btn btn-secondary  mt-2 w-50" onclick="editParty()">Edit Party</button>
+            <button type="button" id="partyDelete" class="btn btn-danger w-50 mt-2 ms-2" onclick="deleteParty()">Delete Party</button>
+            </div>
             <input type="hidden" id="partyId">
         </div>
         <!-- Right section -->
@@ -331,6 +336,45 @@ function selectParty(partyName) {
 }
     </script>
     <script>
+          async function deleteParty(){
+            const partyId = document.getElementById('partyId').value;
+            const response = await fetch(`/business-owner/deleteParty?partyId=${partyId}`)
+            if(response.ok){
+                const result = await response.json(); 
+                if(result.success){
+                    Swal.fire({
+                title: "Successfully Deleted the Party.",
+                icon: "success",
+                });
+                setTimeout(()=>{
+                    window.location.href = '/business-owner/viewParty'
+                },300)
+                }else{
+                    Swal.fire({
+                        icon: "error",
+                        title: "Oops...",
+                        text: "This Party can't be deleted!",
+                        footer: "Transaction are available with this Party"
+                        });
+                }
+            }else{
+                Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong!",
+                });
+            }
+            
+        }
+
+
+
+
+        async function editParty(){
+            const partyId = document.getElementById('partyId').value;
+            window.location.href = `/business-owner/editParty?partyId=${partyId}`;
+        }
+        
           function paymentOut(){
             const partyId = document.getElementById('partyId').value
             window.location.href =`/business-owner/addPaymentOut?partyId=${partyId}`

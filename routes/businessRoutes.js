@@ -31,7 +31,8 @@ router.get('/business-owner/addPurchase',isLogged,businessController.viewAddPurc
 router.post('/business-owner/addTransactions',isLogged,businessController.addTransaction);
 // router.post('/business-owner/addCompany',isLogged,businessController.addCompany);
 router.get('/business-owner/switchCompany/:id',isLogged,businessController.switchCompany);
-router.get('/business-owner/viewParty',isLogged,businessController.viewParty);
+router.get('/business-owner/viewParties',isLogged,businessController.viewParty);
+router.get('/business-owner/viewParty',isLogged,businessController.viewParties);
 router.get('/business-owner/logout',isLogged,businessController.logout);
 router.post('/business-owner/addParty',isLogged,businessController.addParty);
 router.get('/business-owner/updatePartyStatus',isLogged,businessController.togglePartyStatus);
@@ -73,7 +74,7 @@ router.get('/business-owner/deliveryDetails',isLogged,businessController.viewDel
 router.get('/business-owner/deliveryUpdates',isLogged,businessController.viewDeliveryUpdates)
 router.get('/business-owner/paymentEdit',isLogged,businessController.viewPaymentEdit)
 router.post('/business-owner/paymentEdit',isLogged,businessController.paymentEdit)
-
+// router.post('/business-owner/store-access-token',businessController.storeAccessToken)
 
 
 // router.get('/business-owner/downloadPdf',isLogged,businessController.downloadCashFlow);

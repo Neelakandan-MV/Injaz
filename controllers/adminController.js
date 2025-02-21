@@ -2496,7 +2496,7 @@ if (products && products.length) {
         `, [itemId, user.id, companyId]);
 
 
-            res.render('businessOwner/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany, allItems })
+            res.render('admin/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany, allItems })
 
         } catch (error) {
             console.error("Error fetching item details:", error);

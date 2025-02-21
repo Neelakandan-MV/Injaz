@@ -982,6 +982,7 @@ const businessOwnerController = {
             }
 
             try {
+                console.log('addParty Works');
                 const user = req.session.user;
                 const { name, email, phone, address } = req.body;
 
@@ -991,7 +992,8 @@ const businessOwnerController = {
                     "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture,company_id) VALUES (?,?,?,?,?,?,?)",
                     [user.id, name, email, phone, address, image, user.company_id]
                 );
-
+                
+                
                 res.redirect('/business-owner/viewParty');
             } catch (dbError) {
                 res.status(500).json({ error: "Database operation failed", details: dbError });
@@ -2059,7 +2061,44 @@ paymentEdit: async (req, res) => {
     await mysql.query('UPDATE parties SET receivable = ?, payable = ? WHERE id = ?', [receivable, payable, partyId]);
 
     res.redirect('/admin/viewParty');
-}
+},
+
+viewParties: async (req, res) => {
+    const user = req.session.user;
+    const [companyData] = await mysql.query(`SELECT * FROM companies`);
+    const companyId = user.company_id;
+    const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+    const [oauth_tokens] = await mysql.query('SELECT * FROM oauth_tokens WHERE user_id = ?',[user.id]) 
+    const access_token = oauth_tokens[0]?.access_token
+
+    const [parties] = await mysql.query(`
+        SELECT * FROM parties p WHERE p.company_id = ?`, [companyId]);
+    res.render('businessOwner/allParties.ejs', {
+        companies: companyData,
+        currentCompany: currentCompany,
+        parties ,
+        user,
+        access_token
+    });
+},
+
+// storeAccessToken:async(req,res)=>{
+
+//     const user = req.session.user
+//     const body = req.body
+//     const access_token = body.access_token
+
+//     const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+//     try {
+//         if(access_token){
+//     await mysql.query(`INSERT INTO oauth_tokens (user_id, access_token, expires_at)
+//                VALUES (?, ?, ?)`,[user.id,access_token,expiresAt])
+//         }
+//     }catch (error) {
+//         console.error("Error storing access token:", error);
+//     }
+
+// },
 
 
     
