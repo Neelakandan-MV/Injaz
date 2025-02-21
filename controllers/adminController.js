@@ -655,8 +655,8 @@ if (products && products.length) {
             try {
 
                 const [itemExist] = await mysql.query(
-                    "SELECT * FROM items WHERE item_name = ? AND user_id = ?",
-                    [itemName, user.id]
+                    "SELECT * FROM items WHERE item_name = ? AND company_id = ?",
+                    [itemName, user.company_id]
                 );
 
                 if (itemExist.length > 0) {

@@ -240,8 +240,8 @@ async function importContacts(accessToken) {
     // Step 1: Redirect User to Google OAuth
     async function authenticateWithGoogle() {
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-        `client_id=${HOSTING_CLIENT_ID}&` +
-        `redirect_uri=${encodeURIComponent(HOSTING_REDIRECT_URI)}&` +
+        `client_id=${CLIENT_ID}&` +
+        `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
         `response_type=token&` +
         `scope=${encodeURIComponent("https://www.googleapis.com/auth/contacts.readonly")}`;
 
