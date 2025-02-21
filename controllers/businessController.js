@@ -1562,8 +1562,8 @@ if (products && products.length) {
         for (const item of contacts) {
             const name = item.name[0];
             const phone = item.tel[0]?.replace(/\D/g, '') || 'No Number found';
-            const email = item.email[0] || null;
-            const address = item.address[0] || null;
+            const email = item?.email[0] || null;
+            const address = item?.address[0] || null;
             const image = null;
     
             const isDuplicate = parties.some(party => party.PartyName == name);
