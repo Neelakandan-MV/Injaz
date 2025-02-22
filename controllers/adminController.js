@@ -357,7 +357,7 @@ const adminController = {
             let payable = Number(party[0].payable);
             let receivable = Number(party[0].receivable);
             const balance = Math.abs(Number(balanceDue) - Number(transactionDetails[0].balance_due));
-            
+
             if (transactionType === "purchase") {
                 if (receivable > 0) {
                     if (receivable >= balance) {
@@ -373,7 +373,6 @@ const adminController = {
                     }else{
                         payable += balance;
                     }
-                    
                 }
             } else { // Sale transaction
                 if (payable > 0) {
@@ -383,8 +382,13 @@ const adminController = {
                         receivable += balance - payable;
                         payable = 0;
                     }
-                } else {
+                } else { 
+                    if(balance >= receivable){
+                    payable += (balance - receivable)
+                    receivable = 0
+                }else{
                     receivable -= balance;
+                }
                 }
             }
             
