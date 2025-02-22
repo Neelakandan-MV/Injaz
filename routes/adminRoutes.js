@@ -3,6 +3,9 @@ const router = express.Router();
 const adminController = require('../controllers/adminController');
 const {isLoggedAdmin,isLoggedSuperAdmin} = require('../middlewares/auth');
 
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+
 
 // Admin dashboard
 
@@ -93,6 +96,7 @@ router.post('/admin/expenseEdit',isLoggedAdmin,adminController.expenseEdit)
 router.get('/admin/incomeEdit',isLoggedAdmin,adminController.viewIncomeEdit)
 router.post('/admin/incomeEdit',isLoggedAdmin,adminController.incomeEdit)
 router.post('/admin/store-access-token',adminController.storeAccessToken)
+router.post('/admin/uploadContactFile',upload.single('contact'),adminController.importContacts)
 
   
 

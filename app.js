@@ -1,6 +1,8 @@
+// @ts-nocheck
 const express = require('express');
 const session = require('express-session');
 const pool = require('./mySql');
+
 
 
 const path = require('path');
@@ -27,6 +29,8 @@ app.use(session({
 }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 
 
 

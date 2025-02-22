@@ -98,6 +98,36 @@
         .transaction-table td {
             color: #495057;
         }
+
+
+        .custom-file-input {
+            display: none; /* Hide default input */
+        }
+
+        .custom-file-label {
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s ease-in-out;
+        }
+
+        .custom-file-label:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        /* Show selected file name */
+        .file-name {
+            margin-top: 4px;
+            font-size: 10px;
+            color: #333;
+        }
     </style>
 </head>
 
@@ -116,13 +146,70 @@
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </div>
 
-        <form id="filter-form" class="mb-4">
+        <form id="filter-form" class="mb-1">
             <div class="input-group">
                 <input type="text" class="form-control" id="searchInput" placeholder="Search Name..." onkeyup="filterParties()"/>
             </div>
             <button type="button" class="btn btn-success  mt-2" data-bs-toggle="modal" data-bs-target="#addPartyModalSaleMan">Add New Party</button>
             <button type="button" class="btn btn-primary mt-2" onclick="importContacts('<%= access_token %>')">Import Contacts</button>
+            <div class="mt-2 d-flex">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <!-- <label for="contact">Upload Contacts</label> -->
+                    <label for="contact" class="custom-file-label">📂 Choose File</label>
+                    <input class="custom-file-input" type="file" id="contact" name="contact" onchange="displayFileName()" accept=".vcf">
+                    <button class="btn btn-warning btn-sm ms-2" type="button" onclick="uploadContact()">Submit</button>
+                </form>
+            </div>
         </form>
+        <div class="file-name mb-3" id="file-name"></div>                
+                <script>
+                    function uploadContact() {
+                        const fileInput = document.getElementById('contact');
+                
+                        if (!fileInput.files.length) {
+                            alert("Please select a file.");
+                            return;
+                        }
+                        console.log(fileInput.files)
+                
+                        const formData = new FormData();
+                        formData.append("contact", fileInput.files[0]);
+                        showLoading()
+                
+                        fetch('/admin/uploadContactFile', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+
+                            console.log(data);
+                            if(data.message){
+                                hideLoading()
+                                Swal.fire({
+                                title: `${data.message}`,
+                                icon: "success",
+                                draggable: false
+                            });
+                            setTimeout(()=>{
+                                window.location.reload()
+                            },300)
+                            }
+                        })
+                        .catch(error => {
+                            hideLoading()
+                            console.error("Error uploading file:", error);
+                            alert("Error uploading file. Please try again.");
+                        });
+                    }
+
+                    function displayFileName() {
+            const input = document.getElementById('contact');
+            const fileName = document.getElementById('file-name');
+            fileName.textContent = input.files.length > 0 ? input.files[0].name : "No file chosen";
+        }
+                </script>
+                
        
 
         <div class="container mt-4">

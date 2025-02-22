@@ -1,0 +1,677 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Feb 22, 2025 at 08:19 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `injaz`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_flows`
+--
+
+CREATE TABLE `cash_flows` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `date` date NOT NULL,
+  `tnx_type` varchar(50) NOT NULL,
+  `amount` decimal(13,5) NOT NULL,
+  `money_type` varchar(50) NOT NULL,
+  `tnx_id` int(11) DEFAULT NULL,
+  `company_id` int(11) NOT NULL,
+  `opening_cash` decimal(13,5) NOT NULL DEFAULT 0.00000,
+  `closing_cash` decimal(13,5) NOT NULL DEFAULT 0.00000,
+  `other_tnx_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `categories`
+--
+
+CREATE TABLE `categories` (
+  `id` int(11) NOT NULL,
+  `category` varchar(255) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `company_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `companies`
+--
+
+CREATE TABLE `companies` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `cash_in_hand` decimal(13,5) NOT NULL DEFAULT 0.00000
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `companies`
+--
+
+INSERT INTO `companies` (`id`, `user_id`, `name`, `created_at`, `cash_in_hand`) VALUES
+(16, 22, 'Test Company', '2025-01-21 08:15:07', -200.00000);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `delivery_details`
+--
+
+CREATE TABLE `delivery_details` (
+  `id` int(11) NOT NULL,
+  `sale_product_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `sale_id` int(11) NOT NULL,
+  `company_id` int(11) NOT NULL,
+  `delivery_date` datetime NOT NULL,
+  `delivered_quantity` int(11) DEFAULT 0,
+  `notes` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `serial_number` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `exchange_rates`
+--
+
+CREATE TABLE `exchange_rates` (
+  `id` int(11) NOT NULL,
+  `currency_from` varchar(10) NOT NULL,
+  `currency_to` varchar(10) NOT NULL,
+  `exchange_rate` decimal(13,5) NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `exchange_rates`
+--
+
+INSERT INTO `exchange_rates` (`id`, `currency_from`, `currency_to`, `exchange_rate`, `updated_at`) VALUES
+(1, 'INR', 'SAR', 0.00000, '2025-02-18 08:15:04'),
+(2, 'SAR', 'INR', 0.00000, '2025-02-18 08:15:04');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `expenses`
+--
+
+CREATE TABLE `expenses` (
+  `expense_id` bigint(20) UNSIGNED NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `amount` decimal(13,5) NOT NULL,
+  `company_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `expense_category`
+--
+
+CREATE TABLE `expense_category` (
+  `id` int(11) NOT NULL,
+  `category_name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `income_category`
+--
+
+CREATE TABLE `income_category` (
+  `id` int(11) NOT NULL,
+  `category_name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `items`
+--
+
+CREATE TABLE `items` (
+  `id` int(11) NOT NULL,
+  `item_name` varchar(255) NOT NULL,
+  `item_hsn` tinyint(1) NOT NULL DEFAULT 1,
+  `category_id` int(11) DEFAULT NULL,
+  `unit` varchar(255) NOT NULL,
+  `image` varchar(500) DEFAULT NULL,
+  `sale_price` decimal(13,5) NOT NULL,
+  `sale_price_tax_included` tinyint(1) DEFAULT 0,
+  `wholesale_price_1` decimal(13,5) DEFAULT NULL,
+  `wholesale_price_2` decimal(13,5) DEFAULT NULL,
+  `wholesale_quantity_1` int(11) DEFAULT NULL,
+  `wholesale_quantity_2` int(11) DEFAULT NULL,
+  `purchase_price` decimal(13,5) NOT NULL,
+  `purchase_price_tax_included` tinyint(1) DEFAULT 0,
+  `tax_rate` varchar(50) NOT NULL,
+  `item_code` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `discount_value` decimal(13,5) DEFAULT 0.00000,
+  `discount_type` varchar(50) DEFAULT NULL,
+  `company_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `stock` int(11) DEFAULT 0,
+  `service_charge_1` decimal(13,5) DEFAULT NULL,
+  `service_charge_2` decimal(13,5) DEFAULT NULL,
+  `service_charge_3` decimal(13,5) DEFAULT NULL,
+  `service_charge_quantity_1` int(11) DEFAULT NULL,
+  `service_charge_quantity_2` int(11) DEFAULT NULL,
+  `service_charge_quantity_3` int(11) DEFAULT NULL,
+  `wholesale_price_3` decimal(13,5) DEFAULT NULL,
+  `wholesale_quantity_3` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `oauth_tokens`
+--
+
+CREATE TABLE `oauth_tokens` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `access_token` text NOT NULL,
+  `refresh_token` text NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `other_income`
+--
+
+CREATE TABLE `other_income` (
+  `id` int(11) NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `amount` decimal(13,5) NOT NULL,
+  `company_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `parties`
+--
+
+CREATE TABLE `parties` (
+  `id` int(11) NOT NULL,
+  `PartyName` varchar(255) NOT NULL,
+  `Phone` varchar(20) NOT NULL,
+  `Address` varchar(255) DEFAULT NULL,
+  `Email` varchar(255) DEFAULT NULL,
+  `PartyStatus` tinyint(1) DEFAULT 1,
+  `user_id` int(11) DEFAULT NULL,
+  `profile_picture` varchar(255) DEFAULT NULL,
+  `company_id` int(11) NOT NULL,
+  `receivable` decimal(13,5) NOT NULL DEFAULT 0.00000,
+  `payable` decimal(13,5) NOT NULL DEFAULT 0.00000
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `party_payments`
+--
+
+CREATE TABLE `party_payments` (
+  `id` int(11) NOT NULL,
+  `date` date NOT NULL DEFAULT current_timestamp(),
+  `party_name` varchar(100) NOT NULL,
+  `phone` bigint(20) DEFAULT NULL,
+  `party_id` int(11) NOT NULL,
+  `description` text DEFAULT NULL,
+  `amount` decimal(13,5) NOT NULL,
+  `payment_type` enum('payment_in','payment_out') NOT NULL,
+  `company_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sales`
+--
+
+CREATE TABLE `sales` (
+  `id` int(11) NOT NULL,
+  `date` datetime NOT NULL,
+  `invoice_number` varchar(255) NOT NULL,
+  `customer_name` int(11) DEFAULT NULL,
+  `total_amount` decimal(13,5) NOT NULL,
+  `payment_type` enum('Cash','Credit','Online') NOT NULL,
+  `balance_due` decimal(13,5) DEFAULT 0.00000,
+  `received_amount` decimal(13,5) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `company_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `transaction_type` enum('purchase','sale') NOT NULL,
+  `is_returned` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sale_products`
+--
+
+CREATE TABLE `sale_products` (
+  `id` int(11) NOT NULL,
+  `sale_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `price` decimal(13,5) NOT NULL,
+  `discount` decimal(13,5) DEFAULT 0.00000,
+  `tax_rate` decimal(13,5) NOT NULL,
+  `total` decimal(13,5) NOT NULL,
+  `company_id` int(11) NOT NULL,
+  `product_name` varchar(255) DEFAULT NULL,
+  `unit` varchar(255) NOT NULL DEFAULT 'pcs',
+  `delivered_quantity` int(11) DEFAULT 0,
+  `returned_quantity` int(11) DEFAULT 0,
+  `free_quantity` int(11) DEFAULT 0,
+  `serial_number` varchar(40) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stock_adjustments`
+--
+
+CREATE TABLE `stock_adjustments` (
+  `id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `adjustment_type` enum('add','reduce') NOT NULL,
+  `adjustment_quantity` int(11) NOT NULL,
+  `total_amount` decimal(13,5) NOT NULL,
+  `reason` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `company_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('admin','businessOwner','superAdmin') NOT NULL,
+  `isActive` tinyint(1) DEFAULT 1,
+  `available_companies` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `isActive`, `available_companies`) VALUES
+(22, 'Basheer', 'abasheerp611@gmail.com', '$2a$10$6rbf9vgBP5Jufoag88CPd.69sx7jQQro/KWs50mZwUbzgRb11vi.q', 'superAdmin', 1, '[\"16\"]'),
+(39, 'Neelakandan MV', 'neelakandanmv742@gmail.com', '$2a$10$1vAM2dhkyZUfXZjPUBJhEusNhM8fOByk5NkbdESisEExQ0rYB0oYG', 'businessOwner', 1, '[\"16\"]');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `cash_flows`
+--
+ALTER TABLE `cash_flows`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `tnx_id` (`tnx_id`),
+  ADD KEY `fk_cash_flows_company` (`company_id`);
+
+--
+-- Indexes for table `categories`
+--
+ALTER TABLE `categories`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `companies`
+--
+ALTER TABLE `companies`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `delivery_details`
+--
+ALTER TABLE `delivery_details`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sale_product_id` (`sale_product_id`),
+  ADD KEY `sale_id` (`sale_id`),
+  ADD KEY `company_id` (`company_id`),
+  ADD KEY `fk_delivery_details_item` (`item_id`);
+
+--
+-- Indexes for table `exchange_rates`
+--
+ALTER TABLE `exchange_rates`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_currency_pair` (`currency_from`,`currency_to`);
+
+--
+-- Indexes for table `expenses`
+--
+ALTER TABLE `expenses`
+  ADD PRIMARY KEY (`expense_id`),
+  ADD KEY `category_id` (`category_id`),
+  ADD KEY `fk_company_id` (`company_id`);
+
+--
+-- Indexes for table `expense_category`
+--
+ALTER TABLE `expense_category`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `income_category`
+--
+ALTER TABLE `income_category`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `items`
+--
+ALTER TABLE `items`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `item_code` (`item_code`),
+  ADD KEY `category_id` (`category_id`);
+
+--
+-- Indexes for table `oauth_tokens`
+--
+ALTER TABLE `oauth_tokens`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `other_income`
+--
+ALTER TABLE `other_income`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `company_id` (`company_id`),
+  ADD KEY `fk_category_id` (`category_id`);
+
+--
+-- Indexes for table `parties`
+--
+ALTER TABLE `parties`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `fk_parties_company` (`company_id`);
+
+--
+-- Indexes for table `party_payments`
+--
+ALTER TABLE `party_payments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_party_payments_party` (`party_id`),
+  ADD KEY `fk_party_payments_company` (`company_id`);
+
+--
+-- Indexes for table `sales`
+--
+ALTER TABLE `sales`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `invoice_number` (`invoice_number`),
+  ADD KEY `fk_customer_name_party_id` (`customer_name`);
+
+--
+-- Indexes for table `sale_products`
+--
+ALTER TABLE `sale_products`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `sale_id` (`sale_id`),
+  ADD KEY `item_id` (`item_id`);
+
+--
+-- Indexes for table `stock_adjustments`
+--
+ALTER TABLE `stock_adjustments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `item_id` (`item_id`),
+  ADD KEY `company_id` (`company_id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `cash_flows`
+--
+ALTER TABLE `cash_flows`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `categories`
+--
+ALTER TABLE `categories`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `companies`
+--
+ALTER TABLE `companies`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+
+--
+-- AUTO_INCREMENT for table `delivery_details`
+--
+ALTER TABLE `delivery_details`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `exchange_rates`
+--
+ALTER TABLE `exchange_rates`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `expenses`
+--
+ALTER TABLE `expenses`
+  MODIFY `expense_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `expense_category`
+--
+ALTER TABLE `expense_category`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `income_category`
+--
+ALTER TABLE `income_category`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `items`
+--
+ALTER TABLE `items`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `oauth_tokens`
+--
+ALTER TABLE `oauth_tokens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `other_income`
+--
+ALTER TABLE `other_income`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `parties`
+--
+ALTER TABLE `parties`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `party_payments`
+--
+ALTER TABLE `party_payments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `sales`
+--
+ALTER TABLE `sales`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `sale_products`
+--
+ALTER TABLE `sale_products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `stock_adjustments`
+--
+ALTER TABLE `stock_adjustments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `cash_flows`
+--
+ALTER TABLE `cash_flows`
+  ADD CONSTRAINT `cash_flows_ibfk_1` FOREIGN KEY (`tnx_id`) REFERENCES `sales` (`id`),
+  ADD CONSTRAINT `fk_cash_flows_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `categories`
+--
+ALTER TABLE `categories`
+  ADD CONSTRAINT `categories_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `companies`
+--
+ALTER TABLE `companies`
+  ADD CONSTRAINT `companies_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `delivery_details`
+--
+ALTER TABLE `delivery_details`
+  ADD CONSTRAINT `delivery_details_ibfk_1` FOREIGN KEY (`sale_product_id`) REFERENCES `sale_products` (`id`),
+  ADD CONSTRAINT `delivery_details_ibfk_2` FOREIGN KEY (`sale_id`) REFERENCES `sales` (`id`),
+  ADD CONSTRAINT `delivery_details_ibfk_3` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  ADD CONSTRAINT `fk_delivery_details_item` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`);
+
+--
+-- Constraints for table `expenses`
+--
+ALTER TABLE `expenses`
+  ADD CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `expense_category` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_company_id` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`);
+
+--
+-- Constraints for table `items`
+--
+ALTER TABLE `items`
+  ADD CONSTRAINT `items_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+
+--
+-- Constraints for table `other_income`
+--
+ALTER TABLE `other_income`
+  ADD CONSTRAINT `fk_category_id` FOREIGN KEY (`category_id`) REFERENCES `income_category` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `other_income_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `parties`
+--
+ALTER TABLE `parties`
+  ADD CONSTRAINT `fk_parties_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `parties_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `party_payments`
+--
+ALTER TABLE `party_payments`
+  ADD CONSTRAINT `fk_party_payments_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_party_payments_party` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `sales`
+--
+ALTER TABLE `sales`
+  ADD CONSTRAINT `fk_customer_name_party_id` FOREIGN KEY (`customer_name`) REFERENCES `parties` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `sale_products`
+--
+ALTER TABLE `sale_products`
+  ADD CONSTRAINT `sale_products_ibfk_1` FOREIGN KEY (`sale_id`) REFERENCES `sales` (`id`),
+  ADD CONSTRAINT `sale_products_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`);
+
+--
+-- Constraints for table `stock_adjustments`
+--
+ALTER TABLE `stock_adjustments`
+  ADD CONSTRAINT `stock_adjustments_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
+  ADD CONSTRAINT `stock_adjustments_ibfk_2` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

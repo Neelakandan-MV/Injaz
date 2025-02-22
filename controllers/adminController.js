@@ -1775,8 +1775,8 @@ if (products && products.length) {
         const [parties] = await mysql.query(`SELECT * FROM parties WHERE company_id =?`, [user.company_id]);
     
         for (const item of contacts) {
-            const name = item.name;
-            const phone = item.tel
+            const name = item.name || 'No Name';
+            const phone = item.tel || null;
             const email = item.email || null;
             const address = null;
             const image = null;
@@ -2166,6 +2166,9 @@ if (products && products.length) {
             GROUP BY sp.item_id, i.item_name
             ORDER BY i.item_name
         `, [companyId]);
+        console.log(items);
+        
+        
     
         // console.log(JSON.stringify(formattedData, null, 2));
         res.render('admin/totalDelivered.ejs',{companies,currentCompany,items,user})
@@ -2536,6 +2539,58 @@ if (products && products.length) {
             access_token
         });
     },
+
+    importContacts :async (req, res) => {
+
+    const fs = require('fs');
+    const vCardParser = require('vcard-parser');
+    const path = require('path');
+    const user = req.session.user
+
+        try {
+            if (!req.file) {
+                return res.status(400).json({ error: "No file uploaded" });
+            }
+    
+            const filePath = req.file.path;    
+    
+            fs.readFile(filePath, 'utf8', async(err, data) => {
+                if (err) {
+                    console.error("Error reading file:", err);
+                    return res.status(500).json({ error: "File read error" });
+                }
+
+                const contacts = data.split("BEGIN:VCARD").slice(1);
+
+                    const parsedContacts = contacts.map(contact => {
+                    let obj = {};
+                    contact.split("\n").forEach(line => {
+                    if (line.startsWith("FN:")) {
+                        obj.fullName = line.replace("FN:", "").trim();
+                    } else if (line.startsWith("TEL")) {
+                        const type = line.includes("HOME") ? "home" : "mobile";
+                        const number = line.split(":").pop().trim();
+                        obj[type] = number;
+                    }
+                        });
+                        return obj;
+                    });
+                console.log(parsedContacts);
+
+                for(const contact of parsedContacts){
+                    const name = contact.fullName;
+                    const phone = contact.mobile
+                    await mysql.query(`INSERT INTO parties(PartyName,Phone,company_id) VALUES(?,?,?)`,[name?name:'Unknown',phone,user.company_id])
+                }
+                res.status(200).json({message:'Parties Added Successfully'})
+
+            });
+    
+        } catch (error) {
+            console.error("Error in importContacts:", error);
+            res.status(500).json({ error: "Server error" });
+        }
+    }
     
 
 
