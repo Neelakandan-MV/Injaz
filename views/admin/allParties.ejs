@@ -103,6 +103,13 @@
 
 <body>
     <%- include('./navbar')  %>
+
+    <div id="loading-screen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div class="spinner-border text-light" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    
     <div class="main-content">
         <div class="mb-4 d-flex justify-content-between align-items-center">
             <h1 class="fw-bold">Parties</h1>
@@ -113,7 +120,7 @@
             <div class="input-group">
                 <input type="text" class="form-control" id="searchInput" placeholder="Search Name..." onkeyup="filterParties()"/>
             </div>
-            <button type="button" class="btn btn-success  mt-2" data-bs-toggle="modal" data-bs-target="#addPartyAdminModalLabel">Add New Party</button>
+            <button type="button" class="btn btn-success  mt-2" data-bs-toggle="modal" data-bs-target="#addPartyModalSaleMan">Add New Party</button>
             <button type="button" class="btn btn-primary mt-2" onclick="importContacts('<%= access_token %>')">Import Contacts</button>
         </form>
        
@@ -164,12 +171,12 @@
     }
 </script>
 
-<div class="modal fade" id="addPartyAdminModalLabel" tabindex="-1" aria-labelledby="addCompanyModalLabel"
+<div class="modal fade" id="addPartyModalSaleMan" tabindex="-1" aria-labelledby="addCompanyModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addPartyAdminModalLabel">Add New Party</h5>
+                    <h5 class="modal-title" id="addPartyModal">Add New Party</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -220,6 +227,28 @@
 
 <script>
 
+    function showLoading() {
+        document.getElementById("loading-screen").style.display = "flex";
+    }
+
+    function hideLoading() {
+        document.getElementById("loading-screen").style.display = "none";
+    }
+
+    let accessToken  = getAccessTokenFromUrl()
+    
+    document.addEventListener('DOMContentLoaded',()=>{
+        if(accessToken){
+        showLoading()
+        }else{
+            hideLoading()
+        }
+    })
+    if(accessToken){
+        showLoading()
+        importContacts(accessToken)
+    }
+
     
 async function importContacts(accessToken) {
     if (!accessToken) {
@@ -232,7 +261,7 @@ async function importContacts(accessToken) {
 
     
     const HOSTING_CLIENT_ID = "397635889905-e3rj6bva24tgd511tp99qfbaervfmdmr.apps.googleusercontent.com";
-    const CLIENT_ID = "820300599951-chq1g1l44ub8626kls0e8crkrmv8605u.apps.googleusercontent.com";
+        const CLIENT_ID = "820300599951-chq1g1l44ub8626kls0e8crkrmv8605u.apps.googleusercontent.com";
     const REDIRECT_URI = "http://localhost:3000";
     const HOSTING_REDIRECT_URI = "https://injazomanagementsystem.in"
     const SCOPE = "https://www.googleapis.com/auth/contacts.readonly";
@@ -270,6 +299,7 @@ async function importContacts(accessToken) {
         });
 
         if (!response.ok) {
+            hideLoading()
             throw new Error("Failed to fetch contacts");
         }
 
@@ -294,6 +324,7 @@ async function importContacts(accessToken) {
         return allContacts;
 
     } catch (error) {
+        hideLoading()
         console.error("Error fetching contacts:", error);
         Swal.fire({
             icon: "error",
@@ -308,6 +339,7 @@ async function importContacts(accessToken) {
     // Step 4: Send Contacts to Server
     async function sendContactsToServer(contacts) {
         if (contacts.length === 0) {
+            hideLoading()
             Swal.fire({
                 icon: "warning",
                 title: "No Contacts Found",
@@ -334,12 +366,14 @@ async function importContacts(accessToken) {
                     draggable: false
                 });
                 setTimeout(() => {
-                    window.location.reload();
+                    window.location.href = '/admin/viewParties'
                 }, 300);
             } else {
+                hideLoading()
                 throw new Error(data.data || "Failed to import contacts");
             }
         } catch (error) {
+            hideLoading()
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
