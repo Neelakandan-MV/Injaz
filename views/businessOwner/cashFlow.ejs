@@ -150,9 +150,9 @@
         
         <div class="content">
             <div class="money-in active">
-                <a href="#" class="btn btn-warning mt" onclick="moneyInDownload()">Download Report</a>
+                <a href="#" class="btn btn-warning mt" onclick="moneyInDownload('<%= currentCompany[0].name %>')">Download Report</a>
         
-                <section class="transactions mt-4 table-responsive" id="moneyIn">
+                <section class="transactions mt-4 table-responsive" id="moneyInTable">
                     <table class="table table-bordered">
                         <thead class="table-light">
                             <tr>
@@ -178,8 +178,8 @@
             </div>
         
             <div class="money-out">
-                <a href="#" class="btn btn-warning mt" onclick="moneyOutDownload()">Download Report</a>
-                <section class="transactions mt-4 table-responsive" id="moneyOut">
+                <a href="#" class="btn btn-warning mt" onclick="moneyOutDownload('<%= currentCompany[0].name %>')">Download Report</a>
+                <section class="transactions mt-4 table-responsive" id="moneyOutTable">
                     <table class="table table-bordered">
                         <thead class="table-light">
                             <tr>
@@ -302,13 +302,13 @@ function updateCashFlowSummary(filteredCashFlows, moneyIn, moneyOut) {
     });
 </script>
 <script>
-    function moneyInDownload() {
+    function moneyInDownload(company_name) {
 
 const wrapper = document.createElement('div');
 
 
 const companyName = document.createElement('h2');
-companyName.textContent = 'Injaz';
+companyName.textContent = `${company_name}`;
 companyName.style.textAlign = 'center';
 wrapper.appendChild(companyName);
 
@@ -318,18 +318,18 @@ reportHeading.textContent = 'Cash Flow Report';
 reportHeading.style.textAlign = 'center';
 wrapper.appendChild(reportHeading);
 
-const tableContent = document.getElementById('moneyIn').cloneNode(true);
+const tableContent = document.getElementById('moneyInTable').cloneNode(true);
 wrapper.appendChild(tableContent);
 
 html2pdf().set({ filename: 'Cash Flow Report' }).from(wrapper).save();
 }
-    function moneyOutDownload() {
+    function moneyOutDownload(company_name) {
 
 const wrapper = document.createElement('div');
 
 
 const companyName = document.createElement('h2');
-companyName.textContent = 'Injaz';
+companyName.textContent = `${company_name}`;
 companyName.style.textAlign = 'center';
 wrapper.appendChild(companyName);
 
@@ -339,7 +339,7 @@ reportHeading.textContent = 'Cash Flow Report';
 reportHeading.style.textAlign = 'center';
 wrapper.appendChild(reportHeading);
 
-const tableContent = document.getElementById('moneyOut').cloneNode(true);
+const tableContent = document.getElementById('moneyOutTable').cloneNode(true);
 wrapper.appendChild(tableContent);
 
 html2pdf().set({ filename: 'Cash Flow Report' }).from(wrapper).save();

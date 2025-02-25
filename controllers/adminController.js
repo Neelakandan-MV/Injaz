@@ -455,26 +455,27 @@ if (products && products.length) {
             product.saleProduct_id
           ]
         );
-        
+        if(transactionType == 'sale'){
         // Find the matching current product (if available)
-        const currentProduct = currentProductsInTransactions.find(p => p.id == product.saleProduct_id);
-        if (currentProduct) {
-          if (Number(currentProduct.delivered_quantity) !== Number(product.deliveredQuantity)) {
-            await mysql.query(
-              `INSERT INTO delivery_details (sale_id, sale_product_id, delivery_date, delivered_quantity, company_id, item_id, notes ,serial_number)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                currentProduct.sale_id,
-                currentProduct.id,
-                created_at,
-                Number(product.deliveredQuantity) - Number(currentProduct.delivered_quantity),
-                user.company_id,
-                currentProduct.item_id,
-                `Delivery updated from ${currentProduct.delivered_quantity} to ${product.deliveredQuantity} on ${created_at}`,
-                product.serial_number
-              ]
-            );
-          }
+            const currentProduct = currentProductsInTransactions.find(p => p.id == product.saleProduct_id);
+            if (currentProduct) {
+                if (Number(currentProduct.delivered_quantity) !== Number(product.deliveredQuantity)) {
+                    await mysql.query(
+                    `INSERT INTO delivery_details (sale_id, sale_product_id, delivery_date, delivered_quantity, company_id, item_id, notes ,serial_number)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        currentProduct.sale_id,
+                        currentProduct.id,
+                        created_at,
+                        Number(product.deliveredQuantity) - Number(currentProduct.delivered_quantity),
+                        user.company_id,
+                        currentProduct.item_id,
+                        `Delivery updated from ${currentProduct.delivered_quantity} to ${product.deliveredQuantity} on ${created_at}`,
+                        product.serial_number
+                    ]
+                    );
+                }
+            }
         }
       } else {
         // NEW ITEM: This covers cases where a new item is inserted in between.
@@ -540,6 +541,14 @@ if (products && products.length) {
   }
   
 // 
+
+let current_received = transactionDetails[0].recieved
+
+if (transactionType === "purchase") {
+    await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[Number(recieved ||0) - Number(current_received||0),user.company_id]);
+}else{
+    await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[Number(recieved ||0) - Number(current_received||0),user.company_id]);
+}
         
         if (transactionType === "purchase") {
             return res.redirect('/admin/purchases');
@@ -833,7 +842,6 @@ if (products && products.length) {
         const companyId = user.company_id;
         const products = await mysql.query(
             "SELECT * FROM items WHERE company_id = ? AND item_hsn = true", [companyId]);
-
         res.render('admin/addTransactions.ejs', { date: today, products: products[0], currentCompany, companies, user, parties, previousRoute });
     },
     viewAddPurchase: async (req, res) => {
@@ -1090,14 +1098,23 @@ if (products && products.length) {
 
             try {
                 const user = req.session.user;
-                const { name, email, phone, address } = req.body;
+                const { name, email, phone, address, openingBalance, balanceType } = req.body;
 
                 const image = req.file ? req.file.filename : null;
 
-                await mysql.query(
-                    "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture,company_id) VALUES (?,?,?,?,?,?,?)",
-                    [user.id, name, email, phone, address, image, user.company_id]
-                );
+                if(balanceType == 'toReceive'){
+                    await mysql.query(
+                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, receivable, company_id) VALUES (?,?,?,?,?,?,?,?)",
+                        [user.id, name, email, phone, address, image, openingBalance, user.company_id]
+                    );
+                }else{
+                    await mysql.query(
+                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, payable, company_id) VALUES (?,?,?,?,?,?,?,?)",
+                        [user.id, name, email, phone, address, image, openingBalance, user.company_id]
+                    );
+                }
+
+                
 
                 res.redirect('/admin/viewParties');
             } catch (dbError) {
@@ -1153,7 +1170,7 @@ if (products && products.length) {
                     "UPDATE parties set PartyName = ?, Email = ?, Phone = ?, Address = ?, profile_picture = ? WHERE id = ?",
                     [name,email,phone,address,image,partyId]
                 )
-                res.redirect('/admin/viewParty');
+                res.redirect('/admin/viewParties');
             } catch (dbError) {
                 res.status(500).json({ error: "Database operation failed", details: dbError });
             }
@@ -1677,9 +1694,8 @@ if (products && products.length) {
             
             const [transactionDetails] = await mysql.query(`SELECT s.received_amount, s.transaction_type, s.date, p.PartyName FROM sales s LEFT JOIN parties p ON s.customer_name = p.id WHERE s.company_id = ?`,[companyId])
             const [expenses] = await mysql.query(`SELECT e.amount AS received_amount, c.category_name AS transaction_type, date FROM expenses e LEFT JOIN expense_category c ON e.category_id = c.id WHERE e.company_id = ?`, [companyId]);
-            const [cashFlows] = await mysql.query(`SELECT c.amount AS received_amount, c.money_type,c.tnx_type AS transaction_type, c.date, c.name AS PartyName FROM cash_flows c WHERE tnx_type = 'Cash Adjusted' AND company_id = ?`,[user.company_id])
+            const [cashFlows] = await mysql.query(`SELECT c.id, c.amount AS received_amount, c.money_type,c.tnx_type AS transaction_type, c.date, c.name AS PartyName FROM cash_flows c WHERE tnx_type = 'Cash Adjusted' AND company_id = ?`,[user.company_id])
             const [party_payments] = await mysql.query(`SELECT p.amount AS received_amount, p.payment_type AS transaction_type,p.date,p.party_name AS PartyName FROM party_payments p WHERE p.company_id = ?`,[companyId])
-            
         
             res.render('admin/cashInHand.ejs',{currentCompany,companies:companyData,user,transactionDetails:[...transactionDetails,...expenses,...cashFlows,...party_payments],totalCashInHand,user})
         } catch (error) {
@@ -1814,10 +1830,10 @@ if (products && products.length) {
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         if(adjustmentType == 'add'){
         await mysql.query(`UPDATE companies set cash_in_hand = cash_in_hand + ? WHERE id = ?`,[amount,user.company_id])
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,['Cash Added',date,'Cash Adjusted',amount,'money_in',user.company_id])
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,description,money_type,company_id) VALUES(?,?,?,?,?,?,?)`,['Cash Added',date,'Cash Adjusted',amount,description,'money_in',user.company_id])
         }else{
             await mysql.query(`UPDATE companies set cash_in_hand = cash_in_hand - ? WHERE id = ?`,[amount,user.company_id])
-            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id) VALUES(?,?,?,?,?,?)`,['Cash Reduced',date,'Cash Adjusted',amount,'money_out',user.company_id])
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,description,money_type,company_id) VALUES(?,?,?,?,?,?,?)`,['Cash Reduced',date,'Cash Adjusted',amount,description,'money_out',user.company_id])
         }
         res.redirect('/admin/cashInHand')
     },
@@ -1865,7 +1881,7 @@ if (products && products.length) {
              VALUES (?, ?, ?, ?, ?, ?)`,
              [partyName, created_at, 'Payment_In', amount, 'money_in', user.company_id]
         );
-        res.redirect('/admin/viewParty');
+        res.redirect('/admin/viewParties');
     },
     
     viewAddPaymentOut:async(req,res)=>{
@@ -1923,7 +1939,7 @@ if (products && products.length) {
             [partyName, created_at, 'Payment_Out', amount, 'money_out', user.company_id]
         );
     
-        res.redirect('/admin/viewParty');
+        res.redirect('/admin/viewParties');
     },
     
     
@@ -1980,14 +1996,11 @@ if (products && products.length) {
     
             const totalSales = grossProfit[0]?.total_sales || 0;
             const totalPurchases = grossProfit[0]?.total_purchases || 0;
-            const grossProfitValue = Number(totalSales) - totalPurchases;
     
             const [otherIncome] = await mysql.query(
                 `SELECT COALESCE(SUM(amount), 0) AS total_income FROM other_income WHERE company_id = ? AND date BETWEEN ? AND ?`,
                 [companyId ,start || '2000-01-01', end || '2099-12-31']
             );
-
-            console.log(otherIncome);
             
             const totalOtherIncome = otherIncome[0]?.total_income || 0;
     
@@ -2013,9 +2026,9 @@ if (products && products.length) {
             );
             const totalClosingStock = closingStock[0]?.closing_stock || 0;
 
-    
-            const netProfit = (Number(grossProfitValue) + Number(totalOtherIncome) - Number(totalOtherExpenses)) + (Number(totalClosingStock) - Number(totalOpeningStock));
-    
+            const grossProfitValue = (Number(totalSales) - totalPurchases) + (Number(totalClosingStock) - Number(totalOpeningStock));  //add stockValue
+            const netProfit = (Number(grossProfitValue) + Number(totalOtherIncome) - Number(totalOtherExpenses));
+
             if (start && end) {
                 return res.json({
                     grossProfit: grossProfitValue,
@@ -2218,6 +2231,9 @@ if (products && products.length) {
             const [item] = await mysql.query(`SELECT item_name FROM items WHERE id = ?`, [itemId]);
 
             const [deliveries] = await mysql.query(`SELECT * FROM delivery_details WHERE item_id = ?`,[itemId])
+
+            console.log(pendingSales);
+            
                 
         res.render('admin/deliveryDetails.ejs', {
             item_name: item[0]?.item_name || "Unknown",
@@ -2399,7 +2415,7 @@ if (products && products.length) {
         // Update the party balance
         await mysql.query('UPDATE parties SET receivable = ?, payable = ? WHERE id = ?', [receivable, payable, partyId]);
     
-        res.redirect('/admin/viewParty');
+        res.redirect('/admin/viewParties');
     },
 
     viewExpenseEdit:async(req,res)=>{
@@ -2648,6 +2664,47 @@ if (products && products.length) {
         } catch (error) {
             console.error("Error deleting company:", error);
             return res.status(500).json({ success: false, message: "An error occurred while deleting the company." });
+        }
+    },
+
+    viewCashInHandAdjustEdit:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.execute(`SELECT * FROM companies`);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        try {
+            const cashFlowId = req.query.id
+            const [cashFlow] = await mysql.query(`SELECT * FROM cash_flows WHERE id = ?`,[cashFlowId])
+            res.render('admin/editAdjustCashInHand.ejs',{companies,currentCompany,user,cashFlow:cashFlow[0]})
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+    cashInHandAdjustEdit:async(req,res)=>{
+        try {
+            const user = req.session.user;
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+            const {id,date,amount,description} = req.body
+
+            const [currentCashFlow] = await mysql.query('SELECT * FROM cash_flows WHERE id=?',[id])
+            // console.log("currentCashFlow",currentCashFlow);
+            let current_amount = currentCashFlow[0].amount
+            if(currentCashFlow[0].money_type == 'money_in'){
+                console.log('if works');
+                await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[current_amount-amount,user.company_id])
+                await mysql.query(`UPDATE cash_flows set date = ?,amount =?,description = ? WHERE id = ?`,[date,amount,description,id])
+            }else{
+                console.log('else works');
+                await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[current_amount-amount,user.company_id])
+                await mysql.query(`UPDATE cash_flows set date = ?,amount =?,description = ? WHERE id = ?`,[date,amount,description,id])
+            }
+            
+        res.redirect('/admin/cashInHand')            
+            
+        } catch (error) {
+            console.error(error);
+            
         }
     }
     

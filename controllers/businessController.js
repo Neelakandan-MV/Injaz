@@ -982,16 +982,22 @@ const businessOwnerController = {
             }
 
             try {
-                console.log('addParty Works');
                 const user = req.session.user;
-                const { name, email, phone, address } = req.body;
+                const { name, email, phone, address, openingBalance, balanceType } = req.body;
 
                 const image = req.file ? req.file.filename : null;
 
-                await mysql.query(
-                    "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture,company_id) VALUES (?,?,?,?,?,?,?)",
-                    [user.id, name, email, phone, address, image, user.company_id]
-                );
+                if(balanceType == 'toReceive'){
+                    await mysql.query(
+                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, receivable, company_id) VALUES (?,?,?,?,?,?,?,?)",
+                        [user.id, name, email, phone, address, image, openingBalance, user.company_id]
+                    );
+                }else{
+                    await mysql.query(
+                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, payable, company_id) VALUES (?,?,?,?,?,?,?,?)",
+                        [user.id, name, email, phone, address, image, openingBalance, user.company_id]
+                    );
+                }
                 
                 
                 res.redirect('/business-owner/viewParty');
@@ -1160,7 +1166,7 @@ const businessOwnerController = {
 
         if(Number(transactionDetails[0].balance_due) != Number(balanceDue)){
             let payable = Number(party[0].payable);
-            let receivable = Number(party[0].receivable) ;
+            let receivable = Number(party[0].receivable);
             const balance = Math.abs(Number(balanceDue) - Number(transactionDetails[0].balance_due));
 
             if (transactionType === "purchase") {
@@ -1172,7 +1178,12 @@ const businessOwnerController = {
                         receivable = 0;
                     }
                 } else {
-                    payable += balance;
+                    if(balance >= payable){
+                        receivable += (balance - payable)
+                        payable = 0
+                    }else{
+                        payable += balance;
+                    }
                 }
             } else { // Sale transaction
                 if (payable > 0) {
@@ -1182,8 +1193,13 @@ const businessOwnerController = {
                         receivable += balance - payable;
                         payable = 0;
                     }
-                } else {
+                } else { 
+                    if(balance >= receivable){
+                    payable += (balance - receivable)
+                    receivable = 0
+                }else{
                     receivable -= balance;
+                }
                 }
             }
             
@@ -1250,26 +1266,27 @@ if (products && products.length) {
             product.saleProduct_id
           ]
         );
-        
+        if(transactionType == 'sale'){
         // Find the matching current product (if available)
-        const currentProduct = currentProductsInTransactions.find(p => p.id == product.saleProduct_id);
-        if (currentProduct) {
-          if (Number(currentProduct.delivered_quantity) !== Number(product.deliveredQuantity)) {
-            await mysql.query(
-              `INSERT INTO delivery_details (sale_id, sale_product_id, delivery_date, delivered_quantity, company_id, item_id, notes ,serial_number)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-              [
-                currentProduct.sale_id,
-                currentProduct.id,
-                created_at,
-                Number(product.deliveredQuantity) - Number(currentProduct.delivered_quantity),
-                user.company_id,
-                currentProduct.item_id,
-                `Delivery updated from ${currentProduct.delivered_quantity} to ${product.deliveredQuantity} on ${created_at}`,
-                product.serial_number
-              ]
-            );
-          }
+            const currentProduct = currentProductsInTransactions.find(p => p.id == product.saleProduct_id);
+            if (currentProduct) {
+                if (Number(currentProduct.delivered_quantity) !== Number(product.deliveredQuantity)) {
+                    await mysql.query(
+                    `INSERT INTO delivery_details (sale_id, sale_product_id, delivery_date, delivered_quantity, company_id, item_id, notes ,serial_number)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        currentProduct.sale_id,
+                        currentProduct.id,
+                        created_at,
+                        Number(product.deliveredQuantity) - Number(currentProduct.delivered_quantity),
+                        user.company_id,
+                        currentProduct.item_id,
+                        `Delivery updated from ${currentProduct.delivered_quantity} to ${product.deliveredQuantity} on ${created_at}`,
+                        product.serial_number
+                    ]
+                    );
+                }
+            }
         }
       } else {
         // NEW ITEM: This covers cases where a new item is inserted in between.
@@ -1335,6 +1352,14 @@ if (products && products.length) {
   }
   
 // 
+
+let current_received = transactionDetails[0].recieved
+
+if (transactionType === "purchase") {
+    await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[Number(recieved ||0) - Number(current_received||0),user.company_id]);
+}else{
+    await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[Number(recieved ||0) - Number(current_received||0),user.company_id]);
+}
         
         if (transactionType === "purchase") {
             return res.redirect('/business-owner/purchases');

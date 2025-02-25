@@ -63,6 +63,40 @@
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
 
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-header">Payable:</div>
+                    <div class="card-body">
+                        <h5 class="card-title" id="totalPayable"></h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-header">Receivable:</div>
+                    <div class="card-body">
+                        <h5 class="card-title" id="totalReceivable"></h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+
+            const party = <%- JSON.stringify(party)%>
+                if(party.receivable > 0){
+                    document.getElementById("totalReceivable").textContent = party.receivable 
+                }else{
+                    document.getElementById("totalPayable").textContent = party.payable 
+                }
+                if(party.receivable == 0){
+                    document.getElementById("totalReceivable").textContent = 0 
+                }
+                if(party.payable == 0){
+                    document.getElementById("totalPayable").textContent = 0
+                }
+        </script>
+
 <section class="form-section mt-4">
     <form action="/admin/addPaymentOut" method="POST">
         <!-- Existing fields -->

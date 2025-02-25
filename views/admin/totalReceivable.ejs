@@ -109,25 +109,43 @@
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </div>
 
+        <input type="text" id="searchInputReceivable" class="form-control mb-3" placeholder="Search by Party Name" onkeyup="filterReceivables()">
+
         <div class="container mt-4">
-            <div class="row">
+            <div class="row" id="receivableList">
                 <% partyWiseReceivable.forEach(party => { %>
                     <% if(party.receivable > 0){ %>
-                        <a href="/admin/partyTransactions?partyId=<%= party.id %>">
-                        <div class="col-md-4 col-sm-6 mb-3">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-body text-center">
-                                    <div class="d-flex">
-                                    <h5 class="card-title"><%= party.PartyName %> :</h5>
-                                    <h5 class="fw-bold text-success"> SAR <%= party.receivable %></h5>
-                                </div>
+                        <a href="/admin/partyTransactions?partyId=<%= party.id %>" class="receivable-item">
+                            <div class="col-md-4 col-sm-6 mb-3">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-body text-center">
+                                        <div class="d-flex">
+                                            <h5 class="receivableName"><%= party.PartyName %> :</h5>
+                                            <h5 class="fw-bold text-success"> SAR <%= party.receivable %></h5>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
                     <% }}); %>
             </div>
         </div>
+        
+        <script>
+            function filterReceivables() {
+                let input = document.getElementById("searchInputReceivable").value.toLowerCase();
+                let items = document.querySelectorAll(".receivable-item");
+                
+                items.forEach(item => {
+                    let partyName = item.querySelector(".receivableName").textContent.toLowerCase();
+                    if (partyName.includes(input)) {
+                        item.style.display = "block";
+                    } else {
+                        item.style.display = "none";
+                    }
+                });
+            }
+        </script>
     </div>
 </body>
   <!-- script for hamburgur -->

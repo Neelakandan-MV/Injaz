@@ -138,7 +138,7 @@
             />
             <button class="mt-3" onclick="searchTable()">Search</button>
             <button class="mt-3" onclick="reset()">Reset</button>
-            <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
+            <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf('<%= currentCompany[0].name %>')">Download Report</button>
         </div>
 
         <!-- Table -->
@@ -191,20 +191,20 @@
     function reset(){
         window.location.reload()
     }
-    function downloadPdf() {
+    function downloadPdf(company_name) {
     
     const wrapper = document.createElement('div');
 
 
     const companyName = document.createElement('h2');
-    companyName.textContent = 'Injaz';
-    companyName.style.textAlign = 'center'; // Optional styling
+    companyName.textContent = `${company_name}`;
+    companyName.style.textAlign = 'center'; 
     wrapper.appendChild(companyName);
 
 
     const reportHeading = document.createElement('h4');
     reportHeading.textContent = 'Item Wise Profit&Loss Report';
-    reportHeading.style.textAlign = 'center'; // Optional styling
+    reportHeading.style.textAlign = 'center';
     wrapper.appendChild(reportHeading);
 
     const tableContent = document.getElementById('reportContainer').cloneNode(true); // Clone the table element

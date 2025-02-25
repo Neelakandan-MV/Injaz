@@ -131,7 +131,7 @@
     <%- include('./navbar')  %>
 
     <div class="container">
-    <button type="button" class="btn btn-warning mt-3 mb-3" onclick="downloadPdf()">Download Report</button>
+    <button type="button" class="btn btn-warning mt-3 mb-3" onclick="downloadPdf('<%= currentCompany[0].name %>')">Download Report</button>
     <div class="table-responsive">
         
     <table border="1" id="reportContainer">
@@ -169,13 +169,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    function downloadPdf() {
+    function downloadPdf(company_name) {
 
         const wrapper = document.createElement('div');
 
 
         const companyName = document.createElement('h2');
-        companyName.textContent = 'Injaz';
+        companyName.textContent = `${company_name}`;
         companyName.style.textAlign = 'center'; // Optional styling
         wrapper.appendChild(companyName);
 

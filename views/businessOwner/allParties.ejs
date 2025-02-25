@@ -285,6 +285,16 @@
                             <input type="email" class="form-control" id="companyName" name="email">
                         </div>
                         <div class="mb-3">
+                            <label for="openingBalance" class="form-label">Opening Balance</label>
+                            <input type="text" class="form-control" id="openingBalance" name="openingBalance" value="0">
+                            <label>
+                                <input type="radio" name="balanceType" value="toReceive" checked required> To Receive
+                            </label>
+                            <label class="ms-4">
+                                <input type="radio" name="balanceType" value="toPay" required> To Pay
+                            </label><br>
+                        </div>
+                        <div class="mb-3">
                             <label for="dp" class="form-label">Profile Picture</label>
                             <input type="file" class="form-control" id="profile" name="image">
                         </div>

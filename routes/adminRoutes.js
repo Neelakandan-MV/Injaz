@@ -98,7 +98,9 @@ router.post('/admin/incomeEdit',isLoggedAdmin,adminController.incomeEdit)
 router.post('/admin/store-access-token',adminController.storeAccessToken)
 router.post('/admin/uploadContactFile',upload.single('contact'),adminController.importContacts)
 router.get('/admin/manageCompanies',isLoggedAdmin,adminController.viewManageCompanies)
-router.get('/admin/deleteCompany',isLoggedAdmin,adminController.deleteCompany)
+router.delete('/admin/deleteCompany',isLoggedAdmin,adminController.deleteCompany)
+router.get('/admin/editAdjustCash',isLoggedAdmin,adminController.viewCashInHandAdjustEdit)
+router.post('/admin/editAdjustCash',isLoggedAdmin,adminController.cashInHandAdjustEdit)
 
   
 

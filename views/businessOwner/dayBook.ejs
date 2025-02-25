@@ -73,7 +73,7 @@
                     </div>
                 </div>
                 <div class="mt-3 d-flex">
-                    <button type="button" class="btn btn-warning" onclick="downloadPdf()">Download Report</button>
+                    <button type="button" class="btn btn-warning" onclick="downloadPdf('<%= currentCompany[0].name %>')">Download Report</button>
 
                 </div>
             </header>
@@ -152,13 +152,13 @@
     window.onload = setDefaultDate;
 </script>
 <script>
-    function downloadPdf() {
+    function downloadPdf(company_name) {
 
         const wrapper = document.createElement('div');
 
 
         const companyName = document.createElement('h2');
-        companyName.textContent = 'Injaz';
+        companyName.textContent = `${company_name}`;
         companyName.style.textAlign = 'center';
         wrapper.appendChild(companyName);
 

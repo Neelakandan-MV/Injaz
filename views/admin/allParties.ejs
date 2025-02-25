@@ -150,7 +150,7 @@
             <div class="input-group">
                 <input type="text" class="form-control" id="searchInput" placeholder="Search Name..." onkeyup="filterParties()"/>
             </div>
-            <button type="button" class="btn btn-success  mt-2" data-bs-toggle="modal" data-bs-target="#addPartyModalSaleMan">Add New Party</button>
+            <button type="button" class="btn btn-success  mt-2" data-bs-toggle="modal" data-bs-target="#addPartyModalAdmin">Add New Party</button>
             <button type="button" class="btn btn-primary mt-2" onclick="importContacts('<%= access_token %>')">Import Contacts</button>
             <div class="mt-2 d-flex">
                 <form id="uploadForm" enctype="multipart/form-data">
@@ -258,7 +258,7 @@
     }
 </script>
 
-<div class="modal fade" id="addPartyModalSaleMan" tabindex="-1" aria-labelledby="addCompanyModalLabel"
+<div class="modal fade" id="addPartyModalAdmin" tabindex="-1" aria-labelledby="addCompanyModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -283,6 +283,16 @@
                         <div class="mb-3">
                             <label for="email" class="form-label">Party Email</label>
                             <input type="email" class="form-control" id="companyName" name="email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="openingBalance" class="form-label">Opening Balance</label>
+                            <input type="text" class="form-control" id="openingBalance" name="openingBalance" value="0">
+                            <label>
+                                <input type="radio" name="balanceType" value="toReceive" checked required> To Receive
+                            </label>
+                            <label class="ms-4">
+                                <input type="radio" name="balanceType" value="toPay" required> To Pay
+                            </label><br>
                         </div>
                         <div class="mb-3">
                             <label for="dp" class="form-label">Profile Picture</label>

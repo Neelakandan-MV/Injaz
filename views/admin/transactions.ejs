@@ -73,47 +73,67 @@
         </header>
             
         <div class="container">
-        <a href="/admin/dashboard"><button class="btn btn-success">Back</button></a>
-
-        <div class="table-responsive">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    
-                    <th>Customer Name</th>
-                    <th>Transaction Type</th>
-                    <th>Total Amount</th>
-                    <th>Paid / Received Amount</th>
-                    <th>Balance Due</th>
-                    <th>Payment Type</th>
-                    <th>Date</th>
-                    <th>Invoice Number</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% transactions.forEach(function(transaction) { %>
-                    <tr>
-                        <td><%= transaction.customer_name %></td>
-                        <td><%= transaction.transaction_type %></td>
-                        <td  class="<%= transaction.payment_type == 'Credit'? 'text-warning':'text-success' %>"><%= transaction.total_amount %></td>
-                        <td><%= transaction.received_amount %></td>
-                        <td><%= transaction.balance_due %></td>
-                        <td><%= transaction.payment_type %></td>
-                        <td><%= formatDateToDDMMYYYY(transaction.date) %></td>
-                        <td><%= transaction.invoice_number %></td>
-                    </tr>
-                <% }) %>
-            </tbody>
-        </table>
-    </div>
-
-        <!-- Pagination -->
-        <div class="pagination">
-            <% for (let i = 1; i <= totalPages; i++) { %>
-                <a href="/total-transactions?page=<%= i %>&limit=<%= limit %>" class="<%= i === currentPage ? 'current-page' : '' %>"><%= i %></a>
-            <% } %>
+            <a href="/admin/dashboard"><button class="btn btn-success">Back</button></a>
+        
+            <input type="text" id="searchInputTransactions" class="form-control mb-3" placeholder="Search by Customer Name or Invoice Number" onkeyup="filterTransactions()">
+        
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Transaction Type</th>
+                            <th>Total Amount</th>
+                            <th>Paid / Received Amount</th>
+                            <th>Balance Due</th>
+                            <th>Payment Type</th>
+                            <th>Date</th>
+                            <th>Invoice Number</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionList">
+                        <% transactions.forEach(function(transaction) { %>
+                            <tr class="transaction-item">
+                                <td class="customerName"><%= transaction.customer_name %></td>
+                                <td><%= transaction.transaction_type %></td>
+                                <td class="<%= transaction.payment_type == 'Credit'? 'text-warning':'text-success' %>"><%= transaction.total_amount %></td>
+                                <td><%= transaction.received_amount %></td>
+                                <td><%= transaction.balance_due %></td>
+                                <td><%= transaction.payment_type %></td>
+                                <td><%= formatDateToDDMMYYYY(transaction.date) %></td>
+                                <td class="invoiceNumber"><%= transaction.invoice_number %></td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        
+            <!-- Pagination -->
+            <div class="pagination">
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a href="/total-transactions?page=<%= i %>&limit=<%= limit %>" class="<%= i === currentPage ? 'current-page' : '' %>"><%= i %></a>
+                <% } %>
+            </div>
         </div>
-    </div>
+        
+        <script>
+            function filterTransactions() {
+                let input = document.getElementById("searchInputTransactions").value.toLowerCase();
+                let items = document.querySelectorAll(".transaction-item");
+                
+                items.forEach(item => {
+                    let customerName = item.querySelector(".customerName").textContent.toLowerCase();
+                    let invoiceNumber = item.querySelector(".invoiceNumber").textContent.toLowerCase();
+                    
+                    if (customerName.includes(input) || invoiceNumber.includes(input)) {
+                        item.style.display = "table-row";
+                    } else {
+                        item.style.display = "none";
+                    }
+                });
+            }
+        </script>
+        
 
 </body>
 </html>
