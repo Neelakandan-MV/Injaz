@@ -191,6 +191,7 @@
                                 <!-- <th>Discount (%)</th>
                                 <th>Tax (%)</th> -->
                                 <th>Total (SAR)</th>
+                                <th>Free</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -299,6 +300,7 @@
             <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this)" required >
             <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this)" required >
             <td><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required ></td>
+            <td><input type="text" id="freeQuantity" name="products[${count}][freeQuantity]"></td>
             <input type="hidden" id="productId" name="products[${count}][productId]" >
             <td><button type="button" class="btn btn-danger btn-sm ms-2" onclick="removeRow(this)">Remove</button></td>
             </tr>

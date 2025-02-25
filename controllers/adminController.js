@@ -936,7 +936,7 @@ if (products && products.length) {
             //controlling stock
             if (transactionType === "purchase") {
                 for (const product of products) {
-                    await mysql.query(`UPDATE items SET stock = stock + ? WHERE id = ?`, [Number(product.quantity), product.productId]);
+                    await mysql.query(`UPDATE items SET stock = stock + ? WHERE id = ?`, [Number(product.quantity)+Number(product.freeQuantity), product.productId]);
 
                     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
                         [product.productId, 'add', product.quantity, product.productTotal, 'due to purchase', created_at, user.company_id])
@@ -2589,6 +2589,65 @@ if (products && products.length) {
         } catch (error) {
             console.error("Error in importContacts:", error);
             res.status(500).json({ error: "Server error" });
+        }
+    },
+
+    viewManageCompanies:async(req,res)=>{
+
+        try {
+            const user = req.session.user;
+            const companyId = user.company_id;
+            const [companies] = await mysql.execute(`SELECT * FROM companies`);
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+    
+            res.render('admin/manageCompanies.ejs',{companies,currentCompany,user})    
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+    deleteCompany: async (req, res) => {
+        const user = req.session.user;
+        const companyId = req.query.companyId; // Get the company ID from the request
+        try {
+            // Check if the company exists
+            const [selectedCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+            if (!selectedCompany) {
+                return res.status(404).json({ success: false, message: "Company not found" });
+            }
+    
+            // Check if any related records exist in dependent tables
+            const tablesToCheck = [
+                "categories",
+                "delivery_details",
+                "expenses",
+                "stock_adjustments",
+                "items",
+                "other_income",
+                "party_payments",
+                "sale_products",
+                "sales",
+                "parties"
+            ];
+    
+            for (const table of tablesToCheck) {
+                const [records] = await mysql.query(`SELECT COUNT(*) as count FROM ${table} WHERE company_id = ?`, [companyId]);
+                if (records[0].count > 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Company cannot be deleted. Try deleting transactions from the company and try again."
+                    });
+                }
+            }
+    
+            // No related records found, proceed with deletion
+            await mysql.query(`DELETE FROM companies WHERE id = ?`, [companyId]);
+    
+            return res.status(200).json({ success: true, message: "Company deleted successfully." });
+    
+        } catch (error) {
+            console.error("Error deleting company:", error);
+            return res.status(500).json({ success: false, message: "An error occurred while deleting the company." });
         }
     }
     

@@ -97,6 +97,8 @@ router.get('/admin/incomeEdit',isLoggedAdmin,adminController.viewIncomeEdit)
 router.post('/admin/incomeEdit',isLoggedAdmin,adminController.incomeEdit)
 router.post('/admin/store-access-token',adminController.storeAccessToken)
 router.post('/admin/uploadContactFile',upload.single('contact'),adminController.importContacts)
+router.get('/admin/manageCompanies',isLoggedAdmin,adminController.viewManageCompanies)
+router.get('/admin/deleteCompany',isLoggedAdmin,adminController.deleteCompany)
 
   
 

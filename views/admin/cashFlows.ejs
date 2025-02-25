@@ -68,6 +68,13 @@
         .btn-secondary {
             margin-right: 10px; 
         }
+
+        .date-filter {
+        margin: 10px 0;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
     </style>
 </head>
 
@@ -90,142 +97,192 @@
         <i class="fas fa-bars hamburger" id="hamburger"></i>
     </header>
 
-        <div>
-            <div class="d-flex justify-content-between align-items-center">
-                <a href="/admin/addSale" class="btn btn-primary">+ Add Sale</a>
-            </div>
-        </div>
         <section class="cashflow-summary mb-4 mt-3">
             <div class="row">
                 <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-header">Opening Cash</div>
                         <div class="card-body">
-                            <h5 class="card-title">SAR <%= cashFlows.length > 0 ? cashFlows[0].opening_cash.toFixed(5) : '0.00' %></h5>
+                            <h5 class="card-title" id="openingCash">SAR <%= cashFlows.length > 0 ? cashFlows[0].opening_cash.toFixed(5) : '0.00' %></h5>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mt-2">
                     <div class="card text-center">
                         <div class="card-header">Closing Cash</div>
                         <div class="card-body">
-                            <h5 class="card-title">SAR <%= closingCash.toFixed(5) %></h5>
+                            <h5 class="card-title" id="closingCash">SAR <%= closingCash.toFixed(5) %></h5>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mt-2">
                     <div class="card text-center">
                         <div class="card-header">Money In</div>
                         <div class="card-body">
-                            <h5 class="card-title" style="color: green;">SAR <%= moneyIn.toFixed(5) %></h5>
+                            <h5 class="card-title" id="moneyIn" style="color: green;">SAR <%= moneyIn %></h5>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 mt-2">
                     <div class="card text-center">
                         <div class="card-header">Money Out</div>
                         <div class="card-body">
-                            <h5 class="card-title" style="color: red;">SAR <%= moneyOut.toFixed(5) %></h5>
+                            <h5 class="card-title" id="moneyOut" style="color: red;">SAR <%= moneyOut %></h5>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+        
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('money-in')">Money In</div>
-        <div class="tab" onclick="switchTab('money-out')">Money Out</div>
-      </div>
-      
-      <div class="content">
-        <div class="money-in active">
-            <a href="#" class="btn btn-warning mt" onclick="moneyInDownload()">Download Report</a>
-
-            <section class="transactions mt-4 table-responsive" id="moneyIn">
-                <table class="table table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Date</th>
-                            <th>Name</th>
-                            <th>Transaction Type</th>
-                            <th>Money Type</th>
-                            <th>Amount</th>
-                            <!-- <th>Opening Cash</th>
-                            <th>Closing Cash</th> -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% cashFlows.forEach(cashFlow => { %>
-                            <% if(cashFlow.money_type == 'money_in'){ %>
-                            <tr>
-                                <td><%= formatDateToDDMMYYYY(cashFlow.date) %></td>
-                                <td><%= cashFlow.name %></td>
-                                <td><%= cashFlow.tnx_type %></td>
-                                <td><%= cashFlow.money_type %></td>
-                                <td style="color: green;">SAR <%= cashFlow.amount %></td>
-                                <!-- <td>SAR <%= Number(cashFlow.opening_cash).toFixed(5) %></td>
-                                <td>SAR <%= Number(cashFlow.closing_cash).toFixed(5) %></td> -->
-                            </tr>
-                        <% }}) %>
-                    </tbody>
-                </table>
-          </section>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('money-in')">Money In</div>
+            <div class="tab" onclick="switchTab('money-out')">Money Out</div>
         </div>
-      
-        <div class="money-out" >
-            <a href="#" class="btn btn-warning mt" onclick="moneyOutDownload()">Download Report</a>
-            <section class="transactions mt-4 table-responsive" id="moneyOut">
-                <table class="table table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Date</th>
-                            <th>Name</th>
-                            <th>Transaction Type</th>
-                            <th>Money Type</th>
-                            <th>Amount</th>
-                            <!-- <th>Opening Cash</th>
-                            <th>Closing Cash</th> -->
-                           
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% cashFlows.forEach(cashFlow => { %>
-                            <% if(cashFlow.money_type == 'money_out'){ %>
-                            <tr>
-                                <td><%= formatDateToDDMMYYYY(cashFlow.date) %></td>
-                                <td><%= cashFlow.name %></td>
-                                <td><%= cashFlow.tnx_type %></td>
-                                <td><%= cashFlow.money_type %></td>
-                                <td style="color: red;">SAR <%= cashFlow.amount %></td>
-                                <!-- <td>SAR <%= Number(cashFlow.opening_cash).toFixed(5) %></td>
-                                <td>SAR <%= Number(cashFlow.closing_cash).toFixed(5) %></td> -->
-                            </tr>
-                        <%} }) %>
-                    </tbody>
-                </table>
-            </section>
+        
+        <!-- Date Filter Inputs -->
+        <div class="date-filter">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" onchange="filterTransactions()">
+            
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" onchange="filterTransactions()">
         </div>
-      </div>
-    </div>
-      
-      <script>
-        function switchTab(tab) {
-          // Remove 'active' class from the currently active tab and content
-          document.querySelector('.tab.active').classList.remove('active');
-          document.querySelector('.content > div.active').classList.remove('active');
-      
-          // Add 'active' class to the clicked tab
-          if (tab === 'money-in') {
-            document.querySelector('.tab:nth-child(1)').classList.add('active');
-          } else if (tab === 'money-out') {
-            document.querySelector('.tab:nth-child(2)').classList.add('active');
-          }
-      
-          // Add 'active' class to the corresponding content
-          document.querySelector(`.${tab}`).classList.add('active');
+        
+        <div class="content">
+            <div class="money-in active">
+                <a href="#" class="btn btn-warning mt" onclick="moneyInDownload()">Download Report</a>
+        
+                <section class="transactions mt-4 table-responsive" id="moneyIn">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Transaction Type</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moneyInBody">
+                            <% cashFlows.forEach(cashFlow => { %>
+                                <% if(cashFlow.money_type == 'money_in'){ %>
+                                <tr>
+                                    <td><%= formatDateToDDMMYYYY(cashFlow.date) %></td>
+                                    <td><%= cashFlow.name %></td>
+                                    <td><%= cashFlow.tnx_type %></td>
+                                    <td style="color: green;">SAR <%= cashFlow.amount %></td>
+                                </tr>
+                            <% }}) %>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+        
+            <div class="money-out">
+                <a href="#" class="btn btn-warning mt" onclick="moneyOutDownload()">Download Report</a>
+                <section class="transactions mt-4 table-responsive" id="moneyOut">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Transaction Type</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moneyOutBody">
+                            <% cashFlows.forEach(cashFlow => { %>
+                                <% if(cashFlow.money_type == 'money_out'){ %>
+                                <tr>
+                                    <td><%= formatDateToDDMMYYYY(cashFlow.date) %></td>
+                                    <td><%= cashFlow.name %></td>
+                                    <td><%= cashFlow.tnx_type %></td>
+                                    <td style="color: red;">SAR <%= cashFlow.amount %></td>
+                                </tr>
+                            <% }}) %>
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+        </div>
+        
+        <script>
+            function switchTab(tab) {
+                document.querySelector('.tab.active').classList.remove('active');
+                document.querySelector('.content > div.active').classList.remove('active');
+        
+                if (tab === 'money-in') {
+                    document.querySelector('.tab:nth-child(1)').classList.add('active');
+                } else if (tab === 'money-out') {
+                    document.querySelector('.tab:nth-child(2)').classList.add('active');
+                }
+        
+                document.querySelector(`.${tab}`).classList.add('active');
+            }
+        
+            function filterTransactions() {
+    let startDate = document.getElementById("startDate").value;
+    let endDate = document.getElementById("endDate").value;
 
+    if (!startDate || !endDate) return; // Skip filtering if no date is selected
+
+    startDate = new Date(startDate);
+    endDate = new Date(endDate);
+
+    let filteredMoneyIn = 0;
+    let filteredMoneyOut = 0;
+    let filteredCashFlows = [];
+
+    document.querySelectorAll("#moneyInBody tr, #moneyOutBody tr").forEach(row => {
+        let dateText = row.cells[0].innerText.trim(); // Get the date from the first cell (DD-MM-YYYY)
+        
+        // Convert "DD-MM-YYYY" to a Date object
+        let [day, month, year] = dateText.split('-').map(num => parseInt(num, 10));
+        let rowDate = new Date(year, month - 1, day);
+
+        if (rowDate >= startDate && rowDate <= endDate) {
+            row.style.display = "";
+            filteredCashFlows.push({
+                date: rowDate,
+                amount: parseFloat(row.cells[3].innerText.replace("SAR", "").trim()),
+                type: row.cells[3].style.color === "green" ? "money_in" : "money_out"
+            });
+
+            if (row.cells[3].style.color === "green") {
+                filteredMoneyIn += parseFloat(row.cells[3].innerText.replace("SAR", "").trim());
+            } else {
+                filteredMoneyOut += parseFloat(row.cells[3].innerText.replace("SAR", "").trim());
+            }
+        } else {
+            row.style.display = "none";
         }
-      </script>
+    });
+
+    // Update Summary
+    updateCashFlowSummary(filteredCashFlows, filteredMoneyIn, filteredMoneyOut);
+}
+
+function updateCashFlowSummary(filteredCashFlows, moneyIn, moneyOut) {
+    let openingCash = filteredCashFlows.length > 0 ? filteredCashFlows[0].amount : 0;
+    let closingCash = openingCash + moneyIn - moneyOut;
+
+    document.getElementById("openingCash").innerText = `SAR ${openingCash.toFixed(5) || 0}`;
+    document.getElementById("closingCash").innerText = `SAR ${closingCash.toFixed(5) || 0}`;
+    document.getElementById("moneyIn").innerText = `SAR ${moneyIn.toFixed(5) || 0}`;
+    document.getElementById("moneyOut").innerText = `SAR ${moneyOut.toFixed(5) || 0}`;
+}
+
+        </script>
+        
+        <style>
+            .date-filter {
+                margin: 10px 0;
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+        </style>
+        
       
 </body>
 
@@ -289,5 +346,6 @@ wrapper.appendChild(tableContent);
 html2pdf().set({ filename: 'Cash Flow Report' }).from(wrapper).save();
 }
 </script>
+
 
 </html>
