@@ -194,3 +194,20 @@
 
     }
 </script>
+<script>
+    function setDefaultDates() {
+        let today = new Date();
+        let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);  // 1st day of current month
+        let lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Last day of current month
+
+        // Format to YYYY-MM-DD for the input fields
+        let formatDate = (date) => date.toISOString().split('T')[0];
+
+        document.getElementById('startDate').value = formatDate(firstDay);
+        document.getElementById('endDate').value = formatDate(lastDay);
+        dateSelector()
+    }
+
+    // Call the function when the page loads
+    window.onload = setDefaultDates;
+</script>

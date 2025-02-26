@@ -86,8 +86,12 @@
                     <a href="/admin/item-detail"><button class="btn btn-success">Report</button></a>
                 </div>
                 <div class="stat-card">
+                    <h3>Item Report By Party</h3>
+                    <a href="/admin/itemReportByParty"><button class="btn btn-success">Report</button></a>
+                </div>
+                <div class="stat-card">
                     <h3>Total Profit</h3>
-                    <p style="color: <%= total_profit[0].total_profit > 0 ? 'green':'red' %>;">SAR <%= total_profit[0].total_profit %></p>
+                    <p style="color: <%= total_profit> 0 ? 'green':'red' %>;">SAR <%= total_profit%></p>
                     <a href="/admin/profitAndLoss"><button class="btn btn-success">Report</button></a>
                 </div>
             </div>

@@ -42,7 +42,8 @@
         <div class="container mt-4">
             <form id="filter-form" class="mb-4">
                 <div class="input-group">
-                    <input type="text" id="partyFilter" class="form-control" placeholder="Search by Party Name" list="partySuggestions"/>
+                    <input type="text" id="partyFilter" class="form-control" placeholder="Search by Party Name" list="partySuggestions" onchange="partySelected(this)"/>
+                    <input type="hidden" id="partyId" class="form-control" placeholder="Search by Party Name"/>
                     <button type="button" class="btn btn-primary" onclick="filterReport()">Filter</button>
                 </div>
                 <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf('<%= currentCompany[0].name %>')">Download Report</button>
@@ -78,15 +79,51 @@
     </datalist>
 
     <script>
-        function filterReport() {
-            let searchValue = document.getElementById("partyFilter").value.toLowerCase();
-            let rows = document.querySelectorAll(".report-row");
+        const allParties = <%-JSON.stringify(allParties)%>
+        
+        function partySelected(element){
+            const partyName = element.value
+            const selectedParty = allParties.find(p=>p.PartyName == partyName)
 
-            rows.forEach(row => {
-                let partyName = row.getAttribute("data-party").toLowerCase();
-                row.style.display = (searchValue === "" || partyName.includes(searchValue)) ? "" : "none";
-            });
+            document.getElementById('partyId').value = selectedParty.id
         }
+        
+       function filterReport() {
+        let searchValue = document.getElementById("partyFilter").value.trim();
+        const partyId = document.getElementById('partyId').value
+
+        if (!searchValue) {
+            alert("Please enter a party name.");
+            return;
+        }
+
+        fetch(`/admin/itemReportByParty?partyId=${partyId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // body: JSON.stringify({ partyName: searchValue })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let tableBody = document.getElementById("report-data");
+                tableBody.innerHTML = ""; // Clear previous results
+
+                data.itemDetails.forEach(item => {
+                    let row = `<tr>
+                        <td>${item.item_name}</td>
+                        <td>${item.sale_qty}</td>
+                        <td>${item.purchase_qty}</td>
+                    </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            } else {
+                alert("No data found for the selected party.");
+            }
+        })
+        .catch(error => console.error('Error fetching item report:', error));
+    }
 
         function downloadPdf(company_name) {
             const wrapper = document.createElement('div');
@@ -110,3 +147,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 </body>
 </html>
+
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const hamburger = document.getElementById('hamburger');
+
+    hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    });
+
+    overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    });
+</script>

@@ -202,7 +202,6 @@ const adminController = {
         sales.date DESC, sales.id DESC
         `, [companyId]);
 
-        console.log(items);
         
 
         res.render("admin/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
@@ -1189,8 +1188,36 @@ if (transactionType === "purchase") {
         const companyId = user.company_id;
         const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [total_profit] = await mysql.query("SELECT (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'sale') - (SELECT SUM(total_amount) FROM sales WHERE transaction_type = 'purchase') AS total_profit;");
-        res.render('admin/reports.ejs', { total_profit,companies,currentCompany,user });
+        const [grossProfit] = await mysql.query(
+            `SELECT 
+                COALESCE(SUM(CASE WHEN transaction_type = 'sale' THEN total_amount ELSE 0 END), 0) AS total_sales,
+                COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS total_purchases
+            FROM sales
+            WHERE company_id = ?`,
+            [companyId]
+        );
+
+        const totalSales = grossProfit[0]?.total_sales || 0;
+        const totalPurchases = grossProfit[0]?.total_purchases || 0;
+        
+        const [openingStock] = await mysql.query(
+            `SELECT COALESCE(SUM(stock * purchase_price), 0) AS opening_stock 
+            FROM items 
+            WHERE company_id = ? AND created_at < ?`,
+            [companyId ,'2000-01-01']
+        );
+        const totalOpeningStock = openingStock[0]?.opening_stock || 0;
+
+        const [closingStock] = await mysql.query(
+            `SELECT COALESCE(SUM(stock * purchase_price), 0) AS closing_stock 
+            FROM items 
+            WHERE company_id = ? AND created_at <= ?`,
+            [companyId ,'2099-12-31']
+        );
+        const totalClosingStock = closingStock[0]?.closing_stock || 0;
+        const grossProfitValue = (Number(totalSales) - totalPurchases) + (Number(totalClosingStock) - Number(totalOpeningStock));  //add stockValue
+        
+        res.render('admin/reports.ejs', { total_profit:grossProfitValue,companies,currentCompany,user });
     },
     viewExpense: async (req, res) => {
         const user = req.session.user;
@@ -1288,9 +1315,6 @@ if (transactionType === "purchase") {
                 ORDER BY 
                     i.item_name;
             `, [company_id]);
-
-            console.log(results);            
-            
 
             res.render('admin/itemProfitAndLoss.ejs', { results,companies,currentCompany,user, })
         } catch (error) {
@@ -1799,8 +1823,6 @@ if (transactionType === "purchase") {
             const email = item.email || null;
             const address = null;
             const image = null;
-
-            console.log(item.tel);
             
     
             const isDuplicate = parties.some(party => party.PartyName == name);
@@ -1872,7 +1894,6 @@ if (transactionType === "purchase") {
         } else {
             payable = payable + Number(totalAmount)
         }
-        console.log(discount);
     
         await mysql.query(
             `INSERT INTO party_payments (party_name, phone, date, description, amount, discount, payment_type, party_id, company_id) 
@@ -1982,8 +2003,6 @@ if (transactionType === "purchase") {
             const companyId = user.company_id;
             const { start, end } = req.query;
 
-            console.log("start",start);
-            console.log("end",end);
             
     
             const [companies] = await mysql.query(`SELECT * FROM companies`);
@@ -2018,8 +2037,8 @@ if (transactionType === "purchase") {
             const [openingStock] = await mysql.query(
                 `SELECT COALESCE(SUM(stock * purchase_price), 0) AS opening_stock 
                 FROM items 
-                WHERE company_id AND created_at < ?`,
-                [start || '2000-01-01']
+                WHERE company_id = ? AND created_at < ?`,
+                [companyId , start || '2000-01-01']
             );
             const totalOpeningStock = openingStock[0]?.opening_stock || 0;
 
@@ -2031,7 +2050,7 @@ if (transactionType === "purchase") {
             );
             const totalClosingStock = closingStock[0]?.closing_stock || 0;
 
-            const grossProfitValue = (Number(totalSales) - totalPurchases) + (Number(totalClosingStock) - Number(totalOpeningStock));  //add stockValue
+            const grossProfitValue = (Number(totalSales) - totalPurchases) + (Number(totalClosingStock) - Number(totalOpeningStock)); 
             const netProfit = (Number(grossProfitValue) + Number(totalOtherIncome) - Number(totalOtherExpenses));
 
             if (start && end) {
@@ -2046,6 +2065,8 @@ if (transactionType === "purchase") {
                     totalClosingStock
                 });
             }
+
+            
 
             res.render('admin/profitAndLoss.ejs', {
                 currentCompany,
@@ -2184,7 +2205,6 @@ if (transactionType === "purchase") {
             GROUP BY sp.item_id, i.item_name
             ORDER BY i.item_name
         `, [companyId]);
-        console.log(items);
         
         
     
@@ -2237,7 +2257,6 @@ if (transactionType === "purchase") {
 
             const [deliveries] = await mysql.query(`SELECT * FROM delivery_details WHERE item_id = ?`,[itemId])
 
-            console.log(pendingSales);
             
                 
         res.render('admin/deliveryDetails.ejs', {
@@ -2385,7 +2404,6 @@ if (transactionType === "purchase") {
             } else {
                 payable += diff;
             }
-            console.log('if - payment_in');
         } else { 
             // Handling Payment Out (FIXED with money_increased & money_decreased)
             if (transaction_type === 'money_increased') {
@@ -2411,7 +2429,6 @@ if (transactionType === "purchase") {
                     payable += Math.abs(diff);
                 }
             }
-            console.log('else - payment_out');
         }
     
         // Update the payment details
@@ -2433,7 +2450,6 @@ if (transactionType === "purchase") {
         const [expense] = await mysql.query('SELECT * FROM expenses WHERE expense_id = ?',[expenseId])
         const [selectedCategory] = await mysql.query('SELECT * FROM expense_category WHERE id = ?',[expense[0].category_id])
         const [categories] = await mysql.query('SELECT * FROM expense_category')
-        console.log(expense);
         res.render('admin/expenseEdit',{companies,currentCompany,user,expense:expense[0],selectedCategory:selectedCategory[0],categories})
         
     },
@@ -2453,7 +2469,6 @@ if (transactionType === "purchase") {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
 
         const incomeId = req.query.incomeId
-        console.log(incomeId);
         
         const [income] = await mysql.query('SELECT * FROM other_income WHERE id = ?',[incomeId])
         const [selectedCategory] = await mysql.query('SELECT * FROM income_category WHERE id = ?',[income[0].category_id])
@@ -2596,7 +2611,6 @@ if (transactionType === "purchase") {
                         });
                         return obj;
                     });
-                console.log(parsedContacts);
 
                 for(const contact of parsedContacts){
                     const name = contact.fullName;
@@ -2700,11 +2714,9 @@ if (transactionType === "purchase") {
             // console.log("currentCashFlow",currentCashFlow);
             let current_amount = currentCashFlow[0].amount
             if(currentCashFlow[0].money_type == 'money_in'){
-                console.log('if works');
                 await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[current_amount-amount,user.company_id])
                 await mysql.query(`UPDATE cash_flows set date = ?,amount =?,description = ? WHERE id = ?`,[date,amount,description,id])
             }else{
-                console.log('else works');
                 await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[current_amount-amount,user.company_id])
                 await mysql.query(`UPDATE cash_flows set date = ?,amount =?,description = ? WHERE id = ?`,[date,amount,description,id])
             }
@@ -2715,7 +2727,66 @@ if (transactionType === "purchase") {
             console.error(error);
             
         }
+    },
+
+    viewItemReportByParty: async (req, res) => {
+        const { partyId } = req.query; // Get partyId from query params (default: all parties)
+        const user = req.session.user;
+        const companyId = user.company_id;
+
+        
+    
+        try {
+            // Fetch company details
+            const [companies] = await mysql.execute(
+                `SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)))`,
+                [user.id]
+            );
+            
+            // Fetch current company details
+            const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
+            
+            // Fetch all parties for filtering dropdown
+            const [allParties] = await mysql.query(`SELECT id, PartyName FROM parties WHERE company_id = ?`, [companyId]);
+    
+            // Query to fetch item details filtered by party
+            const query = `
+                SELECT 
+                    items.id AS item_id,
+                    items.item_name,
+                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
+                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
+                    (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) -
+                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0)) AS closing_qty
+                FROM 
+                    items
+                LEFT JOIN 
+                    sale_products ON items.id = sale_products.item_id
+                LEFT JOIN 
+                    sales ON sale_products.sale_id = sales.id
+                LEFT JOIN 
+                    parties ON sales.customer_name = parties.id
+                WHERE 
+                    items.company_id = ? 
+                    ${partyId ? 'AND parties.id = ?' : ''}  -- Apply filter if partyId is provided
+                GROUP BY 
+                    items.id;
+            `;
+            
+            const params = partyId ? [companyId, partyId] : [companyId];
+            const [itemDetails] = await mysql.query(query, params);
+
+            if(partyId){
+                return res.json({success:true,itemDetails})
+            }
+    
+            res.render('admin/itemReportByParty.ejs', { itemDetails, companies, user, currentCompany, allParties, selectedParty: partyId || 'All' });
+        } catch (error) {
+            console.error("Error fetching item report by party:", error);
+            res.status(500).json({ success: false, error: 'Failed to fetch item reports.' });
+        }
     }
+    
     
 
 

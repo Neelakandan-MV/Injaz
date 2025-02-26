@@ -101,6 +101,7 @@ router.get('/admin/manageCompanies',isLoggedAdmin,adminController.viewManageComp
 router.delete('/admin/deleteCompany',isLoggedAdmin,adminController.deleteCompany)
 router.get('/admin/editAdjustCash',isLoggedAdmin,adminController.viewCashInHandAdjustEdit)
 router.post('/admin/editAdjustCash',isLoggedAdmin,adminController.cashInHandAdjustEdit)
+router.get('/admin/itemReportByParty',isLoggedAdmin,adminController.viewItemReportByParty)
 
   
 
