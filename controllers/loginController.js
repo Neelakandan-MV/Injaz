@@ -32,7 +32,7 @@ exports.login = async (req, res) => {
     }
 
     let company_id = null;
-    if (user.role === 'businessOwner' || user.role === 'admin' || user.role === 'superAdmin') {
+    if (user.role === 'businessOwner' || user.role === 'admin') {
       const [companyRows] = await db.execute(
         `SELECT * FROM companies 
 WHERE JSON_CONTAINS(
@@ -44,6 +44,15 @@ WHERE JSON_CONTAINS(
     );
     
       if (companyRows.length > 0) {
+          company_id = companyRows[0].id;
+        }else{
+          return res.render('auth/login', { error: 'No companies for this User' });
+        }
+    }else if(user.role === 'superAdmin'){
+      const [companyRows] = await db.execute(
+        `SELECT * FROM companies`);
+
+        if (companyRows.length > 0) {
           company_id = companyRows[0].id;
         }
     }

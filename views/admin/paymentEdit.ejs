@@ -94,6 +94,16 @@
                 <label for="number" class="form-label">Amount *</label>
                 <input type="text" id="phone" name="amount" class="form-control"  
                     placeholder="Enter Amount" value="<%= payment.amount %>" required>
+                    <% if(payment.payment_type == 'payment_in'){ %>
+                    <span>Actual amount received : <%= payment.amount -Number(payment.discount) %></span>
+                    <% }else{ %>
+                        <span>Actual amount paid : <%= payment.amount -Number(payment.discount) %></span>
+                        <% } %>
+            </div>
+            <div class="col-md-4">
+                <label for="number" class="form-label">Discount</label>
+                <input type="text" id="discount" name="discount" class="form-control"  
+                    placeholder="Enter Discount Amount" value="<%= payment.discount %>" disabled>
             </div>
         </div>
         <div class="row mb-3">

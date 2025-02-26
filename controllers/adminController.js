@@ -198,6 +198,8 @@ const adminController = {
                 AND sales.transaction_type = 'sale'
             GROUP BY 
                 sales.id, parties.PartyName
+            ORDER BY
+        sales.date DESC, sales.id DESC
         `, [companyId]);
 
         console.log(items);
@@ -973,6 +975,7 @@ if (transactionType === "purchase") {
 
         // Check if the company already exists
         const companyExist = await mysql.query(`SELECT * FROM companies WHERE name = ?`, [name]);
+        // const [currentUser] = await mysql.query(`SELECT * FROM users WHERE id = ?`,user.id)
 
         if (companyExist[0].length === 0) {
             // Insert the new company into the database
@@ -1849,30 +1852,32 @@ if (transactionType === "purchase") {
 
     addPaymentIn: async (req, res) => {
         const user = req.session.user;
-        const { partyName, partyId, date, phone, amount, desc } = req.body;
+        const { partyName, partyId, date, phone, amount, desc, discount } = req.body;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`, [partyId]);
         // Convert to Number explicitly
         let receivable = Number(party[0].receivable) || 0;
         let payable = Number(party[0].payable) || 0;
+        let totalAmount = Number(amount)+Number(discount)
     
         // Use explicit comparisons instead of truthy/falsy checks
         if (receivable > 0) {
-            if (Number(amount) <= receivable) {
-                receivable -= Number(amount)
+            if (Number(totalAmount) <= receivable) {
+                receivable -= Number(totalAmount)
             } else {
-                let diff = Number(amount) - receivable;
+                let diff = Number(totalAmount) - receivable;
                 receivable = 0;
                 payable = payable + diff;
             }
         } else {
-            payable = payable + Number(amount)
+            payable = payable + Number(totalAmount)
         }
+        console.log(discount);
     
         await mysql.query(
-            `INSERT INTO party_payments (party_name, phone, date, description, amount, payment_type, party_id, company_id) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-             [partyName, phone, date, desc, amount, 'payment_in', partyId, user.company_id]
+            `INSERT INTO party_payments (party_name, phone, date, description, amount, discount, payment_type, party_id, company_id) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             [partyName, phone, date, desc, totalAmount, discount, 'payment_in', partyId, user.company_id]
         );
         await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`, [receivable, payable, partyId]);
         await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`, [amount, user.company_id]);
@@ -1896,7 +1901,7 @@ if (transactionType === "purchase") {
 
     addPaymentOut: async (req, res) => {
         const user = req.session.user;
-        const { partyName, partyId, date, phone, amount, desc } = req.body;
+        const { partyName, partyId, date, phone, amount, desc, discount} = req.body;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
     
         // Fetch the current party details
@@ -1905,7 +1910,7 @@ if (transactionType === "purchase") {
         // Ensure receivable and payable are numbers, defaulting to 0 if null
         let receivable = Number(party[0].receivable) || 0;
         let payable = Number(party[0].payable) || 0;
-        let paymentAmount = Number(amount);
+        let paymentAmount = Number(amount)+Number(discount);
     
         if (payable > 0) {
             if (paymentAmount <= payable) {
@@ -1921,9 +1926,9 @@ if (transactionType === "purchase") {
     
         // Insert into party_payments
         await mysql.query(
-            `INSERT INTO party_payments (party_name, phone, date, description, amount, payment_type, party_id, company_id) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [partyName, phone, date, desc, amount, 'payment_out', partyId, user.company_id]
+            `INSERT INTO party_payments (party_name, phone, date, description, amount, discount, payment_type, party_id, company_id) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [partyName, phone, date, desc, paymentAmount, discount, 'payment_out', partyId, user.company_id]
         );
     
         // Update party's receivable and payable amounts
@@ -2343,7 +2348,7 @@ if (transactionType === "purchase") {
     },
 
     paymentEdit: async (req, res) => {
-        const { paymentId, amount, desc, payment_type, partyId } = req.body;
+        const { paymentId, amount, discount, desc, payment_type, partyId } = req.body;
     
         // Fetch current payment details
         const [current_payment] = await mysql.query('SELECT * FROM party_payments WHERE id = ?', [paymentId]);
@@ -2631,6 +2636,10 @@ if (transactionType === "purchase") {
             if (!selectedCompany) {
                 return res.status(404).json({ success: false, message: "Company not found" });
             }
+
+            if(selectedCompany[0].id == user.company_id){
+                return res.status(400).json({ success: false, message: "Cannot Delete Selected Company! Try after switching." });
+            }
     
             // Check if any related records exist in dependent tables
             const tablesToCheck = [
@@ -2655,7 +2664,7 @@ if (transactionType === "purchase") {
                     });
                 }
             }
-    
+            
             // No related records found, proceed with deletion
             await mysql.query(`DELETE FROM companies WHERE id = ?`, [companyId]);
     

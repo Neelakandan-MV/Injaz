@@ -106,6 +106,8 @@ const businessOwnerController = {
                 AND sales.transaction_type = 'sale'
             GROUP BY 
                 sales.id, parties.PartyName
+            ORDER BY
+        sales.date DESC, sales.id DESC
         `, [companyId]);
 
         res.render("businessOwner/sales.ejs", { title: "Sales", items, currentCompany, companies, user });
