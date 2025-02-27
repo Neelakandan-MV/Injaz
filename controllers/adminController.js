@@ -1259,7 +1259,25 @@ if(Number(current_received) != Number(recieved)){
             [companyId ,'2099-12-31']
         );
         const totalClosingStock = closingStock[0]?.closing_stock || 0;
-        const grossProfitValue = (Number(totalSales) - totalPurchases) + (Number(totalClosingStock) - Number(totalOpeningStock));  //add stockValue
+
+        // ===== Added party_payments logic =====
+        const [partyPayments] = await mysql.query(
+            `SELECT 
+                 COALESCE(SUM(CASE WHEN payment_type = 'payment_out' THEN discount ELSE 0 END), 0) AS total_payment_out_discount,
+                 COALESCE(SUM(CASE WHEN payment_type = 'payment_in' THEN discount ELSE 0 END), 0) AS total_payment_in_discount
+             FROM party_payments
+             WHERE company_id = ? AND date BETWEEN ? AND ?`,
+            [companyId,'2000-01-01','2099-12-31']
+        );
+        const totalPaymentOutDiscount = partyPayments[0]?.total_payment_out_discount || 0;
+        const totalPaymentInDiscount = partyPayments[0]?.total_payment_in_discount || 0;
+
+        const grossProfitValue = 
+                (Number(totalSales) - totalPurchases) +
+                (Number(totalClosingStock) - Number(totalOpeningStock)) +
+                (Number(totalPaymentOutDiscount) - Number(totalPaymentInDiscount));
+
+        
         
         res.render('admin/reports.ejs', { total_profit:grossProfitValue,companies,currentCompany,user });
     },
@@ -2048,61 +2066,72 @@ if(Number(current_received) != Number(recieved)){
             const user = req.session.user;
             const companyId = user.company_id;
             const { start, end } = req.query;
-
             
-    
             const [companies] = await mysql.query(`SELECT * FROM companies`);
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
-    
+            
             // Calculate Gross Profit (Sales - Purchases)
             const [grossProfit] = await mysql.query(
                 `SELECT 
                     COALESCE(SUM(CASE WHEN transaction_type = 'sale' THEN total_amount ELSE 0 END), 0) AS total_sales,
                     COALESCE(SUM(CASE WHEN transaction_type = 'purchase' THEN total_amount ELSE 0 END), 0) AS total_purchases
                 FROM sales
-                WHERE company_id = ? AND date BETWEEN ? AND ? `,
-                [companyId ,start || '2000-01-01', end || '2099-12-31']
-            );
-    
-            const totalSales = grossProfit[0]?.total_sales || 0;
-            const totalPurchases = grossProfit[0]?.total_purchases || 0;
-    
-            const [otherIncome] = await mysql.query(
-                `SELECT COALESCE(SUM(amount), 0) AS total_income FROM other_income WHERE company_id = ? AND date BETWEEN ? AND ?`,
-                [companyId ,start || '2000-01-01', end || '2099-12-31']
+                WHERE company_id = ? AND date BETWEEN ? AND ?`,
+                [companyId, start || '2000-01-01', end || '2099-12-31']
             );
             
+            const totalSales = grossProfit[0]?.total_sales || 0;
+            const totalPurchases = grossProfit[0]?.total_purchases || 0;
+            
+            const [otherIncome] = await mysql.query(
+                `SELECT COALESCE(SUM(amount), 0) AS total_income FROM other_income WHERE company_id = ? AND date BETWEEN ? AND ?`,
+                [companyId, start || '2000-01-01', end || '2099-12-31']
+            );
             const totalOtherIncome = otherIncome[0]?.total_income || 0;
-    
+            
             const [otherExpenses] = await mysql.query(
                 `SELECT COALESCE(SUM(amount), 0) AS total_expenses FROM expenses WHERE company_id = ? AND date BETWEEN ? AND ?`,
-                [companyId ,start || '2000-01-01', end || '2099-12-31']
+                [companyId, start || '2000-01-01', end || '2099-12-31']
             );
             const totalOtherExpenses = otherExpenses[0]?.total_expenses || 0;
-    
+            
             const [openingStock] = await mysql.query(
                 `SELECT COALESCE(SUM(stock * purchase_price), 0) AS opening_stock 
                 FROM items 
                 WHERE company_id = ? AND created_at < ?`,
-                [companyId , start || '2000-01-01']
+                [companyId, start || '2000-01-01']
             );
             const totalOpeningStock = openingStock[0]?.opening_stock || 0;
-
+            
             const [closingStock] = await mysql.query(
                 `SELECT COALESCE(SUM(stock * purchase_price), 0) AS closing_stock 
                 FROM items 
                 WHERE company_id = ? AND created_at <= ?`,
-                [companyId ,end || '2099-12-31']
+                [companyId, end || '2099-12-31']
             );
             const totalClosingStock = closingStock[0]?.closing_stock || 0;
-
-            const grossProfitValue = (Number(totalSales) - totalPurchases) + (Number(totalClosingStock) - Number(totalOpeningStock)); 
+            
+            // ===== Added party_payments logic =====
+            const [partyPayments] = await mysql.query(
+                `SELECT 
+                     COALESCE(SUM(CASE WHEN payment_type = 'payment_out' THEN discount ELSE 0 END), 0) AS total_payment_out_discount,
+                     COALESCE(SUM(CASE WHEN payment_type = 'payment_in' THEN discount ELSE 0 END), 0) AS total_payment_in_discount
+                 FROM party_payments
+                 WHERE company_id = ? AND date BETWEEN ? AND ?`,
+                [companyId, start || '2000-01-01', end || '2099-12-31']
+            );
+            const totalPaymentOutDiscount = partyPayments[0]?.total_payment_out_discount || 0;
+            const totalPaymentInDiscount = partyPayments[0]?.total_payment_in_discount || 0;
+            // ======================================
+            
+            // ===== Adjusted gross profit calculation to incorporate party_payments discount effect =====
+            const grossProfitValue = 
+                (Number(totalSales) - totalPurchases) +
+                (Number(totalClosingStock) - Number(totalOpeningStock)) +
+                (Number(totalPaymentOutDiscount) - Number(totalPaymentInDiscount));
+            // ============================================================================================
+            
             const netProfit = (Number(grossProfitValue) + Number(totalOtherIncome) - Number(totalOtherExpenses));
-
-            console.log(totalSales);
-            console.log(totalPurchases);
-            console.log(totalClosingStock);
-            console.log(totalOpeningStock);
             
 
             if (start && end) {
