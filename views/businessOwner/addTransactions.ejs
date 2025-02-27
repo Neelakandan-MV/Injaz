@@ -569,6 +569,7 @@ window.onload = setDefaultDate;
 
 
 <script>
+    const currentCompany = <%- JSON.stringify(currentCompany[0].name) %>
    function downloadPdf() {
 
     const partyName = document.getElementById('partyName').value
@@ -591,7 +592,7 @@ window.onload = setDefaultDate;
 
     // Company Name
     const companyName = document.createElement('h2');
-    companyName.textContent = 'Injaz';
+    companyName.textContent = `${currentCompany}`;
     companyName.style.textAlign = 'center';
     companyName.style.marginBottom = '5px';
     wrapper.appendChild(companyName);

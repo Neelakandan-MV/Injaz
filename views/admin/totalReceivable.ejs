@@ -98,6 +98,13 @@
         .transaction-table td {
             color: #495057;
         }
+
+        #partyName{
+            font-size: 17px;
+        }
+        #amount{
+            font-size: 17px;
+        }
     </style>
 </head>
 
@@ -120,8 +127,8 @@
                                 <div class="card shadow-sm border-0">
                                     <div class="card-body text-center">
                                         <div class="d-flex">
-                                            <h5 class="receivableName"><%= party.PartyName %> :</h5>
-                                            <h5 class="fw-bold text-success"> SAR <%= party.receivable %></h5>
+                                            <h5 class="receivableName" id="partyName"><%= party.PartyName %> :</h5>
+                                            <h5 class="fw-bold text-success" id="amount"> SAR <%= party.receivable %></h5>
                                         </div>
                                     </div>
                                 </div>

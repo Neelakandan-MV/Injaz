@@ -1959,7 +1959,7 @@ if(Number(current_received) != Number(recieved)){
             payable = payable + Number(totalAmount)
         }
     
-        await mysql.query(
+        const [data] = await mysql.query(
             `INSERT INTO party_payments (party_name, phone, date, description, amount, discount, payment_type, party_id, company_id) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
              [partyName, phone, date, desc, amount, discount, 'payment_in', partyId, user.company_id]
@@ -1967,9 +1967,9 @@ if(Number(current_received) != Number(recieved)){
         await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`, [receivable, payable, partyId]);
         await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`, [amount, user.company_id]);
         await mysql.query(
-            `INSERT INTO cash_flows (name, date, tnx_type, amount, money_type, company_id) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-             [partyName, created_at, 'Payment_In', amount, 'money_in', user.company_id]
+            `INSERT INTO cash_flows (name, date, tnx_type, amount, money_type, payment_id, company_id) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+             [partyName, created_at, 'Payment_In', amount, 'money_in', data.insertId, user.company_id]
         );
         res.redirect('/admin/viewParties');
     },
@@ -2010,7 +2010,7 @@ if(Number(current_received) != Number(recieved)){
         }
     
         // Insert into party_payments
-        await mysql.query(
+        const [data] = await mysql.query(
             `INSERT INTO party_payments (party_name, phone, date, description, amount, discount, payment_type, party_id, company_id) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [partyName, phone, date, desc, amount, discount, 'payment_out', partyId, user.company_id]
@@ -2024,9 +2024,9 @@ if(Number(current_received) != Number(recieved)){
     
         // Insert into cash_flows
         await mysql.query(
-            `INSERT INTO cash_flows (name, date, tnx_type, amount, money_type, company_id) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [partyName, created_at, 'Payment_Out', amount, 'money_out', user.company_id]
+            `INSERT INTO cash_flows (name, date, tnx_type, amount, money_type, payment_id, company_id) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [partyName, created_at, 'Payment_Out', amount, 'money_out', data.insertId, user.company_id]
         );
     
         res.redirect('/admin/viewParties');
@@ -2516,6 +2516,8 @@ if(Number(current_received) != Number(recieved)){
     
         // Update the payment details
         await mysql.query('UPDATE party_payments SET description = ?, amount = ? WHERE id = ?', [desc, amount, paymentId]);
+
+        await mysql.query(`UPDATE cash_flows SET amount = ? WHERE payment_id = ?`,[amount,paymentId])
     
         // Update the party balance
         await mysql.query('UPDATE parties SET receivable = ?, payable = ? WHERE id = ?', [receivable, payable, partyId]);
