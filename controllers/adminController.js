@@ -2451,21 +2451,21 @@ if(Number(current_received) != Number(recieved)){
 
     paymentEdit: async (req, res) => {
         const { paymentId, amount, discount, desc, payment_type, partyId } = req.body;
-    
+
         // Fetch current payment details
         const [current_payment] = await mysql.query('SELECT * FROM party_payments WHERE id = ?', [paymentId]);
-    
+
         // Fetch current party details
         const [current_party] = await mysql.query('SELECT * FROM parties WHERE id = ?', [partyId]);
-    
+
         let payable = Number(current_party[0].payable) || 0;
         let receivable = Number(current_party[0].receivable) || 0;
-    
+
         let current_amount = Number(current_payment[0].amount);
         let updated_amount = Number(amount);
-    
+
         let diff = updated_amount - current_amount; // Difference between new and old amount
-    
+
         let transaction_type = '';
         if (diff > 0) {
             transaction_type = 'money_increased';
@@ -2474,19 +2474,23 @@ if(Number(current_received) != Number(recieved)){
         } else {
             transaction_type = 'money_unchanged';
         }
-    
+
         if (payment_type === 'payment_in') {
-            // Handling Payment In
-            if (receivable > 0) { 
-                if (receivable >= Math.abs(diff)) { 
+            // ===== Modified payment_in logic =====
+            if (diff > 0) {
+                // When the new payment is higher, reduce receivable if possible
+                if (receivable >= diff) {
                     receivable -= diff;
                 } else {
-                    payable += Math.abs(diff) - receivable;
+                    let remaining = diff - receivable;
                     receivable = 0;
+                    payable += remaining;
                 }
-            } else {
-                payable += diff;
+            } else if (diff < 0) {
+                // When the new payment is lower (money decreased), add the difference to receivable
+                receivable += Math.abs(diff);
             }
+            // ======================================
         } else { 
             // Handling Payment Out (FIXED with money_increased & money_decreased)
             if (transaction_type === 'money_increased') {
@@ -2513,16 +2517,17 @@ if(Number(current_received) != Number(recieved)){
                 }
             }
         }
-    
+
         // Update the payment details
         await mysql.query('UPDATE party_payments SET description = ?, amount = ? WHERE id = ?', [desc, amount, paymentId]);
 
-        await mysql.query(`UPDATE cash_flows SET amount = ? WHERE payment_id = ?`,[amount,paymentId])
-    
+        await mysql.query(`UPDATE cash_flows SET amount = ? WHERE payment_id = ?`, [amount, paymentId]);
+
         // Update the party balance
         await mysql.query('UPDATE parties SET receivable = ?, payable = ? WHERE id = ?', [receivable, payable, partyId]);
-    
+
         res.redirect('/admin/viewParties');
+
     },
 
     viewExpenseEdit:async(req,res)=>{
