@@ -47,6 +47,38 @@ const calculateClosingCash = async (openingCash, date, companyId) => {
 };
 
 
+async function resetStockOnTransactionDeletion(transactionId, transactionType,user) {
+    
+    // Fetch products related to the transaction
+    const [products] = await mysql.query(
+      "SELECT * FROM sale_products WHERE sale_id = ?",
+      [transactionId]
+    );
+  
+    // Loop through each product and update the items stock
+    for (const product of products) {
+      // For a sale, add back the sold quantity; for a purchase, subtract the purchased quantity.
+      const adjustment = product.quantity;
+      if (transactionType === 'sale') {
+        // If a sale is being deleted, add back the quantity to stock
+        await mysql.query(
+          "UPDATE items SET stock = stock + ? WHERE id = ?",
+          [adjustment, product.item_id]
+        );
+        await mysql.query(`INSERT INTO stock_adjustments (item_id,adjustment_type,adjustment_quantity, total_amount,reason,company_id) VALUES (?,?,?,?,?,?)`,[product.item_id,'add',adjustment,'0','due to deletion',user.company_id])
+      } else if (transactionType === 'purchase') {
+        // If a purchase is being deleted, remove the quantity from stock
+        await mysql.query(
+          "UPDATE items SET stock = stock - ? WHERE id = ?",
+          [adjustment, product.item_id]
+        );
+        await mysql.query(`INSERT INTO stock_adjustments (item_id,adjustment_type,adjustment_quantity, total_amount,reason,company_id) VALUES (?,?,?,?,?,?)`,[product.item_id,'reduce',adjustment,'0','due to deletion',user.company_id])
+      }
+    }
+  }
+  
+
+
 
 
 const adminController = {
@@ -209,6 +241,7 @@ const adminController = {
 
     transactionDelete: async (req, res) => {
 
+        const user = req.session.user
         const transaction_id = req.query.id
         const [transaction] = await mysql.query(`SELECT * FROM sales WHERE id = ?`,[transaction_id])
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[transaction[0].customer_name])
@@ -242,6 +275,14 @@ const adminController = {
             }
         }
         await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`,[receivable,payable,transaction[0].customer_name])
+
+        await resetStockOnTransactionDeletion(transaction_id,transaction[0].transaction_type,user)
+        
+        if(transaction[0].transaction_type == "sale"){
+            await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id=?`,[transaction[0].received_amount,user.company_id])
+        }else{
+            await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id=?`,[transaction[0].received_amount,user.company_id])
+        }
 
         await mysql.query(`DELETE FROM cash_flows WHERE tnx_id = ?`, [transaction_id]);
         await mysql.query(`DELETE FROM delivery_details WHERE sale_id = ?`,[transaction_id])
@@ -368,7 +409,7 @@ const adminController = {
                         receivable = 0;
                     }
                 } else {
-                    if(balance >= payable){
+                    if(balance <= payable){
                         receivable += (balance - payable)
                         payable = 0
                     }else{
@@ -543,12 +584,14 @@ if (products && products.length) {
   
 // 
 
-let current_received = transactionDetails[0].recieved
+let current_received = transactionDetails[0].received_amount
 
-if (transactionType === "purchase") {
-    await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[Number(recieved ||0) - Number(current_received||0),user.company_id]);
-}else{
-    await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[Number(recieved ||0) - Number(current_received||0),user.company_id]);
+if(Number(current_received) != Number(recieved)){
+    if (transactionType === "purchase") {
+        await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id = ?`,[Number(recieved ||0) - Number(current_received||0),user.company_id]);
+    }else{
+        await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`,[Number(recieved ||0) - Number(current_received||0),user.company_id]);
+    }
 }
         
         if (transactionType === "purchase") {
@@ -562,6 +605,7 @@ if (transactionType === "purchase") {
         const item_id = sale_item[0]?.item_id
         await mysql.query(`UPDATE items set stock = stock - ? WHERE id=?`,[quantity,item_id])
         if(id){
+        await mysql.query(`DELETE FROM delivery_details WHERE sale_product_id = ?`,[id])
         await mysql.query(`DELETE FROM sale_products WHERE id = ?`, [id]);
         res.json({success:'Removed From Transaction History'})
         }
@@ -1315,6 +1359,8 @@ if (transactionType === "purchase") {
                 ORDER BY 
                     i.item_name;
             `, [company_id]);
+            console.log(results);
+            
 
             res.render('admin/itemProfitAndLoss.ejs', { results,companies,currentCompany,user, })
         } catch (error) {
@@ -2053,6 +2099,12 @@ if (transactionType === "purchase") {
             const grossProfitValue = (Number(totalSales) - totalPurchases) + (Number(totalClosingStock) - Number(totalOpeningStock)); 
             const netProfit = (Number(grossProfitValue) + Number(totalOtherIncome) - Number(totalOtherExpenses));
 
+            console.log(totalSales);
+            console.log(totalPurchases);
+            console.log(totalClosingStock);
+            console.log(totalOpeningStock);
+            
+
             if (start && end) {
                 return res.json({
                     grossProfit: grossProfitValue,
@@ -2207,6 +2259,7 @@ if (transactionType === "purchase") {
         `, [companyId]);
         
         
+        
     
         // console.log(JSON.stringify(formattedData, null, 2));
         res.render('admin/totalDelivered.ejs',{companies,currentCompany,items,user})
@@ -2257,11 +2310,12 @@ if (transactionType === "purchase") {
 
             const [deliveries] = await mysql.query(`SELECT * FROM delivery_details WHERE item_id = ?`,[itemId])
 
-            
+            let total_quantity = 0
+            pendingSales.forEach(item=>total_quantity+=Number(item.total_quantity))            
                 
         res.render('admin/deliveryDetails.ejs', {
             item_name: item[0]?.item_name || "Unknown",
-            pendingSales: pendingSales, companies,currentCompany,user
+            pendingSales: pendingSales, companies,currentCompany,user,total_quantity
         });
     } catch (err) {
         console.error(err);
@@ -2506,7 +2560,7 @@ if (transactionType === "purchase") {
 
 
     viewItemDetail: async (req, res) => {
-        const { itemId } = req.query;
+        const { item_name } = req.query;
         const user = req.session.user;
         const companyId = user.company_id;
         const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
@@ -2515,38 +2569,31 @@ if (transactionType === "purchase") {
 
 
         try {
-            const [itemDetails] = await mysql.query(`
-            SELECT 
-                items.id AS item_id,
-                items.item_name,
-                items.item_hsn,
-                items.category_id,
-                -- Sales quantity: sum of quantities for transactions where transaction_type is 'sale'
-                COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
-                -- Purchase quantity: sum of quantities for transactions where transaction_type is 'purchase'
-                COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
-                -- Adjustments quantity (if stock_adjustments table is available)
-                COALESCE(SUM(stock_adjustments.adjustment_quantity), 0) AS adjust_qty,
-                -- Closing quantity: purchase_qty + adjust_qty - sale_qty
-                (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) 
-                + COALESCE(SUM(stock_adjustments.adjustment_quantity), 0) 
-                - COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0)) AS closing_qty
-            FROM 
-                items
-            LEFT JOIN 
-                sale_products ON items.id = sale_products.item_id
-            LEFT JOIN 
-                sales ON sale_products.sale_id = sales.id
-            LEFT JOIN 
-                stock_adjustments ON items.id = stock_adjustments.item_id  -- Only if adjustments are tracked in a separate table
-            WHERE 
-                items.item_name = ? AND
-                items.user_id = ? AND
-                items.company_id = ?
-            GROUP BY 
-                items.id;
-        `, [itemId, user.id, companyId]);
-
+            const query = `
+                SELECT 
+                    items.id AS item_id,
+                    items.item_name,
+                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
+                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
+                    (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) -
+                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0)) AS closing_qty
+                FROM 
+                    items
+                LEFT JOIN 
+                    sale_products ON items.id = sale_products.item_id
+                LEFT JOIN 
+                    sales ON sale_products.sale_id = sales.id
+                LEFT JOIN 
+                    parties ON sales.customer_name = parties.id
+                WHERE 
+                    items.company_id = ? 
+                    ${item_name ? 'AND items.item_name = ?' : ''}  -- Apply filter if itemId is provided
+                GROUP BY 
+                    items.id;
+            `;
+            
+            const params = item_name ? [companyId, item_name] : [companyId];
+            const [itemDetails] = await mysql.query(query, params);
 
             res.render('admin/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany, allItems })
 

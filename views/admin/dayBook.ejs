@@ -118,6 +118,7 @@
                     </thead>
                     <tbody>
                         <% items.forEach(item=> { %>
+                            <% if(item.total_amount > 0){ %>
                             <tr>
                                 <td><%= formatDateToDDMMYYYY(item.date) %>.</td>
                                 <td><%= item.transaction_type %></td>
@@ -129,6 +130,7 @@
                                 <td class="text-danger"><%= item.total_amount %></td>
                                 <% } %>
                             </tr>
+                            <% } %>
                             <% }); %>
                     </tbody>
                 </table>
