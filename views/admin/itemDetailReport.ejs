@@ -70,9 +70,9 @@
                     <tr>
                         <th>Item Name</th>
                         <th>Sale Quantity</th>
-                        <th>Purchase Quantity</th>
+                        <th>Purchase Quantity (free)</th>
                         <!-- <th>Adjustment Quantity</th> -->
-                        <th>Closing Quantity</th>
+                        <th>Closing Quantity (free)</th>
                     </tr>
                 </thead>
                 <tbody id="report-data">
@@ -82,10 +82,10 @@
                                 <%= item.item_name %>
                             </td>
                             <td>
-                                <%= item.sale_qty %>
+                                <%= item.sale_qty %>+(<%= item.sale_free_qty %>)
                             </td>
                             <td>
-                                <%= item.purchase_qty %>
+                                <%= item.purchase_qty %>+(<%= item.purchase_free_qty %>)
                             </td>
                             <!-- <td>
                                 <%= item.adjust_qty %>

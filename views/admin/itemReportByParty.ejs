@@ -54,16 +54,16 @@
                     <thead>
                         <tr>
                             <th>Item Name</th>
-                            <th>Sale Quantity</th>
-                            <th>Purchase Quantity</th>
+                            <th>Sale Quantity (free)</th>
+                            <th>Purchase Quantity (free)</th>
                         </tr>
                     </thead>
                     <tbody id="report-data">
                         <% itemDetails.forEach(item => { %>
                             <tr class="report-row" data-party="<%= item.party_name %>">
                                 <td><%= item.item_name %></td>
-                                <td><%= item.sale_qty %></td>
-                                <td><%= item.purchase_qty %></td>
+                                <td><%= item.sale_qty %>+(<%= item.sale_free_qty %>)</td>
+                                <td><%= item.purchase_qty %>+(<%= item.purchase_free_qty %>)</td>
                             </tr>
                         <% }) %>
                     </tbody>

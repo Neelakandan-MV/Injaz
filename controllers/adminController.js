@@ -979,7 +979,7 @@ if(Number(current_received) != Number(recieved)){
                   }
                   
             }
-            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit, serial_number) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.serial_number||0])]);
+            await mysql.query("INSERT INTO sale_products (sale_id, item_id, quantity, delivered_quantity, price, discount, tax_rate, total,company_id, product_name, unit, serial_number,free_quantity) VALUES ?", [products.map(product => [sales[0].insertId, product.productId, product.quantity, product.deliveredQuantity, product.pricePerUnit, product.discount, product.tax, product.productTotal, user.company_id, product.item, product.unit,product.serial_number||0,product.freeQuantity||0])]);
             
             if(transactionType == 'sale'){
             const [sale_products] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id = ?`,[sales[0].insertId])
@@ -1944,7 +1944,7 @@ if(Number(current_received) != Number(recieved)){
         await mysql.query(
             `INSERT INTO party_payments (party_name, phone, date, description, amount, discount, payment_type, party_id, company_id) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-             [partyName, phone, date, desc, totalAmount, discount, 'payment_in', partyId, user.company_id]
+             [partyName, phone, date, desc, amount, discount, 'payment_in', partyId, user.company_id]
         );
         await mysql.query(`UPDATE parties SET receivable = ?, payable = ? WHERE id = ?`, [receivable, payable, partyId]);
         await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id = ?`, [amount, user.company_id]);
@@ -1995,7 +1995,7 @@ if(Number(current_received) != Number(recieved)){
         await mysql.query(
             `INSERT INTO party_payments (party_name, phone, date, description, amount, discount, payment_type, party_id, company_id) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [partyName, phone, date, desc, paymentAmount, discount, 'payment_out', partyId, user.company_id]
+            [partyName, phone, date, desc, amount, discount, 'payment_out', partyId, user.company_id]
         );
     
         // Update party's receivable and payable amounts
@@ -2570,30 +2570,37 @@ if(Number(current_received) != Number(recieved)){
 
         try {
             const query = `
-                SELECT 
-                    items.id AS item_id,
-                    items.item_name,
-                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
-                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
-                    (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) -
-                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0)) AS closing_qty
-                FROM 
-                    items
-                LEFT JOIN 
-                    sale_products ON items.id = sale_products.item_id
-                LEFT JOIN 
-                    sales ON sale_products.sale_id = sales.id
-                LEFT JOIN 
-                    parties ON sales.customer_name = parties.id
-                WHERE 
-                    items.company_id = ? 
-                    ${item_name ? 'AND items.item_name = ?' : ''}  -- Apply filter if itemId is provided
-                GROUP BY 
-                    items.id;
-            `;
+                    SELECT 
+                        items.id AS item_id,
+                        items.item_name,
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.free_quantity ELSE 0 END), 0) AS sale_free_qty,
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.free_quantity ELSE 0 END), 0) AS purchase_free_qty,
+                        (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) +
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.free_quantity ELSE 0 END), 0) -
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) -
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.free_quantity ELSE 0 END), 0)) AS closing_qty
+                    FROM 
+                        items
+                    LEFT JOIN 
+                        sale_products ON items.id = sale_products.item_id
+                    LEFT JOIN 
+                        sales ON sale_products.sale_id = sales.id
+                    LEFT JOIN 
+                        parties ON sales.customer_name = parties.id
+                    WHERE 
+                        items.company_id = ? 
+                        ${item_name ? 'AND items.item_name = ?' : ''}  
+                    GROUP BY 
+                        items.id;
+                `;
+
             
             const params = item_name ? [companyId, item_name] : [companyId];
             const [itemDetails] = await mysql.query(query, params);
+            console.log(itemDetails);
+            
 
             res.render('admin/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany, allItems })
 
@@ -2798,30 +2805,37 @@ if(Number(current_received) != Number(recieved)){
     
             // Query to fetch item details filtered by party
             const query = `
-                SELECT 
-                    items.id AS item_id,
-                    items.item_name,
-                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
-                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
-                    (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) -
-                    COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0)) AS closing_qty
-                FROM 
-                    items
-                LEFT JOIN 
-                    sale_products ON items.id = sale_products.item_id
-                LEFT JOIN 
-                    sales ON sale_products.sale_id = sales.id
-                LEFT JOIN 
-                    parties ON sales.customer_name = parties.id
-                WHERE 
-                    items.company_id = ? 
-                    ${partyId ? 'AND parties.id = ?' : ''}  -- Apply filter if partyId is provided
-                GROUP BY 
-                    items.id;
-            `;
+            SELECT 
+                items.id AS item_id,
+                items.item_name,
+                COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
+                COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
+                COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.free_quantity ELSE 0 END), 0) AS sale_free_qty,
+                COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.free_quantity ELSE 0 END), 0) AS purchase_free_qty,
+                (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) +
+                 COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.free_quantity ELSE 0 END), 0) -
+                 COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) -
+                 COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.free_quantity ELSE 0 END), 0)) AS closing_qty
+            FROM 
+                items
+            LEFT JOIN 
+                sale_products ON items.id = sale_products.item_id
+            LEFT JOIN 
+                sales ON sale_products.sale_id = sales.id
+            LEFT JOIN 
+                parties ON sales.customer_name = parties.id
+            WHERE 
+                items.company_id = ? 
+                ${partyId ? 'AND parties.id = ?' : ''}  
+            GROUP BY 
+                items.id;
+        `;
+        
             
             const params = partyId ? [companyId, partyId] : [companyId];
             const [itemDetails] = await mysql.query(query, params);
+            console.log(itemDetails);
+            
 
             if(partyId){
                 return res.json({success:true,itemDetails})
