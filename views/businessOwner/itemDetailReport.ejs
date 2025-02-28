@@ -57,10 +57,10 @@
     <div class="container mt-4">
         <form id="filter-form" class="mb-4">
             <div class="input-group">
-                <input type="text" name="itemId" class="form-control" placeholder="Enter Item Name" list="itemSuggestions"/>
+                <input type="text" name="item_name" class="form-control" placeholder="Enter Item Name" list="itemSuggestions"/>
                 <button type="submit" class="btn btn-primary">Get Report</button>
             </div>
-            <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf()">Download Report</button>
+            <button type="button" class="btn btn-warning mt-3" onclick="downloadPdf('<%= currentCompany[0].name %>')">Download Report</button>
         </form>
 
         <!-- Bootstrap table with responsiveness -->
@@ -70,9 +70,9 @@
                     <tr>
                         <th>Item Name</th>
                         <th>Sale Quantity</th>
-                        <th>Purchase Quantity</th>
+                        <th>Purchase Quantity (free)</th>
                         <!-- <th>Adjustment Quantity</th> -->
-                        <th>Closing Quantity</th>
+                        <th>Closing Quantity (free)</th>
                     </tr>
                 </thead>
                 <tbody id="report-data">
@@ -82,10 +82,10 @@
                                 <%= item.item_name %>
                             </td>
                             <td>
-                                <%= item.sale_qty %>
+                                <%= item.sale_qty %>+(<%= item.sale_free_qty %>)
                             </td>
                             <td>
-                                <%= item.purchase_qty %>
+                                <%= item.purchase_qty %>+(<%= item.purchase_free_qty %>)
                             </td>
                             <!-- <td>
                                 <%= item.adjust_qty %>
@@ -116,13 +116,13 @@
     crossorigin="anonymous"></script>
 
        <script>
-        function downloadPdf() {
+        function downloadPdf(company_name) {
 
             const wrapper = document.createElement('div');
 
 
             const companyName = document.createElement('h2');
-            companyName.textContent = 'Injaz';
+            companyName.textContent = `${company_name}`;
             companyName.style.textAlign = 'center'; // Optional styling
             wrapper.appendChild(companyName);
 

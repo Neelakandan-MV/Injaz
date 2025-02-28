@@ -1459,7 +1459,7 @@ if(Number(current_received) != Number(recieved)){
     },
 
     viewItemDetail: async (req, res) => {
-        const { itemId } = req.query;
+        const { item_name } = req.query;
         const user = req.session.user;
         const companyId = user.company_id;
         const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
@@ -1468,38 +1468,37 @@ if(Number(current_received) != Number(recieved)){
 
 
         try {
-            const [itemDetails] = await mysql.query(`
-            SELECT 
-                items.id AS item_id,
-                items.item_name,
-                items.item_hsn,
-                items.category_id,
-                -- Sales quantity: sum of quantities for transactions where transaction_type is 'sale'
-                COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
-                -- Purchase quantity: sum of quantities for transactions where transaction_type is 'purchase'
-                COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
-                -- Adjustments quantity (if stock_adjustments table is available)
-                COALESCE(SUM(stock_adjustments.adjustment_quantity), 0) AS adjust_qty,
-                -- Closing quantity: purchase_qty + adjust_qty - sale_qty
-                (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) 
-                + COALESCE(SUM(stock_adjustments.adjustment_quantity), 0) 
-                - COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0)) AS closing_qty
-            FROM 
-                items
-            LEFT JOIN 
-                sale_products ON items.id = sale_products.item_id
-            LEFT JOIN 
-                sales ON sale_products.sale_id = sales.id
-            LEFT JOIN 
-                stock_adjustments ON items.id = stock_adjustments.item_id  -- Only if adjustments are tracked in a separate table
-            WHERE 
-                items.item_name = ? AND
-                items.user_id = ? AND
-                items.company_id = ?
-            GROUP BY 
-                items.id;
-        `, [itemId, user.id, companyId]);
+            const query = `
+                    SELECT 
+                        items.id AS item_id,
+                        items.item_name,
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) AS sale_qty,
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) AS purchase_qty,
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.free_quantity ELSE 0 END), 0) AS sale_free_qty,
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.free_quantity ELSE 0 END), 0) AS purchase_free_qty,
+                        (COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.quantity ELSE 0 END), 0) +
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'purchase' THEN sale_products.free_quantity ELSE 0 END), 0) -
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.quantity ELSE 0 END), 0) -
+                        COALESCE(SUM(CASE WHEN sales.transaction_type = 'sale' THEN sale_products.free_quantity ELSE 0 END), 0)) AS closing_qty
+                    FROM 
+                        items
+                    LEFT JOIN 
+                        sale_products ON items.id = sale_products.item_id
+                    LEFT JOIN 
+                        sales ON sale_products.sale_id = sales.id
+                    LEFT JOIN 
+                        parties ON sales.customer_name = parties.id
+                    WHERE 
+                        items.company_id = ? 
+                        ${item_name ? 'AND items.item_name = ?' : ''}  
+                    GROUP BY 
+                        items.id;
+                `;
 
+            
+            const params = item_name ? [companyId, item_name] : [companyId];
+            const [itemDetails] = await mysql.query(query, params);
+            
 
             res.render('businessOwner/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany, allItems })
 
@@ -1534,6 +1533,31 @@ if(Number(current_received) != Number(recieved)){
         });
         res.render('businessOwner/expenseDisplay.ejs', { categories: formattedData, user, companies, currentCompany })
 
+    },
+    viewStockReport: async (req, res) => {
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const [items] = await mysql.query(`
+            SELECT 
+                i.id, 
+                i.item_name, 
+                i.stock, 
+                i.unit, 
+                i.sale_price,
+                i.purchase_price,
+                COALESCE(SUM(CASE WHEN s.transaction_type = 'sale' THEN sp.quantity ELSE 0 END), 0) AS quantity_out,  -- Total quantity sold
+                COALESCE(SUM(CASE WHEN s.transaction_type = 'purchase' THEN sp.quantity ELSE 0 END), 0) AS quantity_in  -- Total quantity purchased
+            FROM items i
+            LEFT JOIN sale_products sp ON i.id = sp.item_id
+            LEFT JOIN sales s ON sp.sale_id = s.id
+            WHERE i.company_id = ?
+            GROUP BY i.id
+        `, [user.company_id]);
+    
+            
+    res.render('businessOwner/stockReport.ejs',{items,companies,currentCompany,user})
     },
     viewIncome: async (req, res) => {
         const user = req.session.user;

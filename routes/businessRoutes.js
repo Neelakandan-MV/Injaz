@@ -44,6 +44,7 @@ router.get('/business-owner/transactionEdit',isLogged,businessController.viewtra
 router.post('/business-owner/transactionEdit',isLogged,businessController.transactionEdit);
 router.get('/business-owner/removeProduct',isLogged,businessController.removeProductFromTrasaction);
 router.get('/business-owner/item-detail',isLogged,businessController.viewItemDetail);
+router.get('/business-owner/stock-detail',isLogged,businessController.viewStockReport);
 router.get('/business-owner/addExpense',isLogged,businessController.viewAddExpense);
 router.post('/business-owner/addExpense',isLogged,businessController.addExpense);
 router.get('/business-owner/expenses',isLogged,businessController.viewExpense);

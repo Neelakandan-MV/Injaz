@@ -444,13 +444,6 @@ const adminController = {
 
             //checking
             let to_receive = Number(party[0].to_receive)
-            // if(paymentType == 'Cash'){
-            //     if(transactionType == 'purchase'){
-            //         to_receive += Number(transactionDetails[0].balance_due)
-            //     }else{
-            //         to_receive -= Number(transactionDetails[0].balance_due)
-            //     }
-            // }
             if(transactionType == 'purchase'){
 
                 to_receive += Number(transactionDetails[0].balance_due)

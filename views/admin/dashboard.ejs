@@ -18,8 +18,6 @@
             border: none;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 10px;
-            text-align: center;
         }
         .card h5 {
             font-size: 1.25rem;
@@ -27,6 +25,7 @@
         }
         .card p {
             margin: 0;
+            font-size: xx-large;
         }
         .main-content {
             max-width: 1200px;
@@ -83,88 +82,106 @@
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
           
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/totalReceivable">
-                    <div class="card text-center bg-light">
-                        <h5>To Receive</h5>
-                        <p class="text-success display-6">SAR <%= totalReceivable ? totalReceivable : 0 %></p>
-                        <!-- <p class="text-muted">You don’t have any receivables as of now.</p> -->
-                    </div></a>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/totalPayable">
-                    <div class="card text-center bg-light">
-                        <h5>To Pay</h5>
-                        <p class="display-6" style="color: red;">SAR <%= totalPayable ? totalPayable : 0 %></p>
-                        <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
-                    </div></a>
-                </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <a href="/admin/totalReceivable">
+                <div class="card text-center bg-light">
+                    <h5>To Receive</h5>
+                    <p class="text-success display-6">SAR <%= totalReceivable ? totalReceivable : 0 %></p>
+                    <!-- <p class="text-muted">You don’t have any receivables as of now.</p> -->
+                </div></a>
             </div>
+            <div class="col-md-6 mb-3">
+                <a href="/admin/totalPayable">
+                <div class="card text-center bg-light">
+                    <h5>To Pay</h5>
+                    <p class="display-6" style="color: red;">SAR <%= totalPayable ? totalPayable : 0 %></p>
+                    <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
+                </div></a>
+            </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/cashInHand">
-                    <div class="card text-center bg-light">
-                        <h5>Cash In Hand</h5>
-                        <p class="display-6" style="color: <%=totalCashInHand>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= totalCashInHand ? totalCashInHand : 0 %></p>
-                        <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
-                    </div></a>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/viewStockReport">
-                    <div class="card text-center bg-light">
-                        <h5>Total Stock Value</h5>
-                        <p class="display-6" style="color: <%= stockValue>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= Number(stockValue).toFixed(5) %></p>
-                    </div></a>
-                </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <a href="/admin/cashInHand">
+                <div class="card text-center bg-light">
+                    <h5>Cash In Hand</h5>
+                    <p class="display-6" style="color: <%=totalCashInHand>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= totalCashInHand ? totalCashInHand : 0 %></p>
+                    <!-- <p class="text-muted">You don’t have any payables as of now.</p> -->
+                </div></a>
             </div>
+            <div class="col-md-6 mb-3">
+                <a href="/admin/viewStockReport">
+                <div class="card text-center bg-light">
+                    <h5>Total Stock Value</h5>
+                    <p class="display-6" style="color: <%= stockValue>0? 'rgb(46, 128, 46)':'red'%>">SAR <%= Number(stockValue).toFixed(5) %></p>
+                </div></a>
+            </div>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/sales">
-                    <div class="card text-center bg-light">
-                        <h5>Sale List</h5>
-                    </div></a>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/purchases">
-                    <div class="card text-center bg-light">
-                        <h5>Purchase List</h5>
-                    </div></a>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/viewItems">
-                    <div class="card text-center bg-light">
-                        <h5>Stock Items</h5>
-                    </div></a>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/viewParties">
-                    <div class="card text-center bg-light">
-                        <h5>Parties</h5>
-                    </div></a>
-                </div>
-            </div>
-                
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/delivered">
-                    <div class="card text-center bg-light">
-                        <h5>Delivery</h5>
-                    </div></a>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <a href="/admin/exchange-rates">
-                    <div class="card text-center bg-light">
-                        <h5>Calculator</h5>
-                    </div></a>
+    
+
+
+
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="card p-4">
+                    <h5 class="text-center mb-4">Most Used Functions</h5>
+                    <div class="row most-used-cards">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/admin/sales">
+                                <div class="card p-4 text-center bg-light">
+                                    <i class="fas fa-chart-line fa-2x mb-3 text-primary"></i>
+                                    <span class="fw-bold">Sales</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/admin/purchases">
+                                <div class="card p-4 text-center bg-light">
+                                    <i class="fas fa-shopping-cart fa-2x mb-3 text-success"></i>
+                                    <span class="fw-bold">Purchase</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/admin/viewItems">
+                                <div class="card p-4 text-center bg-light">
+                                    <i class="fas fa-box fa-2x mb-3 text-warning"></i>
+                                    <span class="fw-bold">Items</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/admin/viewParties">
+                                <div class="card p-4 text-center bg-light">
+                                    <i class="fas fa-users fa-2x mb-3 text-info"></i>
+                                    <span class="fw-bold">Parties</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/admin/exchange-rates">
+                                <div class="card p-4 text-center bg-light">
+                                    <i class="fas fa-calculator fa-2x mb-3 text-secondary"></i>
+                                    <span class="fw-bold">Calculator</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/admin/delivered">
+                                <div class="card p-4 text-center bg-light">
+                                    <i class="fas fa-truck fa-2x mb-3 text-danger"></i>
+                                    <span class="fw-bold">Delivery</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
 
     <div class="modal fade" id="addCompanyModal" tabindex="-1" aria-labelledby="addCompanyModalLabel"
