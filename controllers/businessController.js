@@ -605,6 +605,10 @@ const businessOwnerController = {
         
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName]);
 
+        if(Number(recieved) >= Number(totalAmount)){
+            paymentType = 'Cash';
+        }
+
 
         let payable = Number(party[0].payable);
         let receivable = Number(party[0].receivable);
@@ -1188,6 +1192,10 @@ const businessOwnerController = {
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
         const [currentProductsInTransactions] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id=?`,[transaction_id])
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
+
+        if(Number(recieved) >= Number(totalAmount)){
+            paymentType = 'Cash';
+        }
         
 
         if(Number(transactionDetails[0].balance_due) != Number(balanceDue)){

@@ -278,11 +278,11 @@ const adminController = {
         let balance_due = Number(transaction[0].balance_due)
 
         //checking
-        let to_receive = party[0].to_receive
+        let to_receive = Number(party[0].to_receive)
         if(transaction[0].transaction_type == 'sale'){
-            to_receive -= transaction[0].balance_due
+            to_receive -= Number(transaction[0].balance_due)
         }else{
-            to_receive += transaction[0].balance_due
+            to_receive += Number(transaction[0].balance_due)
         }
         //
 
@@ -424,14 +424,17 @@ const adminController = {
         res.render('admin/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0], current_party: current_party[0], previousRoute,user })
     },
     transactionEdit: async (req, res) => {
-        const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;
+        let { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;
         const products = req.body.products;
         const user = req.session.user;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName])
         const [currentProductsInTransactions] = await mysql.query(`SELECT * FROM sale_products WHERE sale_id=?`,[transaction_id])
         const [transactionDetails] = await mysql.query(`SELECT * FROM sales WHERE id = ?`, [transaction_id])
-        
+
+        if(Number(recieved) >= Number(totalAmount)){
+            paymentType = 'Cash';
+        }
 
         if(Number(transactionDetails[0].balance_due) != Number(balanceDue)){
             let payable = Number(party[0].payable);
@@ -967,12 +970,16 @@ if(Number(current_received) != Number(recieved)){
 
 
     addTransaction: async (req, res) => {
-        const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType } = req.body;
+        let { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType } = req.body;
         const products = req.body.products;
         const user = req.session.user;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
         
         const [party] = await mysql.query(`SELECT * FROM parties WHERE id=?`, [partyName]);
+
+        if(Number(recieved) >= Number(totalAmount)){
+            paymentType = 'Cash';
+        }
 
 
         let payable = Number(party[0].payable);
@@ -2161,7 +2168,9 @@ if(Number(current_received) != Number(recieved)){
         try {
             const user = req.session.user;
             const companyId = user.company_id;
-            const { start, end } = req.query;
+            let { start, end } = req.query;
+            end = end ? end + ' 23:59:59' : null
+            console.log(start,end);
             
             const [companies] = await mysql.query(`SELECT * FROM companies`);
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
