@@ -2537,6 +2537,7 @@ if(Number(current_received) != Number(recieved)){
     },
 
     paymentEdit: async (req, res) => {
+        const user = req.session.user
         const { paymentId, amount, discount, desc, payment_type, partyId } = req.body;
 
         // Fetch current payment details
@@ -2616,6 +2617,9 @@ if(Number(current_received) != Number(recieved)){
 
         // Update the payment details
         await mysql.query('UPDATE party_payments SET description = ?, amount = ?, discount = ? WHERE id = ?', [desc, amount, discount, paymentId]);
+
+        await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id=?`,[current_payment[0].amount,user.company_id])
+        await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id=?`,[amount,user.company_id])
 
         await mysql.query(`UPDATE cash_flows SET amount = ? WHERE payment_id = ?`, [amount, paymentId]);
 
