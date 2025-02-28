@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaymentOut</title>
+    <title>PaymentIn</title>
     <!-- CSS Framework -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <!-- Icons -->
@@ -59,9 +59,37 @@
     <div class="main-content">
         <!-- Header Section -->
         <header class="mb-4 d-flex justify-content-between align-items-center">
-            <h1 class="fw-bold">Injaz Dashboard</h1>
+            <h1 class="fw-bold">Payment In</h1>
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-header">Payable:</div>
+                    <div class="card-body">
+                        <h5 class="card-title" id="totalPayable">0</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-header">Receivable:</div>
+                    <div class="card-body">
+                        <h5 class="card-title" id="totalReceivable">0</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+<script>
+
+    const party = <%- JSON.stringify(party)%>
+        if(party.to_receive > 0){
+            document.getElementById("totalReceivable").textContent = party.to_receive 
+        }else{
+            document.getElementById("totalPayable").textContent = Math.abs(party.to_receive)
+        }
+</script>
+        
 <section class="form-section mt-4">
     <form action="/business-owner/addPaymentIn" method="POST">
         <!-- Existing fields -->
@@ -81,15 +109,20 @@
         <div class="row mb-3">
             <div class="col-md-4">
                 <label for="number" class="form-label">Phone Number</label>
-                <input type="number" id="phone" name="phone" class="form-control"
+                <input type="text" id="phone" name="phone" class="form-control"
                     placeholder="Enter Phone Number" value="<%= party.Phone %>" required>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-4">
                 <label for="number" class="form-label">Amount *</label>
-                <input type="text" id="phone" name="amount" class="form-control"  
+                <input type="text" id="amount" name="amount" class="form-control"  
                     placeholder="Enter Amount" required>
+            </div>
+            <div class="col-md-4">
+                <label for="number" class="form-label">Discount</label>
+                <input type="text" id="discount" name="discount" class="form-control"  
+                    placeholder="Enter Discount Amount" value="0">
             </div>
         </div>
         <div class="row mb-3">

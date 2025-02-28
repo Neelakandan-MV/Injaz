@@ -295,16 +295,10 @@ function selectParty(partyName) {
         // document.getElementById("partyStatus").value = party.partyStatus;
         document.getElementById("partyName").textContent = party.name;
         
-        if(party.receivable > 0){
-            document.getElementById("totalReceivable").textContent = party.receivable 
+        if(party.to_receive > 0){
+            document.getElementById("totalReceivable").textContent = party.to_receive
         }else{
-            document.getElementById("totalPayable").textContent = party.payable 
-        }
-        if(party.receivable == 0){
-            document.getElementById("totalReceivable").textContent = 0 
-        }
-        if(party.payable == 0){
-            document.getElementById("totalPayable").textContent = 0
+            document.getElementById("totalPayable").textContent = Math.abs(party.to_receive)
         }
 
         // Update the party info card

@@ -1451,7 +1451,6 @@ if(Number(current_received) != Number(recieved)){
                 ORDER BY 
                     i.item_name;
             `, [company_id]);
-            console.log(results);
             
 
             res.render('admin/itemProfitAndLoss.ejs', { results,companies,currentCompany,user, })
@@ -1876,9 +1875,6 @@ if(Number(current_received) != Number(recieved)){
     
         const [partyWiseReceivable] = await mysql.query(`
           SELECT * FROM parties p WHERE p.company_id = ?`, [companyId]);
-
-          console.log(partyWiseReceivable);
-          
     
         res.render('admin/totalReceivable.ejs', {
             companies: companyData,
@@ -2556,14 +2552,6 @@ if(Number(current_received) != Number(recieved)){
         let updated_amount = Number(amount);
 
         let diff = updated_amount - current_amount; // Difference between new and old amount
-
-
-        console.log("current_payment[0].amount",current_payment[0].amount);
-        console.log("current_payment[0].discount",current_payment[0].discount);
-
-        console.log(amount,'amount');
-        console.log(discount,'discount');
-        
         
         let to_receive = Number(current_party[0].to_receive)
         if(payment_type == 'payment_in'){
@@ -2743,7 +2731,6 @@ if(Number(current_received) != Number(recieved)){
             
             const params = item_name ? [companyId, item_name] : [companyId];
             const [itemDetails] = await mysql.query(query, params);
-            console.log(itemDetails);
             
 
             res.render('admin/itemDetailReport.ejs', { itemDetails, companies, user, currentCompany, allItems })
@@ -2978,7 +2965,6 @@ if(Number(current_received) != Number(recieved)){
             
             const params = partyId ? [companyId, partyId] : [companyId];
             const [itemDetails] = await mysql.query(query, params);
-            console.log(itemDetails);
             
 
             if(partyId){
