@@ -204,7 +204,7 @@
                               <td><input type="text" id="priceInput<%= index %>" name="products[<%= index %>][pricePerUnit]" oninput="updateProductTotal(this)" value="<%= product.price %>"  ></td>
                               <input type="hidden" id="discount<%= index %>" name="products[<%= index %>][discount]" oninput="updateProductTotal(this)" value="<%= product.discount %>"  >
                               <input type="hidden" name="products[<%= index %>][tax]" oninput="updateProductTotal(this)" value="<%= product.tax_rate %>"  >
-                              <td><input type="text" id="productId" name="products[<%= index %>][productTotal]" onchange="updateSaleTotal(this)" value="<%= product.total %>"  ></td>
+                              <td><input type="text" id="productTotal" name="products[<%= index %>][productTotal]" onchange="updateSaleTotal(this)" value="<%= product.total %>"  ></td>
                               <% if (transactionDetails.transaction_type == 'sale') { %>
                               <td><div class="d-flex"><input type="text" id="deliveredQuantity" name="products[<%= index %>][deliveredQuantity]" value="<%= product.delivered_quantity?product.delivered_quantity:'0' %>"><span style="color: rgb(95, 95, 95);">(<%= product.delivered_quantity? product.quantity - product.delivered_quantity:'N/A'  %>)</span></div></td>
                               <% } %>
@@ -263,7 +263,11 @@
                      </script>
                     <div class="row mb-3">
                         <div class="col-md-3">
+                            <% if(transactionDetails.transaction_type == 'sale'){ %>
                             <label for="recieved" id="remaining" class="form-label">Received *</label>
+                            <% }else{ %>
+                                <label for="recieved" id="remaining" class="form-label">Given *</label>
+                                <% } %>
                             <input type="text" id="received" name="recieved" class="form-control" value="<%= transactionDetails.received_amount %>" oninput="updateReceived()" required>
                         </div>
                         <div class="col-md-3">
@@ -426,8 +430,8 @@ function addRow() {
          productTotal -= (productTotal * discount) / 100;
 
          row.querySelector(`[name^="products"][name$="[productTotal]"]`).value = productTotal.toFixed(5);
-
-         productTotalInput = document.getElementById('productTotal');
+        
+        productTotalInput = document.getElementById('productTotal');
         productTotalInput.dispatchEvent(new Event('change'));
      }
 

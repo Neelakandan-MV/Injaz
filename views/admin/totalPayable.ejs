@@ -126,7 +126,7 @@
                                 <div class="card-body text-center">
                                     <div class="d-flex">
                                         <h5 class="partyName" id="partyName"><%= party.PartyName %> :</h5>
-                                        <h5 class="fw-bold text-danger" id="amount"> SAR <%= party.payable %></h5>
+                                        <h5 class="fw-bold text-danger" id="amount"> SAR <%= Math.abs(party.to_receive) %></h5>
                                     </div>
                                 </div>
                             </div>
