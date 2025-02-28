@@ -1224,17 +1224,15 @@ if(Number(current_received) != Number(recieved)){
 
                 if(balanceType == 'toReceive'){
                     await mysql.query(
-                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, receivable, company_id) VALUES (?,?,?,?,?,?,?,?)",
-                        [user.id, name, email, phone, address, image, openingBalance, user.company_id]
+                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, to_receive, opening_balance, company_id) VALUES (?,?,?,?,?,?,?,?,?)",
+                        [user.id, name, email, phone, address, image, openingBalance, openingBalance, user.company_id]
                     );
                 }else{
                     await mysql.query(
-                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, payable, company_id) VALUES (?,?,?,?,?,?,?,?)",
-                        [user.id, name, email, phone, address, image, openingBalance, user.company_id]
+                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, to_receive, opening_balance, company_id) VALUES (?,?,?,?,?,?,?,?,?)",
+                        [user.id, name, email, phone, address, image, -openingBalance, -openingBalance, user.company_id]
                     );
                 }
-
-                
 
                 res.redirect('/admin/viewParties');
             } catch (dbError) {
@@ -1282,14 +1280,28 @@ if(Number(current_received) != Number(recieved)){
 
             try {
                 const user = req.session.user;
-                const { name, email, phone, address,partyId } = req.body;
+                const { name, email, phone, openingBalance, balanceType, address, partyId } = req.body;
 
-                const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId]);                
+                const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[partyId]);         
                 const image = req.file ? req.file.filename : party[0].profile_picture;
+
+                
+
+                if(balanceType == 'toReceive'){
+
+                await mysql.query(`UPDATE parties SET to_receive = to_receive -?, opening_balance = opening_balance - ? WHERE id=?`,[party[0].openingBalance,party[0].openingBalance,partyId])
                 await mysql.query(
-                    "UPDATE parties set PartyName = ?, Email = ?, Phone = ?, Address = ?, profile_picture = ? WHERE id = ?",
-                    [name,email,phone,address,image,partyId]
+                    "UPDATE parties SET PartyName = ?, Email = ?, Phone = ?, Address = ?, profile_picture = ?, opening_balance = ?,to_receive = ? WHERE id = ?",
+                    [name,email,phone,address,image,openingBalance,openingBalance,partyId]
                 )
+            }else{
+                await mysql.query(`UPDATE parties SET to_receive = to_receive +?, opening_balance = opening_balance + ? WHERE id=?`,[party[0].openingBalance,party[0].openingBalance,partyId])
+                await mysql.query(
+                    "UPDATE parties SET PartyName = ?, Email = ?, Phone = ?, Address = ?, profile_picture = ?, opening_balance =?, to_receive=? WHERE id = ?",
+                    [name,email,phone,address,image,-openingBalance,-openingBalance,partyId]
+                )   
+            }
+
                 res.redirect('/admin/viewParties');
             } catch (dbError) {
                 res.status(500).json({ error: "Database operation failed", details: dbError });

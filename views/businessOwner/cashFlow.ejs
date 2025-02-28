@@ -164,7 +164,7 @@
                         </thead>
                         <tbody id="moneyInBody">
                             <% cashFlows.forEach(cashFlow => { %>
-                                <% if(cashFlow.money_type == 'money_in'){ %>
+                                <% if(cashFlow.money_type == 'money_in' && cashFlow.amount >0){ %>
                                 <tr>
                                     <td><%= formatDateToDDMMYYYY(cashFlow.date) %></td>
                                     <td><%= cashFlow.name %></td>
@@ -191,7 +191,7 @@
                         </thead>
                         <tbody id="moneyOutBody">
                             <% cashFlows.forEach(cashFlow => { %>
-                                <% if(cashFlow.money_type == 'money_out'){ %>
+                                <% if(cashFlow.money_type == 'money_out' && cashFlow.amount >0){ %>
                                 <tr>
                                     <td><%= formatDateToDDMMYYYY(cashFlow.date) %></td>
                                     <td><%= cashFlow.name %></td>

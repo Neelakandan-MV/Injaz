@@ -82,6 +82,16 @@
                 <input type="email" class="form-control" value="<%= party.Email %>" id="companyName" name="email">
             </div>
             <div class="mb-3">
+                <label for="openingBalance" class="form-label">Opening Balance</label>
+                <input type="text" class="form-control" id="openingBalance" value="<%= Math.abs(party.opening_balance) %>" name="openingBalance" value="0">
+                <label>
+                    <input type="radio" name="balanceType" value="toReceive" <%= party.opening_balance>0? 'checked' :'' %> required> To Receive
+                </label>
+                <label class="ms-4">
+                    <input type="radio" name="balanceType" value="toPay" <%= party.opening_balance<0? 'checked' :'' %> required> To Pay
+                </label><br>
+            </div>
+            <div class="mb-3">
                 <label for="dp" class="form-label">Profile Picture</label>
                 <br>
                 <% if(party.profile_picture){ %>
