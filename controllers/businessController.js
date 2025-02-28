@@ -1112,36 +1112,57 @@ const businessOwnerController = {
         const user = req.session.user;
         const companyId = user.company_id;
 
+        const {start,end} = req.query
+
         // Fetch companies and current company
-        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+        const [companies] = await mysql.query(`SELECT * FROM companies`);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
 
         // Fetch all cash flows sorted by date
         const [cashFlows] = await mysql.query(`SELECT * FROM cash_flows WHERE company_id = ? ORDER BY date ASC`, [companyId]);
+        
+        const [openingCash] = await mysql.query(
+            `SELECT COALESCE(SUM(amount), 0) AS opening_cash 
+             FROM cash_flows
+             WHERE company_id = ? AND date < ?`,
+            [companyId, start || '2000-01-01']
+          );
+          const totalOpeningCash = openingCash[0]?.opening_cash || 0;
 
+          const [closingCash] = await mysql.query(
+            `SELECT COALESCE(SUM(amount), 0) AS closing_cash 
+             FROM cash_flows 
+             WHERE company_id = ? AND date <= ?`,
+            [companyId, end || '2099-12-31']
+          );
+          const totalClosingCash = closingCash[0]?.closing_cash || 0;
+  
+          if(start && end){
+            res.json({totalClosingCash,totalOpeningCash})
+          }
         // Calculate opening cash, closing cash, money_in, and money_out
-        let openingCash = 0;
-        let closingCash = 0;
+        let openingCashForCalculation = 0;
+        let closingCashForCalculation = 0;
         let moneyIn = 0;
         let moneyOut = 0;
 
         cashFlows.forEach((cashFlow) => {
-            cashFlow.opening_cash = openingCash;
+            cashFlow.opening_cash = openingCashForCalculation;
 
             if (cashFlow.money_type === 'money_in') {
                 moneyIn += Number(cashFlow.amount);
-                openingCash += Number(cashFlow.amount);
+                openingCashForCalculation += Number(cashFlow.amount);
             } else if (cashFlow.money_type === 'money_out') {
                 moneyOut += Number(cashFlow.amount);
-                openingCash -= Number(cashFlow.amount);
+                openingCashForCalculation -= Number(cashFlow.amount);
             }
 
-            cashFlow.closing_cash = openingCash;
-            closingCash = openingCash; // Update closing cash after the last transaction
+            cashFlow.closing_cash = openingCashForCalculation;
+            closingCashForCalculation = openingCashForCalculation; // Update closing cash after the last transaction
         });
 
         // Pass aggregate values and cashFlows to the frontend
-        res.render('businessOwner/cashFlow.ejs', { currentCompany, companies, user, cashFlows, closingCash, moneyIn, moneyOut });
+        res.render('businessOwner/cashFlow.ejs', { currentCompany, companies, user, cashFlows, closingCash, moneyIn, moneyOut,totalClosingCash,totalOpeningCash });
     },
 
 

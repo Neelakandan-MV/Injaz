@@ -96,13 +96,14 @@
         <h1 class="fw-bold">Cash Flow</h1>
         <i class="fas fa-bars hamburger" id="hamburger"></i>
     </header>
+
         <section class="cashflow-summary mb-4 mt-3">
             <div class="row">
                 <div class="col-md-3">
                     <div class="card text-center">
                         <div class="card-header">Opening Cash</div>
                         <div class="card-body">
-                            <h5 class="card-title" id="openingCash">SAR <%= cashFlows.length > 0 ? cashFlows[0].opening_cash.toFixed(5) : '0.00' %></h5>
+                            <h5 class="card-title" id="openingCash">SAR <%= totalOpeningCash || '0.00' %></h5>
                         </div>
                     </div>
                 </div>
@@ -110,7 +111,7 @@
                     <div class="card text-center">
                         <div class="card-header">Closing Cash</div>
                         <div class="card-body">
-                            <h5 class="card-title" id="closingCash">SAR <%= closingCash.toFixed(5) %></h5>
+                            <h5 class="card-title" id="closingCash">SAR <%= totalClosingCash || 0 %></h5>
                         </div>
                     </div>
                 </div>
@@ -219,9 +220,23 @@
                 document.querySelector(`.${tab}`).classList.add('active');
             }
         
-            function filterTransactions() {
+        async function filterTransactions() {
     let startDate = document.getElementById("startDate").value;
     let endDate = document.getElementById("endDate").value;
+
+
+    const response = await fetch(`/business-owner/cashFlow?start=${startDate}&end=${endDate}`)
+
+    if(!response.ok){
+        throw new Error('Something Went Wrong')
+    }
+    const result = await response.json()
+
+    console.log(result);
+
+    let openingCash = result.totalOpeningCash
+    let closingCash = result.totalClosingCash
+    
 
     if (!startDate || !endDate) return; // Skip filtering if no date is selected
 
@@ -258,15 +273,14 @@
     });
 
     // Update Summary
-    updateCashFlowSummary(filteredCashFlows, filteredMoneyIn, filteredMoneyOut);
+    updateCashFlowSummary(openingCash, closingCash, filteredMoneyIn, filteredMoneyOut);
 }
 
-function updateCashFlowSummary(filteredCashFlows, moneyIn, moneyOut) {
-    let openingCash = filteredCashFlows.length > 0 ? filteredCashFlows[0].amount : 0;
-    let closingCash = openingCash + moneyIn - moneyOut;
+function updateCashFlowSummary(openingCash, closingCash, moneyIn, moneyOut) {
+    
 
-    document.getElementById("openingCash").innerText = `SAR ${openingCash.toFixed(5) || 0}`;
-    document.getElementById("closingCash").innerText = `SAR ${closingCash.toFixed(5) || 0}`;
+    document.getElementById("openingCash").innerText = `SAR ${openingCash || 0}`;
+    document.getElementById("closingCash").innerText = `SAR ${closingCash || 0}`;
     document.getElementById("moneyIn").innerText = `SAR ${moneyIn.toFixed(5) || 0}`;
     document.getElementById("moneyOut").innerText = `SAR ${moneyOut.toFixed(5) || 0}`;
 }
@@ -282,7 +296,7 @@ function updateCashFlowSummary(filteredCashFlows, moneyIn, moneyOut) {
             }
         </style>
         
-        
+      
 </body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
@@ -345,5 +359,6 @@ wrapper.appendChild(tableContent);
 html2pdf().set({ filename: 'Cash Flow Report' }).from(wrapper).save();
 }
 </script>
+
 
 </html>
