@@ -119,7 +119,7 @@
 
         <div class="row" id="partyList">
             <% partyWisePayable.forEach(party => { %>
-                <% if(party.payable > 0){ %>
+                <% if(party.to_receive < 0){ %>
                     <a href="/admin/partyTransactions?partyId=<%= party.id %>" class="party-item">
                         <div class="col-md-4 col-sm-6 mb-3">
                             <div class="card shadow-sm border-0">

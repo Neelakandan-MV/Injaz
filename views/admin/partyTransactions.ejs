@@ -315,12 +315,12 @@ function selectParty(partyName) {
         }else{
             document.getElementById("totalPayable").textContent = Math.abs(party.to_receive)
         }
-        if(party.receivable == 0){
-            document.getElementById("totalReceivable").textContent = 0 
-        }
-        if(party.payable == 0){
-            document.getElementById("totalPayable").textContent = 0
-        }
+        // if(party.receivable == 0){
+        //     document.getElementById("totalReceivable").textContent = 0 
+        // }
+        // if(party.payable == 0){
+        //     document.getElementById("totalPayable").textContent = 0
+        // }
 
         // Update the party info card
         document.getElementById("partyInfoName").textContent = party.name;

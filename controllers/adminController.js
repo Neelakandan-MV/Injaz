@@ -152,10 +152,6 @@ const adminController = {
                     return acc+Number(transaction.total_to_receive)
             }, 0);
 
-            console.log("totalToPay",Math.abs(totalToPay));
-            console.log("totalToReceive",totalToReceive);
-
-            
 
             const totalPayable = partyWisePayable.reduce((acc, transaction) => {
                     return acc+Number(transaction.total_payable)
@@ -1880,6 +1876,9 @@ if(Number(current_received) != Number(recieved)){
     
         const [partyWiseReceivable] = await mysql.query(`
           SELECT * FROM parties p WHERE p.company_id = ?`, [companyId]);
+
+          console.log(partyWiseReceivable);
+          
     
         res.render('admin/totalReceivable.ejs', {
             companies: companyData,
@@ -2558,6 +2557,23 @@ if(Number(current_received) != Number(recieved)){
 
         let diff = updated_amount - current_amount; // Difference between new and old amount
 
+
+        console.log("current_payment[0].amount",current_payment[0].amount);
+        console.log("current_payment[0].discount",current_payment[0].discount);
+
+        console.log(amount,'amount');
+        console.log(discount,'discount');
+        
+        
+        let to_receive = Number(current_party[0].to_receive)
+        if(payment_type == 'payment_in'){
+            to_receive += (Number(current_payment[0].amount)+Number(current_payment[0].discount))
+            to_receive -= Number(amount)+Number(discount)
+        }else{
+            to_receive -= (Number(current_payment[0].amount)+Number(current_payment[0].discount))
+            to_receive += Number(amount)+Number(discount)
+        }
+
         let transaction_type = '';
         if (diff > 0) {
             transaction_type = 'money_increased';
@@ -2611,12 +2627,12 @@ if(Number(current_received) != Number(recieved)){
         }
 
         // Update the payment details
-        await mysql.query('UPDATE party_payments SET description = ?, amount = ? WHERE id = ?', [desc, amount, paymentId]);
+        await mysql.query('UPDATE party_payments SET description = ?, amount = ?, discount = ? WHERE id = ?', [desc, amount, discount, paymentId]);
 
         await mysql.query(`UPDATE cash_flows SET amount = ? WHERE payment_id = ?`, [amount, paymentId]);
 
         // Update the party balance
-        await mysql.query('UPDATE parties SET receivable = ?, payable = ? WHERE id = ?', [receivable, payable, partyId]);
+        await mysql.query('UPDATE parties SET receivable = ?, payable = ?, to_receive = ? WHERE id = ?', [receivable, payable, to_receive, partyId]);
 
         res.redirect('/admin/viewParties');
 

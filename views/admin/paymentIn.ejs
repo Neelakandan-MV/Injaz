@@ -67,7 +67,7 @@
                 <div class="card text-center">
                     <div class="card-header">Payable:</div>
                     <div class="card-body">
-                        <h5 class="card-title" id="totalPayable"></h5>
+                        <h5 class="card-title" id="totalPayable">0</h5>
                     </div>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                 <div class="card text-center">
                     <div class="card-header">Receivable:</div>
                     <div class="card-body">
-                        <h5 class="card-title" id="totalReceivable"></h5>
+                        <h5 class="card-title" id="totalReceivable">0</h5>
                     </div>
                 </div>
             </div>
@@ -83,16 +83,10 @@
 <script>
 
     const party = <%- JSON.stringify(party)%>
-        if(party.receivable > 0){
-            document.getElementById("totalReceivable").textContent = party.receivable 
+        if(party.to_receive > 0){
+            document.getElementById("totalReceivable").textContent = party.to_receive 
         }else{
-            document.getElementById("totalPayable").textContent = party.payable 
-        }
-        if(party.receivable == 0){
-            document.getElementById("totalReceivable").textContent = 0 
-        }
-        if(party.payable == 0){
-            document.getElementById("totalPayable").textContent = 0
+            document.getElementById("totalPayable").textContent = Math.abs(party.to_receive)
         }
 </script>
         
