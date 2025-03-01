@@ -1621,17 +1621,29 @@ if(Number(current_received) != Number(recieved)){
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        const [expense] = await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
-        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
-        res.redirect('/admin/expense');
+        if(user.role == 'superAdmin'){
+            const [expense] = await mysql.query(`INSERT INTO expenses (category_id,date,amount,expense_by,company_id) VALUES(?,?,?,?,?)`, [category_id, date, amount, 'superAdmin', company_id])    
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
+            res.redirect('/admin/expense');
+        }else{
+            const [expense] = await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
+            res.redirect('/admin/expense');
+        }
     },
     addIncome: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        if(user.role == 'superAdmin'){
+            const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,income_by,company_id) VALUES(?,?,?,?,?)`, [category_id, date, amount, user.role, company_id])
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id,income.insertId])
+            res.redirect('/admin/otherIncome');    
+        }else{
+            const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id,income.insertId])
         res.redirect('/admin/otherIncome');
+        }
     },
 
     addExpenseCategory: async (req, res) => {
@@ -2425,48 +2437,63 @@ if(Number(current_received) != Number(recieved)){
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
 
         const itemId = req.query.itemId
+        const date = req.query.date
+        console.log(date);
+        
 
         try {
             // Fetch pending deliveries from sale_products where quantity > delivered_quantity
-            const [pendingSales] = await mysql.query(`
-                SELECT 
-                    sp.item_id,
-                    sp.serial_number, 
-                    sp.company_id, 
-                    sp.product_name, 
-                    sp.sale_id, 
-                    sp.quantity AS total_quantity, 
-                    sp.delivered_quantity, 
-                    (sp.quantity - sp.delivered_quantity) AS remaining_quantity,
-                    s.customer_name AS party_id, 
-                    p.PartyName AS party_name
-                FROM 
-                    sale_products sp
-                JOIN 
-                    sales s ON sp.sale_id = s.id
-                JOIN 
-                    parties p ON s.customer_name = p.id
-                WHERE 
-                    sp.item_id = ?  -- Filter by specific item
-                    AND sp.quantity > sp.delivered_quantity
-                    AND s.transaction_type = 'sale'
-                    AND sp.company_id = ?
-                    AND s.company_id = ?
-                ORDER BY 
-                    p.PartyName
-            `, [itemId, companyId, companyId]);
-            // Fetch party name
+            let query = `
+            SELECT 
+                sp.item_id,
+                sp.serial_number, 
+                sp.company_id, 
+                sp.product_name, 
+                sp.sale_id, 
+                sp.quantity AS total_quantity, 
+                sp.delivered_quantity, 
+                (sp.quantity - sp.delivered_quantity) AS remaining_quantity,
+                s.customer_name AS party_id, 
+                p.PartyName AS party_name
+            FROM 
+                sale_products sp
+            JOIN 
+                sales s ON sp.sale_id = s.id
+            JOIN 
+                parties p ON s.customer_name = p.id
+            WHERE 
+                sp.item_id = ?
+                AND sp.quantity > sp.delivered_quantity
+                AND s.transaction_type = 'sale'
+                AND sp.company_id = ?
+                AND s.company_id = ?
+            `;
+
+            const params = [itemId, companyId, companyId];
+
+            if (date) {
+            query += ` AND DATE(s.date) = ?`;
+            params.push(date);
+            }
+
+            query += ` ORDER BY p.PartyName`;
+
+            const [pendingSales] = await mysql.query(query, params);
             
             const [item] = await mysql.query(`SELECT item_name FROM items WHERE id = ?`, [itemId]);
 
             const [deliveries] = await mysql.query(`SELECT * FROM delivery_details WHERE item_id = ?`,[itemId])
 
             let total_quantity = 0
-            pendingSales.forEach(item=>total_quantity+=Number(item.total_quantity))            
+            pendingSales.forEach(item=>total_quantity+=Number(item.total_quantity))     
+            
+            if(date){
+                return res.status(200).json({pendingSales,total_quantity})
+            }
                 
         res.render('admin/deliveryDetails.ejs', {
             item_name: item[0]?.item_name || "Unknown",
-            pendingSales: pendingSales, companies,currentCompany,user,total_quantity
+            pendingSales: pendingSales, companies,currentCompany,user,total_quantity,itemId
         });
     } catch (err) {
         console.error(err);

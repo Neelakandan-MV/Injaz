@@ -1513,7 +1513,7 @@ if(Number(current_received) != Number(recieved)){
         const company_id = user.company_id;
         const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ?`, [company_id])
+        const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ? AND expense_by != ? `, [company_id,'superAdmin'])
 
         const [categories] = await mysql.query('SELECT * FROM expense_category');
 
@@ -1564,7 +1564,7 @@ if(Number(current_received) != Number(recieved)){
         const company_id = user.company_id;
         const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [incomes] = await mysql.query(`SELECT * FROM other_income WHERE company_id = ?`, [company_id])
+        const [incomes] = await mysql.query(`SELECT * FROM other_income WHERE company_id = ? AND income_by != ?`, [company_id,'superAdmin'])
 
         const [categories] = await mysql.query('SELECT * FROM income_category');
 
@@ -1597,7 +1597,7 @@ if(Number(current_received) != Number(recieved)){
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        await mysql.query(`INSERT INTO other_income (category_id,income_number,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id,income.insertId])
         res.redirect('/business-owner/otherIncome');
     },
@@ -1619,7 +1619,7 @@ if(Number(current_received) != Number(recieved)){
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        const [expense]= await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
         res.redirect('/business-owner/expenses');
     },
@@ -2015,7 +2015,7 @@ if(Number(current_received) != Number(recieved)){
 
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
 
         const [items] = await mysql.query(`
@@ -2040,47 +2040,64 @@ if(Number(current_received) != Number(recieved)){
         
         const user = req.session.user;
         const companyId = user.company_id;
-        const [companies] = await mysql.query(`SELECT * FROM companies`);
+        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
 
         const itemId = req.query.itemId
-
+        const date = req.query.date
         try {
             // Fetch pending deliveries from sale_products where quantity > delivered_quantity
-            const [pendingSales] = await mysql.query(`
-                SELECT 
-                    sp.item_id, 
-                    sp.serial_number, 
-                    sp.company_id, 
-                    sp.product_name, 
-                    sp.sale_id, 
-                    sp.quantity AS total_quantity, 
-                    sp.delivered_quantity, 
-                    (sp.quantity - sp.delivered_quantity) AS remaining_quantity,
-                    s.customer_name AS party_id, 
-                    p.PartyName AS party_name
-                FROM 
-                    sale_products sp
-                JOIN 
-                    sales s ON sp.sale_id = s.id
-                JOIN 
-                    parties p ON s.customer_name = p.id
-                WHERE 
-                    sp.item_id = ?  -- Filter by specific item
-                    AND sp.quantity > sp.delivered_quantity
-                    AND s.transaction_type = 'sale'
-                    AND sp.company_id = ?
-                    AND s.company_id = ?
-                ORDER BY 
-                    p.PartyName
-            `, [itemId, companyId, companyId]);
+            let query = `
+            SELECT 
+                sp.item_id,
+                sp.serial_number, 
+                sp.company_id, 
+                sp.product_name, 
+                sp.sale_id, 
+                sp.quantity AS total_quantity, 
+                sp.delivered_quantity, 
+                (sp.quantity - sp.delivered_quantity) AS remaining_quantity,
+                s.customer_name AS party_id, 
+                p.PartyName AS party_name
+            FROM 
+                sale_products sp
+            JOIN 
+                sales s ON sp.sale_id = s.id
+            JOIN 
+                parties p ON s.customer_name = p.id
+            WHERE 
+                sp.item_id = ?
+                AND sp.quantity > sp.delivered_quantity
+                AND s.transaction_type = 'sale'
+                AND sp.company_id = ?
+                AND s.company_id = ?
+            `;
+
+            const params = [itemId, companyId, companyId];
+
+            if (date) {
+            query += ` AND DATE(s.date) = ?`;
+            params.push(date);
+            }
+
+            query += ` ORDER BY p.PartyName`;
+
+            const [pendingSales] = await mysql.query(query, params);
             
-            // Fetch party name
             const [item] = await mysql.query(`SELECT item_name FROM items WHERE id = ?`, [itemId]);
 
+            const [deliveries] = await mysql.query(`SELECT * FROM delivery_details WHERE item_id = ?`,[itemId])
+
+            let total_quantity = 0
+            pendingSales.forEach(item=>total_quantity+=Number(item.total_quantity))     
+            
+            if(date){
+                return res.status(200).json({pendingSales,total_quantity})
+            }
+                
         res.render('businessOwner/deliveryDetails.ejs', {
             item_name: item[0]?.item_name || "Unknown",
-            pendingSales: pendingSales, companies,currentCompany
+            pendingSales: pendingSales, companies,currentCompany,user,total_quantity,itemId
         });
     } catch (err) {
         console.error(err);

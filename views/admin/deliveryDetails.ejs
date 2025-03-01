@@ -110,13 +110,21 @@
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </div>
 
+
         <div class="container mt-4">
             <h2>Pending Deliveries for <%= item_name %></h2>
-            <h4>Total Quantity :<%= total_quantity %></h4>
+            <h4 id="totalQuantity">Total Quantity :<%= total_quantity %></h4>
 
-            <div class="mb-3">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search by Serial Number..." onkeyup="filterTable()">
-            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="filters d-flex align-items-center">
+                    <label for="from-date" class="me-2">Select Date</label>
+                    <input type="date" id="from-date" class="form-control me-2" />
+                </div>
+            
+                <div class="">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by Serial Number..." onkeyup="filterTable()">
+                </div>
+        </div>
 
             <div class="table-responsive">
             <table class="table table-bordered" id="deliveryTable">
@@ -187,5 +195,55 @@
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
     });
+</script>
+
+<script>
+    const itemId = <%- JSON.stringify(itemId) %>
+
+    const dateInput = document.getElementById('from-date')
+
+    dateInput.addEventListener('change', async (event) => {
+    
+        const selectedDate = event.target.value;
+
+        const response = await fetch(`/admin/deliveryDetails?itemId=${itemId}&date=${selectedDate}`)
+        if(!response.ok){
+            throw new Error('Something Went Wrong')
+        }
+        const data = await response.json()
+
+        console.log(data);
+        renderTable(data)
+    })
+
+
+    function renderTable(data){
+        const tableBody = document.querySelector("tbody");
+        const totalQuantity = document.getElementById('totalQuantity')
+        tableBody.innerHTML = ""; 
+
+        if (!data.total_quantity) {
+            totalQuantity.innerHTML = `Total Quantity : 0`
+        }
+        if(data.pendingSales.length == 0){
+            tableBody.innerHTML = "<tr><td colspan='8' class='text-center'>No data available</td></tr>";
+            return
+        }
+
+        data.pendingSales.forEach(item => {
+            const row = `
+            <tr onclick="redirectToSaleEdit('${item.sale_id }')" style="cursor: pointer;">
+                            <td class="serial-number">${item.serial_number}</td>
+                            <td>${item.party_name }</td>
+                            <td>${item.total_quantity}</td>
+                            <td>${item.delivered_quantity}</td>
+                            <td>${item.remaining_quantity}</td>
+                        </tr>
+            `
+            tableBody.innerHTML += row;
+        });
+        totalQuantity.innerHTML = `Total Quantity : ${data.total_quantity}`
+
+    }
 </script>
 </html>

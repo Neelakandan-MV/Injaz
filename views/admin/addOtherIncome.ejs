@@ -130,6 +130,17 @@
 </body>
 </html>
 <script>
+    function setDefaultDate() {
+    const dateInput = document.getElementById('date');
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; 
+    dateInput.value = formattedDate;
+    filterByDate()
+}
+window.onload = setDefaultDate;
+</script>
+
+<script>
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
     const hamburger = document.getElementById('hamburger');
