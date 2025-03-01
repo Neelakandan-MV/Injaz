@@ -1621,29 +1621,17 @@ if(Number(current_received) != Number(recieved)){
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        if(user.role == 'superAdmin'){
-            const [expense] = await mysql.query(`INSERT INTO expenses (category_id,date,amount,expense_by,company_id) VALUES(?,?,?,?,?)`, [category_id, date, amount, 'superAdmin', company_id])    
-            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
-            res.redirect('/admin/expense');
-        }else{
-            const [expense] = await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
-            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
-            res.redirect('/admin/expense');
-        }
+        const [expense] = await mysql.query(`INSERT INTO expenses (category_id,date,amount,expense_by,company_id) VALUES(?,?,?,?,?)`, [category_id, date, amount, 'superAdmin', company_id])    
+        await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
+        res.redirect('/admin/expense');
     },
     addIncome: async (req, res) => {
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        if(user.role == 'superAdmin'){
-            const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,income_by,company_id) VALUES(?,?,?,?,?)`, [category_id, date, amount, user.role, company_id])
-            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id,income.insertId])
-            res.redirect('/admin/otherIncome');    
-        }else{
-            const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,income_by,company_id) VALUES(?,?,?,?,?)`, [category_id, date, amount, user.role, company_id])
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id,income.insertId])
-        res.redirect('/admin/otherIncome');
-        }
+        res.redirect('/admin/otherIncome');    
     },
 
     addExpenseCategory: async (req, res) => {

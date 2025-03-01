@@ -1513,7 +1513,7 @@ if(Number(current_received) != Number(recieved)){
         const company_id = user.company_id;
         const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ? AND expense_by != ? `, [company_id,'superAdmin'])
+        const [expenses] = await mysql.query(`SELECT * FROM expenses WHERE company_id = ? AND expense_by = ? `, [company_id,user.role])
 
         const [categories] = await mysql.query('SELECT * FROM expense_category');
 
@@ -1564,7 +1564,7 @@ if(Number(current_received) != Number(recieved)){
         const company_id = user.company_id;
         const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
-        const [incomes] = await mysql.query(`SELECT * FROM other_income WHERE company_id = ? AND income_by != ?`, [company_id,'superAdmin'])
+        const [incomes] = await mysql.query(`SELECT * FROM other_income WHERE company_id = ? AND income_by = ?`, [company_id,user.role])
 
         const [categories] = await mysql.query('SELECT * FROM income_category');
 
@@ -1597,7 +1597,7 @@ if(Number(current_received) != Number(recieved)){
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        const [income] = await mysql.query(`INSERT INTO other_income (category_id,date,amount,income_by,company_id) VALUES(?,?,?,?,?)`, [category_id, date, amount, user.role,company_id])
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',amount,'money_in',company_id,income.insertId])
         res.redirect('/business-owner/otherIncome');
     },
@@ -1619,7 +1619,7 @@ if(Number(current_received) != Number(recieved)){
         const user = req.session.user;
         const company_id = user.company_id;
         const { category_id, date, amount } = req.body
-        const [expense]= await mysql.query(`INSERT INTO expenses (category_id,date,amount,company_id) VALUES(?,?,?,?)`, [category_id, date, amount, company_id])
+        const [expense]= await mysql.query(`INSERT INTO expenses (category_id,date,amount,expense_by,company_id) VALUES(?,?,?,?,?)`, [category_id, date, amount, user.role,company_id])
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',amount,'money_out',company_id,expense.insertId])
         res.redirect('/business-owner/expenses');
     },
