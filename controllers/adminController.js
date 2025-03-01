@@ -1977,7 +1977,12 @@ if(Number(current_received) != Number(recieved)){
     viewCashInHand : async(req,res)=>{
         try {
             const user = req.session.user
-            const [companyData] = await mysql.query(`SELECT * FROM companies`);
+             let companyData= []
+            if(user.role == 'superAdmin'){
+                [companyData] = await mysql.query(`SELECT * FROM companies`);
+            }else{
+                [companyData] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+            }
             const companyId = user.company_id;
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
             const [totalCashInHand] = await mysql.query(`
@@ -2025,7 +2030,12 @@ if(Number(current_received) != Number(recieved)){
     },
     totalReceivable: async (req, res) => {
         const user = req.session.user;
-        const [companyData] = await mysql.query(`SELECT * FROM companies`);
+         let companyData= []
+            if(user.role == 'superAdmin'){
+                [companyData] = await mysql.query(`SELECT * FROM companies`);
+            }else{
+                [companyData] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+            }
         const companyId = user.company_id;
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
     
@@ -2042,7 +2052,12 @@ if(Number(current_received) != Number(recieved)){
 
     totalPayable: async (req, res) => {
         const user = req.session.user;
-        const [companyData] = await mysql.query(`SELECT * FROM companies`);
+         let companyData= []
+            if(user.role == 'superAdmin'){
+                [companyData] = await mysql.query(`SELECT * FROM companies`);
+            }else{
+                [companyData] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+            }
         const companyId = user.company_id;
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
     
@@ -2996,7 +3011,12 @@ if(Number(current_received) != Number(recieved)){
 
     viewParties: async (req, res) => {
         const user = req.session.user;
-        const [companyData] = await mysql.query(`SELECT * FROM companies`);
+         let companyData= []
+            if(user.role == 'superAdmin'){
+                [companyData] = await mysql.query(`SELECT * FROM companies`);
+            }else{
+                [companyData] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+            }
         const companyId = user.company_id;
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
         const [oauth_tokens] = await mysql.query('SELECT * FROM oauth_tokens WHERE user_id = ?',[user.id]) 
