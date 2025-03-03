@@ -1122,23 +1122,37 @@ const businessOwnerController = {
         const [cashFlows] = await mysql.query(`SELECT * FROM cash_flows WHERE company_id = ? ORDER BY date ASC`, [companyId]);
         
         const [openingCash] = await mysql.query(
-            `SELECT COALESCE(SUM(amount), 0) AS opening_cash 
+            `SELECT COALESCE(SUM(
+                CASE 
+                  WHEN money_type = 'money_in' THEN amount 
+                  WHEN money_type = 'money_out' THEN -amount 
+                  ELSE 0 
+                END
+              ), 0) AS opening_cash 
              FROM cash_flows
              WHERE company_id = ? AND date < ?`,
             [companyId, start || '2000-01-01']
           );
           const totalOpeningCash = openingCash[0]?.opening_cash || 0;
+          
 
           const [closingCash] = await mysql.query(
-            `SELECT COALESCE(SUM(amount), 0) AS closing_cash 
+            `SELECT COALESCE(SUM(
+                CASE 
+                  WHEN money_type = 'money_in' THEN amount 
+                  WHEN money_type = 'money_out' THEN -amount 
+                  ELSE 0 
+                END
+              ), 0) AS closing_cash 
              FROM cash_flows 
              WHERE company_id = ? AND date <= ?`,
             [companyId, end || '2099-12-31']
           );
-          const totalClosingCash = closingCash[0]?.closing_cash || 0;
+          
+          const totalClosingCash = closingCash[0]?.closing_cash || 0;  
   
           if(start && end){
-            res.json({totalClosingCash,totalOpeningCash})
+            return res.json({totalClosingCash,totalOpeningCash})
           }
         // Calculate opening cash, closing cash, money_in, and money_out
         let openingCashForCalculation = 0;

@@ -70,7 +70,7 @@
                             <h3>Adjust Stock</h3>
                         </div>
                         <div class="card-body">
-                            <form action="/admin/adjustStock" method="POST">
+                            <form action="/admin/adjustStock" method="POST" id="adjustStockForm">
                                 <!-- Category -->
 
                                 <div class="mb-3 d-flex justify-content-center">
@@ -145,3 +145,17 @@
         overlay.classList.remove('active');
     });
 </script>
+
+<script>
+    document.getElementById('adjustStockForm').addEventListener('submit', (event) => {
+        event.preventDefault()
+        Swal.fire({
+            title: "Stock Adjusted Successfully",
+            icon: "success",
+            showConfirmButton: false,
+        });
+        setTimeout(() => {
+            document.getElementById('adjustStockForm').submit()
+        }, 700)
+    });
+  </script>

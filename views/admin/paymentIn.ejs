@@ -91,7 +91,7 @@
 </script>
         
 <section class="form-section mt-4">
-    <form action="/admin/addPaymentIn" method="POST">
+    <form action="/admin/addPaymentIn" method="POST" id="paymentInForm">
         <!-- Existing fields -->
         <div class="row mb-3">
             <input type="hidden" value="sale" name="transactionType">
@@ -167,3 +167,18 @@ window.onload = setDefaultDate;
         overlay.classList.remove('active');
     });
 </script>
+
+
+<script>
+    document.getElementById('paymentInForm').addEventListener('submit', (event) => {
+        event.preventDefault()
+        Swal.fire({
+            title: "Payment Added Successfully",
+            icon: "success",
+            showConfirmButton: false,
+        });
+        setTimeout(() => {
+            document.getElementById('paymentInForm').submit()
+        }, 700)
+    });
+  </script>

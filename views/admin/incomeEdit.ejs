@@ -67,7 +67,7 @@
             <div class="col-md-6 col-lg-4">
                 <div class="card shadow">
                     <div class="card-body">
-                        <form action="/admin/incomeEdit" method="POST">
+                        <form action="/admin/incomeEdit" method="POST" id="incomeEditForm">
                             <!-- Category -->
                             <div class="mb-3">
                                 <label for="category" class="form-label">Category</label>
@@ -135,3 +135,17 @@
         overlay.classList.remove('active');
     });
 </script>
+
+<script>
+    document.getElementById('incomeEditForm').addEventListener('submit', (event) => {
+        event.preventDefault()
+        Swal.fire({
+            title: "Income Edited Successfully",
+            icon: "success",
+            showConfirmButton: false,
+        });
+        setTimeout(() => {
+            document.getElementById('incomeEditForm').submit()
+        }, 700)
+    });
+  </script>

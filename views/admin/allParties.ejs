@@ -267,7 +267,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="/admin/addParty" method="POST" enctype="multipart/form-data">
+                    <form action="/admin/addParty" method="POST" enctype="multipart/form-data" id="addPartyForm">
                         <div class="mb-3">
                             <label for="companyName" class="form-label">Party Name</label>
                             <input type="text" class="form-control" id="companyName" name="name" required>
@@ -321,6 +321,21 @@
         overlay.classList.remove('active');
     });
 </script>
+
+<script>
+    document.getElementById('addPartyForm').addEventListener('submit', (event) => {
+        event.preventDefault()
+        Swal.fire({
+            title: "Item Added Successfully",
+            icon: "success",
+            showConfirmButton: false,
+        });
+        setTimeout(() => {
+            document.getElementById('addPartyForm').submit()
+        }, 700)
+        event.submit()
+    });
+  </script>
 
 <script>
 

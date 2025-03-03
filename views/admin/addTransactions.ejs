@@ -744,10 +744,6 @@ window.onload = setDefaultDate;
         console.log(partyExist);
         
             if(partyExist){
-
-                console.log('if works');
-                
-
                 Swal.fire({
                 title: "Do you want to Download Invoice?",
                 showDenyButton: true,
@@ -756,13 +752,25 @@ window.onload = setDefaultDate;
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     await downloadPdf();
+                    Swal.fire({
+                        title: "Sale Added Successfully",
+                        icon: "success",
+                        showConfirmButton: false,
+                    });
                     setTimeout(() => {
                         allowSubmit = true;
                         event.target.submit();
                     }, 2000);
                 } else if (result.isDenied) {
-                    allowSubmit = true;
-                    event.target.submit();
+                    setTimeout(()=>{
+                        allowSubmit = true;
+                        event.target.submit();
+                    },400)
+                    Swal.fire({
+                        title: "Sale Added Successfully",
+                        icon: "success",
+                        showConfirmButton: false,
+                    });
                 }
             });
 

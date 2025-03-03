@@ -70,7 +70,7 @@
                             <h3>Adjust Cash</h3>
                         </div>
                         <div class="card-body">
-                            <form action="/admin/editAdjustCash" method="POST">
+                            <form action="/admin/editAdjustCash" method="POST" id="editAdjustCashForm">
                                 <!-- Category -->
 
                                 <input type="hidden" value="<%= cashFlow.id %>" name="id">
@@ -145,3 +145,17 @@
         overlay.classList.remove('active');
     });
 </script>
+
+<script>
+    document.getElementById('editAdjustCashForm').addEventListener('submit', (event) => {
+        event.preventDefault()
+        Swal.fire({
+            title: "Cash Adjusted Successfully",
+            icon: "success",
+            showConfirmButton: false,
+        });
+        setTimeout(() => {
+            document.getElementById('editAdjustCashForm').submit()
+        }, 700)
+    });
+  </script>

@@ -70,7 +70,7 @@
                             <h3>Adjust Cash</h3>
                         </div>
                         <div class="card-body">
-                            <form action="/admin/adjustCash" method="POST">
+                            <form action="/admin/adjustCash" method="POST" id="adjustCashForm">
                                 <!-- Category -->
 
                                 <div class="mb-3 d-flex justify-content-center">
@@ -140,3 +140,17 @@
         overlay.classList.remove('active');
     });
 </script>
+
+<script>
+    document.getElementById('adjustCashForm').addEventListener('submit', (event) => {
+        event.preventDefault()
+        Swal.fire({
+            title: "Cash Adjusted Successfully",
+            icon: "success",
+            showConfirmButton: false,
+        });
+        setTimeout(() => {
+            document.getElementById('adjustCashForm').submit()
+        }, 700)
+    });
+  </script>

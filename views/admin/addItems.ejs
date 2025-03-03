@@ -354,3 +354,18 @@
         overlay.classList.remove('active');
     });
 </script>
+
+<script>
+    document.getElementById('itemForm').addEventListener('submit', (event) => {
+        event.preventDefault()
+        Swal.fire({
+            title: "Item Added Successfully",
+            icon: "success",
+            showConfirmButton: false,
+        });
+        setTimeout(() => {
+            document.getElementById('itemForm').submit()
+        }, 700)
+        event.submit()
+    });
+  </script>

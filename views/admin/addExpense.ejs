@@ -67,7 +67,7 @@
             <div class="col-md-6 col-lg-4">
                 <div class="card shadow">
                     <div class="card-body">
-                        <form action="/admin/addExpense" method="POST">
+                        <form action="/admin/addExpense" method="POST" id="addExpenseForm">
                             <!-- Category -->
                             <div class="mb-3">
                                 <label for="category" class="form-label">Category</label>
@@ -152,3 +152,17 @@ window.onload = setDefaultDate;
         overlay.classList.remove('active');
     });
 </script>
+
+<script>
+    document.getElementById('addExpenseForm').addEventListener('submit', (event) => {
+        event.preventDefault()
+        Swal.fire({
+            title: "Expense Added Successfully",
+            icon: "success",
+            showConfirmButton: false,
+        });
+        setTimeout(() => {
+            document.getElementById('addExpenseForm').submit()
+        }, 700)
+    });
+  </script>

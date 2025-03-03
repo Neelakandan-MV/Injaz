@@ -142,7 +142,7 @@
 <script>
     async function deleteItem(itemId) {
         Swal.fire({
-            title: "Do you want to save the changes?",
+            title: "Do you really want to delete?",
             showDenyButton: true,
             confirmButtonText: "Yes",
             }).then(async(result) => {
@@ -158,7 +158,10 @@
                     Swal.fire(`${data.message}`, "", "error");
                 }
             } else if (result.isDenied) {
-                Swal.fire("Something went wrong", "", "info");
+                Swal.fire("Item not deleted", "", "info");
+                setTimeout(() => {
+                    location.reload();
+                }, 400);
             }
         });
 

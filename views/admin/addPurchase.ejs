@@ -134,7 +134,7 @@
 
             <!-- Add Sale Form -->
             <section class="form-section mt-4">
-                <form action="/admin/addTransactions" method="POST">
+                <form action="/admin/addTransactions" method="POST" id="purchase-form">
                     <div class="row mb-3">
                         <input type="hidden" value="purchase" name="transactionType">
                     <div class="row mb-3">
@@ -545,6 +545,20 @@ window.onload = setDefaultDate;
        }
    }
    
+      </script>
+      <script>
+        document.getElementById('purchase-form').addEventListener('submit', (event) => {
+            event.preventDefault()
+            Swal.fire({
+                title: "Purchase Added Successfully",
+                icon: "success",
+                showConfirmButton: false,
+            });
+            setTimeout(() => {
+                document.getElementById('purchase-form').submit()
+            }, 700)
+            event.submit()
+        });
       </script>
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </html>

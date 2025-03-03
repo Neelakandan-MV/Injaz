@@ -1610,7 +1610,7 @@ if(Number(current_received) != Number(recieved)){
           const totalClosingCash = closingCash[0]?.closing_cash || 0;          
   
           if(start && end){
-            res.json({totalClosingCash,totalOpeningCash})
+            return res.json({totalClosingCash,totalOpeningCash})
           }
         // Calculate opening cash, closing cash, money_in, and money_out
         let openingCashForCalculation = 0;
@@ -2933,11 +2933,19 @@ if(Number(current_received) != Number(recieved)){
     },
 
     expenseEdit:async(req,res)=>{
+        const user = req.session.user
         const {expense_id,category_id,amount,date}= req.body
+        const [currentExpense] = await mysql.query(`SELECT * FROM expenses WHERE expense_id = ?`,[expense_id])
         await mysql.query(`UPDATE expenses SET category_id= ?, amount = ?, date=? WHERE expense_id = ?`,[category_id,amount,date,expense_id])
-        await mysql.query('UPDATE cash_flows SET amount = ?, date = ? WHERE other_tnx_id = ?',[amount,date,expense_id])
-        res.redirect('/admin/expense')
-        
+        // await mysql.query('UPDATE cash_flows SET amount = ?, date = ? WHERE other_tnx_id = ?',[amount,date,expense_id])
+        let current_amount = Number(currentExpense[0].amount)
+        let diff = Math.abs(Number(amount)-current_amount)
+        if(Number(current_amount)<Number(amount)){
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',diff,'money_out',user.company_id,expense_id])
+        }else{
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Expense',date,'expense',diff,'money_in',user.company_id,expense_id])
+        }
+        res.redirect('/admin/expense')  
     },
 
     viewIncomeEdit:async(req,res)=>{
@@ -2962,11 +2970,19 @@ if(Number(current_received) != Number(recieved)){
     },
 
     incomeEdit:async(req,res)=>{
+        const user = req.session.user
         const {income_id,category_id,amount,date}= req.body
+        const [currentIncome] = await mysql.query(`SELECT * FROM other_income WHERE id = ?`,[income_id])
         await mysql.query(`UPDATE other_income SET category_id= ?, amount = ?, date=? WHERE id = ?`,[category_id,amount,date,income_id])
-        await mysql.query('UPDATE cash_flows SET amount = ?, date = ? WHERE other_tnx_id = ?',[amount,date,income_id])
+        // await mysql.query('UPDATE cash_flows SET amount = ?, date = ? WHERE other_tnx_id = ?',[amount,date,income_id])
+        let current_amount = Number(currentIncome[0].amount)
+        let diff = Math.abs(Number(amount)-current_amount)
+        if(Number(current_amount)<Number(amount)){
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',diff,'money_in',user.company_id,income_id])
+        }else{
+            await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,company_id,other_tnx_id) VALUES (?,?,?,?,?,?,?)`,['Income',date,'income',diff,'money_out',user.company_id,income_id])
+        }
         res.redirect('/admin/otherIncome')
-        
     },
 
     storeAccessToken:async(req,res)=>{
