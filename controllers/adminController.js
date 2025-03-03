@@ -3300,6 +3300,11 @@ if(Number(current_received) != Number(recieved)){
         try {
         const user = req.session.user
         const itemId = req.query.itemId
+        const [isItemExists] = await mysql.query(`SELECT * FROM sale_products WHERE item_id = ?`,[itemId])
+        if(isItemExists.length > 0){
+            return res.json({success:false,message:'Cannot delete item as it is associated with some transactions'})
+        }
+        await mysql.query(`DELETE FROM stock_adjustments WHERE item_id = ?`,[itemId])
         await mysql.query(`DELETE FROM items WHERE id = ?`,[itemId])
         res.json({success:true,message:'Item Deleted Successfully'})
         } catch (error) {
