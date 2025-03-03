@@ -67,9 +67,10 @@
             <i class="fas fa-bars hamburger" id="hamburger"></i>
         </header>
     <div class="container">
-        <div class="header">
+        <div class="header d-flex justify-content-between align-items-center p-3">
             <% if(currentUser.role === 'superAdmin'){ %>
             <button class="add-user-btn ms-3" onclick="openAddUserModal()">Add User</button>
+            <a class="btn btn-warning ms-3" href="/admin/editUser?userId=<%= currentUser.id%>">Change Password</a>
             <% } %>
             </div>
 
@@ -214,8 +215,9 @@ function renderUserList() {
             <td>${user.email}</td>
             <td>${user.isActive? 'Active':'Blocked' }</td>
             <td>
+                <div class="d-flex">
                  <button class="btn btn-danger" onclick="deleteUser(${user.id})">${user.isActive ? 'Block' : 'Unblock'}</button>
-                <button class="btn btn-warning" onclick="editUser(${user.id})">Edit</button>
+                <button class="btn btn-warning ms-2" onclick="editUser(${user.id})">Edit</button></div>
             </td>
         `;
         userTableBody.appendChild(row);

@@ -96,4 +96,27 @@ aria-hidden="true">
     </div>
 </div>
 </div>
+
+<a href="/admin/dashboard" class="btn" id="back-button">Injaz</a>
+
+<style>
+    #back-button {
+        position: absolute;
+        top: 20px;
+        left: 545px;
+        z-index: 1000;
+        width: 20%;
+        font-size: large;
+    }
+    @media screen and (max-width: 768px) {
+        #back-button {
+            left: 50%;
+            transform: translateX(-50%);
+            position: relative;
+            top: 0px;
+        }
+    }
+</style>
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>

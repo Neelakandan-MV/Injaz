@@ -711,7 +711,8 @@ if(Number(current_received) != Number(recieved)){
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const currentUser = req.session.user;
         const [users] = await mysql.query("SELECT * FROM users WHERE role != 'superAdmin'")
-        res.render('admin/manageUsers.ejs', { users, currentUser, companies,currentCompany,user })
+        const [superUser] = await mysql.query("SELECT * FROM users WHERE role = 'superAdmin'")
+        res.render('admin/manageUsers.ejs', { users, currentUser, companies,currentCompany,user,superUser })
     },
 
     addUser: async (req, res) => {
@@ -1818,9 +1819,10 @@ if(Number(current_received) != Number(recieved)){
         const{adjustmentType,date,quantity,price,details,item_id} = req.body
         await mysql.query(`
             UPDATE items 
-            SET stock = stock + ? 
+            SET stock = stock + ? ,
+            purchase_price = ?
             WHERE id = ?
-        `, [adjustmentType == 'add' ? quantity : -quantity, item_id]);
+        `, [adjustmentType == 'add' ? quantity : -quantity, price,item_id]);
     await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
         [item_id,adjustmentType,quantity,price,details?details:'',date,company_id])
     
@@ -2744,20 +2746,39 @@ if(Number(current_received) != Number(recieved)){
             }
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
     
+            const [currentUser] = await mysql.query(`SELECT * FROM users WHERE id =?`,[data.userId])
+
+            if(currentUser[0].role !== 'superAdmin'){
+                if (!data.password || data.password.trim() === '') {
+                    await mysql.query(
+                        `UPDATE users SET name = ?, email = ?, role = ?, available_companies = ? WHERE id = ?`,
+                        [data.userName, data.userEmail, data.role, companyJSON, data.userId]
+                    );
+                } else {
+                    const hashedPassword = await bcrypt.hash(data.password, 10);
+                    await mysql.query(
+                        `UPDATE users SET name = ?, email = ?, password = ?, role = ?, available_companies = ? WHERE id = ?`,
+                        [data.userName, data.userEmail, hashedPassword, data.role, companyJSON, data.userId]
+                    );
+                }
+        
+                return res.json({ success: true });
+        }else{
             if (!data.password || data.password.trim() === '') {
                 await mysql.query(
-                    `UPDATE users SET name = ?, email = ?, role = ?, available_companies = ? WHERE id = ?`,
-                    [data.userName, data.userEmail, data.role, companyJSON, data.userId]
+                    `UPDATE users SET name = ?, email = ? WHERE id = ?`,
+                    [data.userName, data.userEmail, data.userId]
                 );
             } else {
                 const hashedPassword = await bcrypt.hash(data.password, 10);
                 await mysql.query(
-                    `UPDATE users SET name = ?, email = ?, password = ?, role = ?, available_companies = ? WHERE id = ?`,
-                    [data.userName, data.userEmail, hashedPassword, data.role, companyJSON, data.userId]
+                    `UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?`,
+                    [data.userName, data.userEmail, hashedPassword, data.userId]
                 );
             }
     
             return res.json({ success: true });
+        }
     
         } catch (error) {
             console.error("Error updating user:", error);
@@ -2962,7 +2983,7 @@ if(Number(current_received) != Number(recieved)){
                 [companies] = await mysql.query(`SELECT * FROM companies`);
             }else{
                 [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
-            }ecute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+            }
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         const [allItems] = await mysql.query(`SELECT * FROM items WHERE  company_id = ?`, [companyId])
 
@@ -3094,7 +3115,7 @@ if(Number(current_received) != Number(recieved)){
                 [companies] = await mysql.query(`SELECT * FROM companies`);
             }else{
                 [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
-            }ecute(`SELECT * FROM companies`);
+            }
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
     
             res.render('admin/manageCompanies.ejs',{companies,currentCompany,user})    
@@ -3160,7 +3181,7 @@ if(Number(current_received) != Number(recieved)){
                 [companies] = await mysql.query(`SELECT * FROM companies`);
             }else{
                 [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
-            }ecute(`SELECT * FROM companies`);
+            }
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
         try {
             const cashFlowId = req.query.id
@@ -3210,10 +3231,7 @@ if(Number(current_received) != Number(recieved)){
                 [companies] = await mysql.query(`SELECT * FROM companies`);
             }else{
                 [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
-            }ecute(
-                `SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)))`,
-                [user.id]
-            );
+            }
             
             // Fetch current company details
             const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [companyId]);
