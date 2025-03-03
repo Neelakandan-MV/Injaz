@@ -103,6 +103,7 @@ router.get('/admin/editAdjustCash',isLoggedAdmin,adminController.viewCashInHandA
 router.post('/admin/editAdjustCash',isLoggedAdmin,adminController.cashInHandAdjustEdit)
 router.get('/admin/itemReportByParty',isLoggedAdmin,adminController.viewItemReportByParty)
 router.get('/admin/removeProduct',isLoggedAdmin,adminController.removeProductFromTrasaction)
+router.get('/admin/deleteItem',isLoggedAdmin,adminController.deleteItem)
 
   
 

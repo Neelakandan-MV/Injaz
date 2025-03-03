@@ -101,6 +101,7 @@
                                     <td><%= item.stock %></td>
                                     <td>
                                         <a class="btn btn-sm btn-warning" href="/admin/editItems?item_id=<%= item.id %>"><i class="fas fa-edit"></i> Edit</a>
+                                        <button type="button" onclick="deleteItem('<%= item.id %>')" class="btn btn-sm btn-warning"><i class="fas fa-trash"></i>Delete</button>
                                     </td>
                                 </tr>
                                 <% }); %>
@@ -138,5 +139,31 @@
         overlay.classList.remove('active');
     });
 </script>
+<script>
+    async function deleteItem(itemId) {
+        Swal.fire({
+            title: "Do you want to save the changes?",
+            showDenyButton: true,
+            confirmButtonText: "Yes",
+            }).then(async(result) => {
+            if (result.isConfirmed) {
+                const result = await fetch(`/admin/deleteItem?itemId=${itemId}`);
+                const data = await result.json();
+                if (data.success) {
+                    Swal.fire(`${data.message}`, "", "success");
+                    setTimeout(() => {
+                        location.reload();
+                    }, 700);
+                } else {
+                    Swal.fire(`${data.message}`, "", "error");
+                }
+            } else if (result.isDenied) {
+                Swal.fire("Something went wrong", "", "info");
+            }
+        });
+
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>
