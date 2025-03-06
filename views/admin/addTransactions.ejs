@@ -299,7 +299,7 @@
             <td><input type="text" id="productName${count}" name="products[${count}][item]" list="productSuggestions" onchange="sugesstion(this,${count})" required></td>
             <td><div class="d-flex"><input type="number" id="quantity${count}" name="products[${count}][quantity]" oninput="updateProductTotal(this,'${count}')" required><span class="stockDisplay" id="stockDisplay${count}"></span></div></td>
             <input type="hidden"  id="unit${count}" name="products[${count}][unit]" required >
-            <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" oninput="updateProductTotal(this,'${count}')" onchange="updateWholesalePrice()" required ></td>
+            <td><input type="text" id="priceInput${count}" name="products[${count}][pricePerUnit]" required ></td>
             <input type="hidden" id="discount${count}" name="products[${count}][discount]" oninput="updateProductTotal(this,'${count}')" required >
             <input type="hidden" name="products[${count}][tax]" oninput="updateProductTotal(this,'${count}')" required>
             <td><div class= "d-flex"><input type="text" id="productTotal" name="products[${count}][productTotal]" onchange="updateSaleTotal(this)" required >
@@ -405,6 +405,8 @@ function updateReceived(){
         const products = <%- JSON.stringify(products) %>
         
         const selectedProduct = products.find((product) => product.item_name == selectedProductName);
+
+        const inputValue = document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value
         
         
         const quantity = parseFloat(row.querySelector(`[name^="products"][name$="[quantity]"]`)?.value) || 0;
@@ -441,7 +443,8 @@ function updateReceived(){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
         }
     }else{
-        document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
+        // document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
+        document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = inputValue
     }
 
     

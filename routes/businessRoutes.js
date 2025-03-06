@@ -52,6 +52,10 @@ router.post('/business-owner/addExpenseCategory',isLogged,businessController.add
 router.post('/business-owner/add-contacts',businessController.addContacts);
 router.post('/business-owner/return',isLogged,businessController.itemReturn);
 
+router.get('/business-owner/adjustStockDetails',isLogged,businessController.viewAdjustStockDetails);
+router.get('/business-owner/adjustStock',isLogged,businessController.viewAdjustStock);
+router.post('/business-owner/adjustStock',isLogged,businessController.adjustStock);
+
 router.post('/business-owner/addIncomeCategory',isLogged,businessController.addIncomeCategory);
 router.get('/business-owner/addIncome',isLogged,businessController.viewAddIncome);
 router.post('/business-owner/addIncome',isLogged,businessController.addIncome);

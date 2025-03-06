@@ -51,6 +51,37 @@ const calculateClosingCash = async (openingCash, date, companyId) => {
 };
 
 
+async function resetStockOnTransactionDeletion(transactionId, transactionType,user) {
+    
+    // Fetch products related to the transaction
+    const [products] = await mysql.query(
+      "SELECT * FROM sale_products WHERE sale_id = ?",
+      [transactionId]
+    );
+  
+    // Loop through each product and update the items stock
+    for (const product of products) {
+      // For a sale, add back the sold quantity; for a purchase, subtract the purchased quantity.
+      const adjustment = product.quantity;
+      if (transactionType === 'sale') {
+        // If a sale is being deleted, add back the quantity to stock
+        await mysql.query(
+          "UPDATE items SET stock = stock + ? WHERE id = ?",
+          [adjustment, product.item_id]
+        );
+        await mysql.query(`INSERT INTO stock_adjustments (item_id,adjustment_type,adjustment_quantity, total_amount,reason,company_id) VALUES (?,?,?,?,?,?)`,[product.item_id,'add',adjustment,'0','due to deletion',user.company_id])
+      } else if (transactionType === 'purchase') {
+        // If a purchase is being deleted, remove the quantity from stock
+        await mysql.query(
+          "UPDATE items SET stock = stock - ? WHERE id = ?",
+          [adjustment, product.item_id]
+        );
+        await mysql.query(`INSERT INTO stock_adjustments (item_id,adjustment_type,adjustment_quantity, total_amount,reason,company_id) VALUES (?,?,?,?,?,?)`,[product.item_id,'reduce',adjustment,'0','due to deletion',user.company_id])
+      }
+    }
+  }
+
+
 const businessOwnerController = {
 
     // Fetch sales for the logged-in user's company
@@ -715,9 +746,9 @@ const businessOwnerController = {
             }
         }
         if (transactionType === "purchase") {
-            return res.redirect('/admin/purchases');
+            return res.redirect('/business-owner/purchases');
         }
-        res.redirect('/bussiness-owner/sales');
+        res.redirect('/business-owner/sales');
 
     },
 
@@ -1055,7 +1086,7 @@ const businessOwnerController = {
         const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
 
         if (!companyId) {
-            return res.render("admin/error.ejs", { error: 'No company found for this user.' });
+            return res.render("business-owner/error.ejs", { error: 'No company found for this user.' });
         }
 
         const [item] = await mysql.query(`
@@ -1196,13 +1227,63 @@ const businessOwnerController = {
     },
     transactionDelete: async (req, res) => {
 
+        const user = req.session.user
         const transaction_id = req.query.id
+        const [transaction] = await mysql.query(`SELECT * FROM sales WHERE id = ?`,[transaction_id])
+        const [party] = await mysql.query(`SELECT * FROM parties WHERE id = ?`,[transaction[0].customer_name])
+        let payable = Number(party[0].payable)
+        let receivable = Number(party[0].receivable)
+        let balance_due = Number(transaction[0].balance_due)
+
+        //checking
+        let to_receive = Number(party[0].to_receive)
+        if(transaction[0].transaction_type == 'sale'){
+            to_receive -= Number(transaction[0].balance_due)
+        }else{
+            to_receive += Number(transaction[0].balance_due)
+        }
+        //
+
+        if(transaction[0].transaction_type == 'sale'){
+
+            if(receivable >= 0 ){
+                if(receivable > balance_due){
+                    receivable -= balance_due
+                }else{
+                    payable += (balance_due-receivable)
+                    receivable = 0
+                }
+            }else{
+                payable += balance_due
+            }
+        }else{
+
+            if(payable >= 0 ){
+                if(payable > balance_due){
+                    payable -= balance_due
+                }else{
+                    receivable += (balance_due-payable)
+                    payable = 0
+                }
+            }else{
+                receivable += balance_due
+            }
+        }
+        await mysql.query(`UPDATE parties SET receivable = ?, payable = ?, to_receive = ? WHERE id = ?`,[receivable,payable, to_receive,transaction[0].customer_name])
+
+        await resetStockOnTransactionDeletion(transaction_id,transaction[0].transaction_type,user)
+        
+        if(transaction[0].transaction_type == "sale"){
+            await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand - ? WHERE id=?`,[transaction[0].received_amount,user.company_id])
+        }else{
+            await mysql.query(`UPDATE companies SET cash_in_hand = cash_in_hand + ? WHERE id=?`,[transaction[0].received_amount,user.company_id])
+        }
+
         await mysql.query(`DELETE FROM cash_flows WHERE tnx_id = ?`, [transaction_id]);
         await mysql.query(`DELETE FROM delivery_details WHERE sale_id = ?`,[transaction_id])
         await mysql.query(`DELETE FROM sale_products WHERE sale_id = ?`, [transaction_id]);
         await mysql.query(`DELETE FROM sales WHERE id = ?`, [transaction_id]);
         res.redirect('/business-owner/dashboard')
-
     },
     viewtransactionEdit: async (req, res) => {
         const user = req.session.user
@@ -1220,7 +1301,7 @@ const businessOwnerController = {
         res.render('businessOwner/transactionEdit.ejs', { user, currentCompany, companies, transactionDetails: transactionDetails[0], transactionProducts, parties, products: products[0], current_party: current_party[0], previousRoute })
     },
     transactionEdit: async (req, res) => {
-        const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;
+        let { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType, transaction_id, } = req.body;
         const products = req.body.products;
         const user = req.session.user;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -1231,7 +1312,6 @@ const businessOwnerController = {
         if(Number(recieved) >= Number(totalAmount)){
             paymentType = 'Cash';
         }
-        
 
         if(Number(transactionDetails[0].balance_due) != Number(balanceDue)){
             let payable = Number(party[0].payable);
@@ -1241,13 +1321,6 @@ const businessOwnerController = {
 
             //checking
             let to_receive = Number(party[0].to_receive)
-            // if(paymentType == 'Cash'){
-            //     if(transactionType == 'purchase'){
-            //         to_receive += Number(transactionDetails[0].balance_due)
-            //     }else{
-            //         to_receive -= Number(transactionDetails[0].balance_due)
-            //     }
-            // }
             if(transactionType == 'purchase'){
 
                 to_receive += Number(transactionDetails[0].balance_due)
@@ -1768,7 +1841,6 @@ if(Number(current_received) != Number(recieved)){
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id, opening_cash, closing_cash) VALUES (?,?,?,?,?,?,?,?,?)`,
             [party[0].PartyName, created_at, 'Product_Return', totalDiff, money_type, sale[0].id, user.company_id, openingCash, closingCash])
 
-
         await mysql.query(`UPDATE items set stock = stock + ? WHERE id = ?`,[quantity,sale_product[0].item_id])
         
         if(sale[0].transaction_type == 'purchase'){
@@ -1778,6 +1850,40 @@ if(Number(current_received) != Number(recieved)){
         }
     },
 
+    viewAdjustStock:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const {item_id} = req.query
+        res.render('businessOwner/adjustStock',{item_id,companies,currentCompany,user})
+    },
+
+    viewAdjustStockDetails:async(req,res)=>{
+        const user = req.session.user;
+        const companyId = user.company_id;
+        const [companies] = await mysql.execute(`SELECT * FROM companies WHERE JSON_CONTAINS((SELECT available_companies FROM users WHERE id = ?), JSON_QUOTE(CAST(id AS CHAR)));`,[user.id]);
+        const [currentCompany] = await mysql.query(`SELECT * FROM companies WHERE id = ?`, [user.company_id]);
+        const {item_id} = req.query
+        const [stock_adjustments] = await mysql.query(`SELECT * FROM stock_adjustments WHERE item_id=?`,[item_id])
+        const [item] = await mysql.query(`SELECT * FROM items WHERE id=?`,[item_id])
+        res.render('businessOwner/adjustStockDetails.ejs',{stock_adjustments,item:item[0],companies,currentCompany,user})
+    },
+    adjustStock:async(req,res)=>{
+        const user = req.session.user
+        const company_id = user.company_id
+        const{adjustmentType,date,quantity,price,details,item_id} = req.body
+        await mysql.query(`
+            UPDATE items 
+            SET stock = stock + ? ,
+            purchase_price = ?
+            WHERE id = ?
+        `, [adjustmentType == 'add' ? quantity : -quantity, price,item_id]);
+        await mysql.query(`INSERT INTO stock_adjustments(item_id,adjustment_type,adjustment_quantity,total_amount,reason,created_at,company_id) VALUES(?,?,?,?,?,?,?)`,
+        [item_id,adjustmentType,quantity,price,details?details:'',date,company_id])
+    
+        res.redirect('/business-owner/stock-detail')
+    },
     
     viewAdjustCash:async(req,res)=>{
         const user = req.session.user;
@@ -2164,7 +2270,7 @@ viewPaymentEdit:async(req,res)=>{
     const {paymentId} = req.query
     const [payment] = await mysql.query(`SELECT * FROM party_payments WHERE id = ?`,[paymentId])
 
-    res.render('admin/paymentEdit.ejs',{companies,currentCompany,payment:payment[0],user})
+    res.render('businessOwner/paymentEdit.ejs',{companies,currentCompany,payment:payment[0],user})
     
 },
 
@@ -2259,7 +2365,7 @@ paymentEdit: async (req, res) => {
     // Update the party balance
     await mysql.query('UPDATE parties SET receivable = ?, payable = ?, to_receive = ? WHERE id = ?', [receivable, payable, to_receive, partyId]);
 
-    res.redirect('/admin/viewParty');
+    res.redirect('/business-owner/viewParty');
 },
 
 viewParties: async (req, res) => {

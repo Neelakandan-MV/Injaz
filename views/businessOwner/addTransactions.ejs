@@ -406,6 +406,8 @@ function updateReceived(){
         const products = <%- JSON.stringify(products) %>
         
         const selectedProduct = products.find((product) => product.item_name == selectedProductName);
+
+        const inputValue = document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value
         
         
         const quantity = parseFloat(row.querySelector(`[name^="products"][name$="[quantity]"]`)?.value) || 0;
@@ -424,7 +426,6 @@ function updateReceived(){
         }else if(quantity<selectedProduct.wholesale_quantity_1){
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price;
         }
-        console.log('3 only case');
     }else if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 > 0 && selectedProduct.wholesale_quantity_3 == 0){
         
         if(quantity>=selectedProduct.wholesale_quantity_1 && quantity< selectedProduct.wholesale_quantity_2){
@@ -434,7 +435,6 @@ function updateReceived(){
         }else{
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
         }
-        console.log('2 only case');
 
     }else if(selectedProduct.wholesale_quantity_1 > 0 && selectedProduct.wholesale_quantity_2 == 0 && selectedProduct.wholesale_quantity_3 == 0){
         if(quantity>=selectedProduct.wholesale_quantity_1){
@@ -442,9 +442,9 @@ function updateReceived(){
         }else{
             document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
         }
-        console.log('1 only case');
     }else{
-        document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
+        document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = inputValue
+        // document.getElementsByName(`products[${count}][pricePerUnit]`)[0].value = selectedProduct.sale_price
     }
 
     

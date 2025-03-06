@@ -157,8 +157,8 @@
                     <td><%= item.purchase_price %></td>
                     <!-- <td style="color: red;"><%= item.quantity_in %></td>
                     <td style="color:green"><%= item.quantity_out %></td> -->
-                    <td class="d-flex"><a href="/admin/adjustStock?item_id=<%= item.id %>" class="btn btn-success btn-sm">Adjust Stock</a>
-                    <a href="/admin/adjustStockDetails?item_id=<%= item.id %>" class="btn btn-success btn-sm ms-2">View</a></td>
+                    <td class="d-flex"><a href="/business-owner/adjustStock?item_id=<%= item.id %>" class="btn btn-success btn-sm">Adjust Stock</a>
+                    <a href="/business-owner/adjustStockDetails?item_id=<%= item.id %>" class="btn btn-success btn-sm ms-2">View</a></td>
                 </tr>
             <% }) %>
         </tbody>
