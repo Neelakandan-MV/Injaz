@@ -235,7 +235,7 @@
                          const totalAmount = parseFloat(document.getElementById('totalAmount').value);
                          
                          if (!isNaN(totalAmount)) {
-                             const roundedDecimals = totalAmount.toFixed(2);
+                             const roundedDecimals = Math.round(totalAmount);
                              document.getElementById('totalAmount').value = roundedDecimals;
                              updateBalanceDue()
                          } else {

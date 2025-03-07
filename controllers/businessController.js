@@ -629,7 +629,7 @@ const businessOwnerController = {
     },
 
     addTransaction: async (req, res) => {
-        const { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType } = req.body;
+        let { partyName, date, invoiceNumber, paymentType, totalAmount, recieved, balanceDue, transactionType } = req.body;
         const products = req.body.products;
         const user = req.session.user;
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -705,10 +705,10 @@ const businessOwnerController = {
         const closingCash = await calculateClosingCash(openingCash, created_at, user.company_id);
 
         const money_type = transactionType === 'sale' ? 'money_in' : 'money_out';
-        if(recieved > 0){
+        
         await mysql.query(`INSERT INTO cash_flows (name,date,tnx_type,amount,money_type,tnx_id, company_id, opening_cash, closing_cash) VALUES (?,?,?,?,?,?,?,?,?)`,
             [party[0].PartyName, created_at, transactionType, recieved, money_type, sales[0].insertId, user.company_id, openingCash, closingCash])
-        }
+        
         if (products) {
             if(transactionType == 'purchase'){
                 for (const product of products) {
@@ -1049,18 +1049,17 @@ const businessOwnerController = {
 
                 if(balanceType == 'toReceive'){
                     await mysql.query(
-                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, receivable, company_id) VALUES (?,?,?,?,?,?,?,?)",
-                        [user.id, name, email, phone, address, image, openingBalance, user.company_id]
+                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, to_receive, opening_balance, company_id) VALUES (?,?,?,?,?,?,?,?,?)",
+                        [user.id, name, email, phone, address, image, openingBalance, openingBalance, user.company_id]
                     );
                 }else{
                     await mysql.query(
-                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, payable, company_id) VALUES (?,?,?,?,?,?,?,?)",
-                        [user.id, name, email, phone, address, image, openingBalance, user.company_id]
+                        "INSERT INTO parties (user_id, PartyName, Email, Phone, Address, profile_picture, to_receive, opening_balance, company_id) VALUES (?,?,?,?,?,?,?,?,?)",
+                        [user.id, name, email, phone, address, image, -openingBalance, -openingBalance, user.company_id]
                     );
                 }
-                
-                
-                res.redirect('/business-owner/viewParty');
+
+                res.redirect('/admin/viewParty');
             } catch (dbError) {
                 res.status(500).json({ error: "Database operation failed", details: dbError });
             }
