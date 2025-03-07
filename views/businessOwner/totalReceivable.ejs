@@ -115,7 +115,7 @@
     <div class="row" id="receivableList">
         <% partyWiseReceivable.forEach(party => { %>
             <% if(party.to_receive > 0){ %>
-                <a href="/admin/partyTransactions?partyId=<%= party.id %>" class="receivable-item">
+                <a href="/business-owner/partyTransactions?partyId=<%= party.id %>" class="receivable-item">
                     <div class="col-md-4 col-sm-6 mb-3">
                         <div class="card shadow-sm border-0">
                             <div class="card-body text-center">
